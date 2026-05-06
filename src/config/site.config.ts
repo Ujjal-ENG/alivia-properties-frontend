@@ -1,0 +1,42 @@
+export const siteConfig = {
+  name: "Alivia Properties",
+  shortName: "Alivia",
+  tagline: "Your Trusted Real Estate Partner in Bangladesh",
+  description:
+    "Alivia Properties is a premier real estate platform in Bangladesh — showcasing exclusive developer projects and a trusted marketplace for buying, selling, and renting properties across the country.",
+  url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+  logo: "/logo.svg",
+  ogImage: "/og-image.jpg",
+
+  contact: {
+    phone: "+880 1700-000000",
+    phoneRaw: "+8801700000000",
+    email: "info@aliviaproperties.com",
+    whatsApp: "+8801700000000",
+    address: "House 12, Road 7, Bashundhara R/A, Dhaka 1229, Bangladesh",
+    officeHours: "Saturday – Thursday: 9:00 AM – 6:00 PM",
+    mapEmbedUrl: "",
+  },
+
+  social: {
+    facebook: "https://facebook.com/aliviaproperties",
+    instagram: "https://instagram.com/aliviaproperties",
+    youtube: "https://youtube.com/@aliviaproperties",
+    linkedin: "https://linkedin.com/company/aliviaproperties",
+  },
+
+  stats: {
+    projectsCompleted: 12,
+    happyFamilies: 1800,
+    yearsExperience: 14,
+    totalListings: 500,
+  },
+
+  founder: {
+    name: "Md. Rafiqul Islam",
+    title: "Founder & Managing Director",
+    message:
+      "At Alivia Properties, we believe that finding the right home is more than a transaction — it is a life milestone. Our commitment is to make that journey transparent, trustworthy, and truly rewarding for every family in Bangladesh.",
+    avatar: "/founder.jpg",
+  },
+} as const
