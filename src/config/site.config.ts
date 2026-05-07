@@ -37,6 +37,6 @@ export const siteConfig = {
     title: "Founder & Managing Director",
     message:
       "At Alivia Properties, we believe that finding the right home is more than a transaction — it is a life milestone. Our commitment is to make that journey transparent, trustworthy, and truly rewarding for every family in Bangladesh.",
-    avatar: "/founder.jpg",
+    avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=800&auto=format",
   },
 } as const
