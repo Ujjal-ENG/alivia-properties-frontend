@@ -1,8 +1,8 @@
-import type { DashboardStats, ChartDataPoint, ActivityItem } from "@/types/dashboard.types"
+import type { DashboardStats, ChartDataPoint, ActivityItem, PropertyStatusPoint } from "@/types/dashboard.types"
 
 export const DUMMY_ADMIN_STATS: DashboardStats = {
-  totalProperties: 248,
-  pendingListings: 18,
+  totalProperties: 254,
+  pendingListings: 6,
   approvedListings: 195,
   verifiedListings: 87,
   featuredListings: 24,
@@ -37,6 +37,28 @@ export const INQUIRY_BY_TYPE_DATA: ChartDataPoint[] = [
   { label: "Project Inquiry", value: 198 },
   { label: "General", value: 92 },
   { label: "Reports", value: 46 },
+]
+
+export const MONTHLY_BOOKINGS_DATA: ChartDataPoint[] = [
+  { label: "Jan", value: 14 },
+  { label: "Feb", value: 19 },
+  { label: "Mar", value: 22 },
+  { label: "Apr", value: 26 },
+  { label: "May", value: 31 },
+  { label: "Jun", value: 28 },
+  { label: "Jul", value: 38 },
+  { label: "Aug", value: 42 },
+  { label: "Sep", value: 35 },
+  { label: "Oct", value: 47 },
+  { label: "Nov", value: 53 },
+  { label: "Dec", value: 39 },
+]
+
+export const PROPERTY_STATUS_QUARTERLY: PropertyStatusPoint[] = [
+  { label: "Q1", pending: 12, approved: 48, verified: 22 },
+  { label: "Q2", pending: 18, approved: 65, verified: 31 },
+  { label: "Q3", pending: 9,  approved: 71, verified: 38 },
+  { label: "Q4", pending: 15, approved: 83, verified: 44 },
 ]
 
 export const RECENT_ACTIVITY: ActivityItem[] = [
