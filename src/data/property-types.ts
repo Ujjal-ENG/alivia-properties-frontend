@@ -21,6 +21,12 @@ export const PROPERTY_TYPE_OPTIONS: PropertyTypeOption[] = [
     description: "Residential flats in multi-storey buildings",
   },
   {
+    value: "villa",
+    label: "Villa",
+    icon: "House",
+    description: "Standalone or duplex luxury homes",
+  },
+  {
     value: "land",
     label: "Land",
     icon: "Map",
