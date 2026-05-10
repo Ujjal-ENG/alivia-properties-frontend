@@ -63,6 +63,10 @@ alivia-properties-frontend/
 │   │   │   ├── admin/
 │   │   │   ├── seller/
 │   │   │   └── buyer/
+│   │   ├── marketplace/              # Marketplace — standalone route group (no layout wrapper)
+│   │   │   ├── page.tsx              # /marketplace — hero + category groups
+│   │   │   ├── category/[slug]/page.tsx   # /marketplace/category/[slug] — supplier list
+│   │   │   └── supplier/[slug]/page.tsx   # /marketplace/supplier/[slug] — profile + products
 │   │   ├── api/
 │   │   │   ├── mock/                 # Dummy API route handlers
 │   │   │   └── _utils/              # Shared API helpers
@@ -78,6 +82,16 @@ alivia-properties-frontend/
 │   │   ├── home/                     # Homepage section components
 │   │   ├── projects/                 # Project card, gallery, specs, etc.
 │   │   ├── properties/               # Property card, filter sidebar, etc.
+│   │   ├── marketplace/              # Marketplace UI components
+│   │   │   ├── CategoryCard.tsx      # Category grid card with image + hover
+│   │   │   ├── CategorySection.tsx   # Group section (icon, heading, card grid)
+│   │   │   ├── CategoryTabs.tsx      # Sticky scroll-spy tab bar (client)
+│   │   │   ├── icon-by-name.tsx      # Dynamic lucide icon lookup by string name
+│   │   │   ├── MarketplaceHero.tsx   # Hero banner on /marketplace
+│   │   │   ├── HowItWorks.tsx        # 3-step process section
+│   │   │   ├── SupplierCard.tsx      # Supplier card (links to profile page)
+│   │   │   ├── SupplierCTA.tsx       # "List your business" CTA banner
+│   │   │   └── ProductCard.tsx       # Product/service card with price + stock status
 │   │   ├── forms/                    # All RHF+Zod form components
 │   │   ├── dashboard/                # Stat cards, data tables, badges
 │   │   ├── chat/                     # Live chat widget
@@ -118,7 +132,10 @@ alivia-properties-frontend/
 │   │   ├── locations.bd.ts           # 8 divisions, 20+ districts, 50+ areas
 │   │   ├── property-types.ts         # Type/purpose/size-unit/price-range options
 │   │   ├── amenities.ts              # 6 categories, 30+ amenity items
-│   │   └── dashboard-stats.ts        # Admin stats + chart data + activity feed
+│   │   ├── dashboard-stats.ts        # Admin stats + chart data + activity feed
+│   │   ├── marketplaceCategories.ts  # 5 groups, 62 category items with images + icons
+│   │   ├── marketplaceSuppliers.ts   # 24 BD suppliers/providers; getSuppliersForCategory(), getSupplierBySlug()
+│   │   └── marketplaceProducts.ts    # 96 products (4 per supplier); getProductsBySupplierId(), getProductsBySupplierSlug()
 │   │
 │   ├── schemas/                      # Zod v4 validation schemas
 │   │   ├── auth.schema.ts
@@ -136,7 +153,16 @@ alivia-properties-frontend/
 │   │   ├── user.types.ts             # User, Seller, Buyer, Admin, AuthUser, UserRole
 │   │   ├── inquiry.types.ts          # Inquiry, InquiryStatus, InquiryType
 │   │   ├── booking.types.ts          # Booking, BookingStatus, ConsultationType
-│   │   └── dashboard.types.ts        # DashboardStats, ChartDataPoint, ActivityItem
+│   │   ├── dashboard.types.ts        # DashboardStats, ChartDataPoint, ActivityItem
+│   │   ├── marketplace.types.ts      # MarketplaceProduct, Supplier, SupplierKind
+│   │   ├── agent.types.ts            # Agent, AgentSpecialty, AgentQueryParams
+│   │   ├── review.types.ts           # Review, ReviewSummary, ReviewTargetType
+│   │   ├── qa.types.ts               # QAItem, QAQueryParams
+│   │   ├── notification.types.ts     # NotificationItem, NotificationType
+│   │   ├── document.types.ts         # PropertyDocument, DocumentType
+│   │   ├── offer.types.ts            # Offer, OfferStatus, OfferMessage
+│   │   ├── bank.types.ts             # Bank
+│   │   └── pre-approval.types.ts     # PreApprovalRequest, EmploymentType
 │   │
 │   ├── utils/
 │   │   ├── cn.ts                     # Re-exports cn() from @/lib/utils
@@ -520,6 +546,135 @@ Do not recreate. Route group: `src/app/(dashboard)/buyer/`
 
 ---
 
+### ✅ STEP 11 — Listing Depth, Transaction Tools, Social + Trust (COMPLETE)
+
+Three feature bundles added on top of the existing detail page + new top-level pages. Compact, data-dense UI: tight padding, small type, info-rich rows. Brand teal + gold tokens unchanged.
+
+**New types (`src/types/`):**
+- `agent.types.ts` — `Agent`, `AgentSpecialty`, `AgentQueryParams`
+- `review.types.ts` — `Review`, `ReviewSummary`, `ReviewTargetType`, `ReviewQueryParams`
+- `qa.types.ts` — `QAItem`, `QAQueryParams`
+- `notification.types.ts` — `NotificationItem`, `NotificationType`
+- `document.types.ts` — `PropertyDocument`, `DocumentType`
+- `offer.types.ts` — `Offer`, `OfferStatus`, `OfferMessage`, `OfferQueryParams`
+- `bank.types.ts` — `Bank`
+- `pre-approval.types.ts` — `PreApprovalRequest`, `EmploymentType`
+
+**New Zod schemas (`src/schemas/`):** `review.schema.ts`, `qa.schema.ts`, `offer.schema.ts`, `pre-approval.schema.ts`
+
+**New dummy data (`src/data/`):** `dummy-agents.ts` (6), `dummy-reviews.ts` (6), `dummy-qa.ts` (4), `dummy-notifications.ts` (7), `dummy-documents.ts` (6), `dummy-banks.ts` (7 BD partner banks), `dummy-offers.ts` (2)
+
+**New mock API routes (`src/app/api/mock/`):**
+- `agents/route.ts` (GET filtered) + `agents/[slug]/route.ts` (GET)
+- `reviews/route.ts` (GET with summary, POST)
+- `qa/route.ts` (GET, POST question, POST `action:"answer"`)
+- `notifications/route.ts` (GET unread count, PATCH read / mark-all)
+- `documents/route.ts` (GET by propertyId)
+- `banks/route.ts` (GET, sorted by interest rate)
+- `offers/route.ts` (GET filtered, POST submit, POST `action:"counter"|"accept"|"reject"|"withdraw"`)
+- `pre-approval/route.ts` (POST — DTI < 0.5 → approved; auto-EMI calc)
+
+**New services (`src/services/`):** `agents.service.ts`, `reviews.service.ts`, `qa.service.ts`, `notifications.service.ts`, `documents.service.ts`, `banks.service.ts`, `offers.service.ts`, `pre-approval.service.ts`
+
+**Listing-depth components (`src/components/properties/`):**
+- `virtual-tour.tsx` — embedded 360° iframe with poster + fullscreen
+- `floor-plan.tsx` — multi-level tabs, zoom, lightbox
+- `photo-lightbox.tsx` — gallery + keyboard nav (←/→/Esc) modal
+- `video-reel.tsx` — vertical 9:16 reel carousel with mute toggle
+- `document-vault.tsx` — verified-count header, per-doc verified/pending state
+
+**Transaction-tools components:**
+- `properties/emi-bank-compare.tsx` — sortable table across 7 banks (rate / EMI / approval days / rating)
+- `properties/roi-calculator.tsx` — gross/net yield, total return, break-even with 5 sliders
+- `properties/moving-checklist.tsx` — 16 tasks × 8 weeks, persists to `localStorage` key `alivia_moving_checklist`
+- `properties/offer-flow.tsx` — Dialog form with contingency chips, +/- vs list price
+- `forms/pre-approval-form.tsx` — RHF + Zod, indicative result tile
+
+**Social + Trust components:**
+- `common/star-rating.tsx` — `<StarRating value count showValue size />`
+- `properties/reviews-section.tsx` — distribution bars + post-review form (target = property | agent | project)
+- `properties/qa-section.tsx` — upvote, agent-answered card, ask-question form
+- `agents/agent-card.tsx` — compact card with rating, areas, response time
+- `layout/notifications-bell.tsx` — bell + unread badge + dropdown panel + mark-all
+
+**New pages (route group `(site)`):**
+- `/agents` + `/agents/[slug]` — listing + agent profile (cover, bio, contact, specialties, listings, reviews tied to `targetType: "agent"`)
+- `/pre-approval` — pre-approval form
+- `/moving-checklist` — checklist
+- `/notifications` — full activity list
+
+**Property detail integration (`/properties/[slug]`):**
+Added below Description: VirtualTour + FloorPlan side-by-side, VideoReel, DocumentVault, RoiCalculator + EmiBankCompare (sale only), QASection, ReviewsSection. Sidebar adds OfferFlow above MortgageCalculator (sale only).
+
+**Routes added to `routes.config.ts`:**
+- Public: `AGENTS`, `AGENT_DETAIL(slug)`, `PRE_APPROVAL`, `MOVING_CHECKLIST`, `OFFER_NEW(slug)`, `NOTIFICATIONS`
+- API: `AGENTS`, `AGENT(slug)`, `REVIEWS`, `QA`, `NOTIFICATIONS`, `DOCUMENTS`, `BANKS`, `OFFERS`, `PRE_APPROVAL`
+
+**Public nav update (`nav.config.ts`):** new top-level **Agents** link + **Tools** dropdown (Pre-Approval, Moving Checklist, Compare, Consultation).
+
+**Lint quirk:** React Compiler's `react-hooks/set-state-in-effect` rule is strict. New components that load data via `useEffect` use `// eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps` above the `load()` call. Don't refactor away — this is intentional fetch-on-mount and the rule does not understand it.
+
+**Avoid:**
+- Importing dummy data inside components (only services/mock routes — same rule as before)
+- Replacing brand teal/gold tokens with the design-system suggestion's teal palette — design system was used for compact/data-dense layout decisions only; brand colors stay
+- Re-importing social icons from `lucide-react` (still removed in v1.14)
+- Putting `<Button>` *inside* `<DialogTrigger>` — Base-UI uses `render={<Button .../>}`. See `offer-flow.tsx` and `report-listing-dialog.tsx`
+
+---
+
+### ✅ STEP 12 — Marketplace (COMPLETE)
+
+Do not recreate. Marketplace lives at `src/app/marketplace/` (outside all route groups — no shared layout, uses root layout directly).
+
+**New routes added to `routes.config.ts`:**
+- `MARKETPLACE` = `"/marketplace"`
+- `MARKETPLACE_CATEGORY(slug)` = `"/marketplace/category/${slug}"`
+- `MARKETPLACE_SUPPLIER(slug)` = `"/marketplace/supplier/${slug}"`
+
+**Header changes (`src/components/layout/site-header.tsx`):**
+- Gold shimmer pill added to top info strip: `<Link href={ROUTES.MARKETPLACE}>` with `ShoppingBag` + `Sparkles` icons and a shine-sweep hover animation
+- Nav link added to `nav.config.ts` with `highlight: true`
+- `siteConfig.marketplaceUrl` added to `site.config.ts` (defaults to `"/marketplace"`)
+
+**Data files (all in `src/data/`):**
+- `marketplaceCategories.ts` — 5 `MarketplaceGroup` objects, 62 `MarketplaceItem` entries, each with `name`, `slug`, `description`, `icon` (lucide name), `imageUrl` (Unsplash), optional `badge`. Exports `marketplaceGroups`.
+- `marketplaceSuppliers.ts` — 24 Bangladesh-realistic `Supplier` objects (mix of `"supplier"` and `"service"` kind). Tagged with `categories: string[]` array. Exports `getSuppliersForCategory(slug)` and `getSupplierBySlug(slug)`.
+- `marketplaceProducts.ts` — 96 `MarketplaceProduct` objects (4 per supplier). Exports `getProductsBySupplierId(id)`, `getProductsBySupplierSlug(slug)`, `getProductsByCategory(slug)`.
+
+**Types (`src/types/marketplace.types.ts`):**
+- `MarketplaceProduct` — id, slug, name, supplierId, categorySlug, image, price (BDT number), unit, description, inStock, moq?, leadTimeDays?, brand?, rating?, reviewCount?, badge?
+- `SupplierKind` — `"supplier" | "service"`
+- `Supplier` — full profile type with categories, serviceAreas, brands, certifications, priceRange, isVerified, isFeatured
+
+**Components (`src/components/marketplace/`):**
+- `icon-by-name.tsx` — client component with double-cast dynamic lucide lookup: `((Icons as unknown) as Record<string, Icons.LucideIcon>)[name] ?? Icons.Circle`
+- `CategoryCard.tsx` — 4:3 image + gradient + icon chip + badge chip; links to `/marketplace/category/[slug]`
+- `CategorySection.tsx` — group heading (icon square + eyebrow + title + tagline) + 6-col card grid; `scroll-mt-32 md:scroll-mt-36` for sticky bar offset
+- `CategoryTabs.tsx` — **client**; sticky scroll-spy tab bar with: shadow-on-scroll elevation, brand→gold gradient progress stripe, icon chip per tab, count badge, gold underline indicator on active, horizontal gradient edge fades, tab rail auto-scrolls to active on click
+- `MarketplaceHero.tsx` — hero banner on the main marketplace page
+- `SupplierCTA.tsx` — "List your business" call-to-action section
+- `HowItWorks.tsx` — 3-step process illustration
+- `SupplierCard.tsx` — 16:9 cover image wrapped in `<Link href={ROUTES.MARKETPLACE_SUPPLIER(s.slug)}>`, rating chip, kind/featured badges, meta row, price-range strip with verified badge, brand chips, Call + WhatsApp buttons
+- `ProductCard.tsx` — 4:3 image, badge/stock chip, rating chip, brand pill, name, description, MOQ/lead-time meta, formatted price (auto BDT Lakh for ≥10L), in-stock indicator
+
+**Pages:**
+- `src/app/marketplace/page.tsx` — Server Component; renders `MarketplaceHero`, `CategoryTabs` (client), then maps `marketplaceGroups` → `CategorySection`; then `SupplierCTA` + `HowItWorks`
+- `src/app/marketplace/category/[slug]/page.tsx` — Server Component; hero with cover image + gradient, supplier count/verified/featured chips, `getSuppliersForCategory(slug)` → grid of `SupplierCard`, empty-state card, sidebar with consult card + related categories
+- `src/app/marketplace/supplier/[slug]/page.tsx` — Server Component; hero with cover image + gradient, supplier stats strip, product grid via `getProductsBySupplierId`, empty-state, sidebar with contact buttons + service areas + brands + certifications + category links
+
+**Architecture exception — direct data imports:**
+Marketplace pages import directly from `src/data/marketplaceCategories`, `marketplaceSuppliers`, and `marketplaceProducts` without going through `src/services/`. This is intentional: marketplace catalogue data is static (no backend API exists for it). When a backend is added, create service functions and swap the imports in the three page files only. Do **not** import these data files inside any UI component — only the pages and any future mock route handlers may do so.
+
+**Product price formatting:**
+`ProductCard.tsx` uses a local `fmtPrice(price)` helper rather than the global `formatPrice()` utility, because product prices span a far wider range (৳11.5/brick → ৳25L/lift) than property prices and need different thresholds. Do not replace with `formatPrice()`.
+
+**Avoid:**
+- Creating a mock API route for marketplace catalogue data — it is static and consumed by Server Components directly
+- Adding `export const dynamic = "force-dynamic"` to marketplace pages — they don't call any service/fetch
+- Importing `marketplaceCategories/Suppliers/Products` inside any client component
+
+---
+
 ## 7. Running the Project
 
 ```bash
@@ -577,3 +732,6 @@ pnpm start        # serve production build
 | Server page fetching without `force-dynamic` | Add `export const dynamic = "force-dynamic"` to any page that calls a service |
 | Accessing `params.slug` directly | Next.js 16: params is a Promise — use `const { slug } = await params` |
 | `(Icons as Record<string, LucideIcon>)[name]` | Double cast: `((Icons as unknown) as Record<string, Icons.LucideIcon>)[name]` |
+| Importing `marketplaceCategories/Suppliers/Products` in a UI component | Only marketplace **page files** and future mock route handlers may import these |
+| Adding `export const dynamic = "force-dynamic"` to marketplace pages | Marketplace pages read static data files, not services — no fetch involved |
+| Calling `formatPrice()` on marketplace product prices | Use the local `fmtPrice()` helper in `ProductCard.tsx` — product prices span ৳11.5 to ৳25L, a different range than property prices |
