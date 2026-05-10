@@ -1,0 +1,468 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================
+   Alivia Properties — Design Tokens
+   Source of truth for all colors, typography, spacing, radii.
+   Use Tailwind v4 utilities (e.g. `bg-brand-600`, `text-h1`)
+   instead of hard-coding hex values anywhere in the app.
+   ============================================================ */
+
+@theme inline {
+  /* shadcn surface tokens */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Brand: deep emerald — trust, growth, premium */
+  --color-brand-50: oklch(0.97 0.02 170);
+  --color-brand-100: oklch(0.93 0.04 170);
+  --color-brand-200: oklch(0.86 0.07 170);
+  --color-brand-300: oklch(0.76 0.1 170);
+  --color-brand-400: oklch(0.64 0.12 170);
+  --color-brand-500: oklch(0.52 0.13 170);
+  --color-brand-600: oklch(0.44 0.12 170);
+  --color-brand-700: oklch(0.36 0.1 170);
+  --color-brand-800: oklch(0.28 0.08 170);
+  --color-brand-900: oklch(0.2 0.06 170);
+  --color-brand-950: oklch(0.14 0.04 170);
+
+  /* Accent: warm gold — luxury highlight */
+  --color-gold-50: oklch(0.97 0.03 85);
+  --color-gold-100: oklch(0.94 0.06 85);
+  --color-gold-200: oklch(0.89 0.1 85);
+  --color-gold-300: oklch(0.83 0.13 85);
+  --color-gold-400: oklch(0.78 0.14 80);
+  --color-gold-500: oklch(0.72 0.15 78);
+  --color-gold-600: oklch(0.62 0.14 72);
+  --color-gold-700: oklch(0.5 0.12 68);
+  --color-gold-800: oklch(0.38 0.09 65);
+  --color-gold-900: oklch(0.28 0.07 62);
+
+  /* Neutral / surface scale for sections, cards, dividers */
+  --color-ink-50: oklch(0.985 0 0);
+  --color-ink-100: oklch(0.97 0 0);
+  --color-ink-200: oklch(0.93 0 0);
+  --color-ink-300: oklch(0.86 0 0);
+  --color-ink-400: oklch(0.7 0 0);
+  --color-ink-500: oklch(0.55 0 0);
+  --color-ink-600: oklch(0.42 0 0);
+  --color-ink-700: oklch(0.32 0 0);
+  --color-ink-800: oklch(0.22 0 0);
+  --color-ink-900: oklch(0.14 0 0);
+  --color-ink-950: oklch(0.08 0 0);
+
+  /* Status colors */
+  --color-success: oklch(0.62 0.15 150);
+  --color-warning: oklch(0.78 0.14 75);
+  --color-info: oklch(0.62 0.14 240);
+  --color-danger: oklch(0.58 0.22 27);
+
+  /* Typography — fonts */
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-heading: var(--font-cinzel), Georgia, serif;
+  --font-display: var(--font-cinzel), Georgia, serif;
+
+  /* Typography — fluid scale (Tailwind v4 emits text-* utilities) */
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.125rem;
+  --text-xs--letter-spacing: 0.01em;
+
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.375rem;
+
+  --text-base: 1rem;
+  --text-base--line-height: 1.625rem;
+
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.75rem;
+
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.875rem;
+  --text-xl--font-weight: 600;
+
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+  --text-2xl--font-weight: 600;
+  --text-2xl--letter-spacing: -0.01em;
+
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 2.375rem;
+  --text-3xl--font-weight: 700;
+  --text-3xl--letter-spacing: -0.015em;
+
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 2.75rem;
+  --text-4xl--font-weight: 700;
+  --text-4xl--letter-spacing: -0.02em;
+
+  --text-5xl: 3rem;
+  --text-5xl--line-height: 3.375rem;
+  --text-5xl--font-weight: 700;
+  --text-5xl--letter-spacing: -0.025em;
+
+  --text-6xl: 3.75rem;
+  --text-6xl--line-height: 4.125rem;
+  --text-6xl--font-weight: 800;
+  --text-6xl--letter-spacing: -0.03em;
+
+  --text-display: 4.5rem;
+  --text-display--line-height: 4.875rem;
+  --text-display--font-weight: 800;
+  --text-display--letter-spacing: -0.035em;
+
+  /* Radius scale */
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Shadows — soft, premium */
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.04), 0 1px 3px 0 rgb(0 0 0 / 0.06);
+  --shadow-elevated:
+    0 4px 12px -2px rgb(0 0 0 / 0.08), 0 2px 6px -2px rgb(0 0 0 / 0.04);
+  --shadow-pop:
+    0 12px 32px -8px rgb(0 0 0 / 0.12), 0 4px 12px -4px rgb(0 0 0 / 0.06);
+}
+
+/* ============================================================
+   Light theme (default)
+   ============================================================ */
+:root {
+  --background: oklch(1 0 0); /* white */
+  --foreground: oklch(0.14 0 0); /* near black */
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.14 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.14 0 0);
+
+  /* Primary = brand-700 (deep emerald) */
+  --primary: oklch(0.36 0.1 170);
+  --primary-foreground: oklch(0.985 0 0);
+
+  --secondary: oklch(0.97 0.02 170); /* brand-50 tint */
+  --secondary-foreground: oklch(0.28 0.08 170);
+
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.45 0 0);
+
+  --accent: oklch(0.94 0.06 85); /* gold-100 */
+  --accent-foreground: oklch(0.38 0.09 65); /* gold-800 */
+
+  --destructive: oklch(0.58 0.22 27);
+  --border: oklch(0.92 0 0);
+  --input: oklch(0.92 0 0);
+  --ring: oklch(0.44 0.12 170); /* brand-600 */
+
+  --chart-1: oklch(0.44 0.12 170);
+  --chart-2: oklch(0.62 0.14 72);
+  --chart-3: oklch(0.62 0.14 240);
+  --chart-4: oklch(0.62 0.15 150);
+  --chart-5: oklch(0.58 0.22 27);
+
+  --radius: 0.625rem;
+
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.14 0 0);
+  --sidebar-primary: oklch(0.36 0.1 170);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0.02 170);
+  --sidebar-accent-foreground: oklch(0.28 0.08 170);
+  --sidebar-border: oklch(0.92 0 0);
+  --sidebar-ring: oklch(0.44 0.12 170);
+}
+
+/* ============================================================
+   Dark theme
+   ============================================================ */
+.dark {
+  --background: oklch(0.14 0.01 170);
+  --foreground: oklch(0.97 0 0);
+
+  --card: oklch(0.2 0.02 170);
+  --card-foreground: oklch(0.97 0 0);
+  --popover: oklch(0.2 0.02 170);
+  --popover-foreground: oklch(0.97 0 0);
+
+  --primary: oklch(0.76 0.1 170); /* brand-300 in dark mode */
+  --primary-foreground: oklch(0.14 0.01 170);
+
+  --secondary: oklch(0.26 0.04 170);
+  --secondary-foreground: oklch(0.97 0 0);
+
+  --muted: oklch(0.26 0.02 170);
+  --muted-foreground: oklch(0.7 0 0);
+
+  --accent: oklch(0.38 0.09 65);
+  --accent-foreground: oklch(0.94 0.06 85);
+
+  --destructive: oklch(0.7 0.19 22);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.64 0.12 170);
+
+  --chart-1: oklch(0.76 0.1 170);
+  --chart-2: oklch(0.78 0.14 80);
+  --chart-3: oklch(0.62 0.14 240);
+  --chart-4: oklch(0.62 0.15 150);
+  --chart-5: oklch(0.58 0.22 27);
+
+  --sidebar: oklch(0.2 0.02 170);
+  --sidebar-foreground: oklch(0.97 0 0);
+  --sidebar-primary: oklch(0.76 0.1 170);
+  --sidebar-primary-foreground: oklch(0.14 0.01 170);
+  --sidebar-accent: oklch(0.26 0.04 170);
+  --sidebar-accent-foreground: oklch(0.97 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.64 0.12 170);
+}
+
+/* ============================================================
+   Base layer
+   ============================================================ */
+@layer base {
+  button,
+  [role="button"],
+  select,
+  summary,
+  label[for] {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1,
+      "ss01" 1;
+    background-image:
+      radial-gradient(
+        circle at top,
+        color-mix(in srgb, oklch(0.97 0.02 170) 90%, transparent) 0,
+        transparent 34rem
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in srgb, white 84%, oklch(0.97 0 0)) 0%,
+        white 100%
+      );
+  }
+
+  /* Headings — keep semantic h1..h6 styled by default for content surfaces.
+     For full control on landing pages, use the .h1..._h6 utilities below. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+  }
+  h1 {
+    @apply text-4xl font-bold tracking-tight;
+  }
+  h2 {
+    @apply text-3xl font-bold tracking-tight;
+  }
+  h3 {
+    @apply text-2xl font-semibold tracking-tight;
+  }
+  h4 {
+    @apply text-xl font-semibold;
+  }
+  h5 {
+    @apply text-lg font-semibold;
+  }
+  h6 {
+    @apply text-base font-semibold;
+  }
+
+  /* Form controls inherit focus ring uniformly */
+  :where(input, textarea, select, button):focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  :where(a, button, [role="button"]) {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgb(15 23 42 / 0.08);
+  }
+}
+
+/* ============================================================
+   Reusable typography utilities (use these on marketing pages)
+   ============================================================ */
+@layer components {
+  .text-display {
+    @apply font-extrabold tracking-tight;
+    font-family: var(--font-display);
+    font-size: clamp(3.25rem, 7vw, 5.75rem);
+    line-height: 0.96;
+  }
+  .text-h1 {
+    @apply text-4xl md:text-5xl font-bold tracking-tight;
+    font-family: var(--font-heading);
+  }
+  .text-h2 {
+    @apply text-3xl md:text-4xl font-bold tracking-tight;
+    font-family: var(--font-heading);
+  }
+  .text-h3 {
+    @apply text-2xl md:text-3xl font-semibold tracking-tight;
+    font-family: var(--font-heading);
+  }
+  .text-h4 {
+    @apply text-xl md:text-2xl font-semibold;
+  }
+  .text-eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.18em] text-brand-700;
+  }
+  .text-lead {
+    @apply text-base md:text-lg text-muted-foreground leading-relaxed;
+  }
+  .text-body {
+    @apply text-base text-foreground leading-relaxed;
+  }
+  .text-meta {
+    @apply text-sm text-muted-foreground;
+  }
+  .text-caption {
+    @apply text-xs text-muted-foreground;
+  }
+
+  /* Page container — consistent horizontal gutters across all routes */
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Section padding rhythm */
+  .section-y {
+    @apply py-16 md:py-24;
+  }
+  .section-y-sm {
+    @apply py-10 md:py-14;
+  }
+
+  .surface-panel {
+    @apply rounded-[1.75rem] border border-white/70 bg-white/88 backdrop-blur-xl;
+    box-shadow: var(--shadow-pop);
+  }
+
+  .surface-card {
+    @apply rounded-[1.5rem] border border-border/80 bg-white;
+    box-shadow: var(--shadow-card);
+  }
+
+  .surface-card-strong {
+    @apply rounded-[1.75rem] border border-white/10 bg-ink-900 text-white;
+    box-shadow: var(--shadow-pop);
+  }
+
+  .eyebrow-pill {
+    @apply inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/90 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-brand-800;
+  }
+
+  .bg-grid-fade {
+    background-image:
+      linear-gradient(
+        to right,
+        color-mix(in srgb, oklch(0.92 0 0) 65%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in srgb, oklch(0.92 0 0) 65%, transparent) 1px,
+        transparent 1px
+      );
+    background-size: 32px 32px;
+  }
+
+  .bg-brand-aurora {
+    background-image:
+      radial-gradient(
+        circle at 15% 20%,
+        color-mix(in srgb, oklch(0.93 0.04 170) 75%, transparent) 0,
+        transparent 28%
+      ),
+      radial-gradient(
+        circle at 85% 10%,
+        color-mix(in srgb, oklch(0.94 0.06 85) 65%, transparent) 0,
+        transparent 32%
+      ),
+      linear-gradient(
+        135deg,
+        white 0%,
+        color-mix(in srgb, white 82%, oklch(0.97 0.02 170)) 100%
+      );
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    oklch(0.94 0 0) 25%,
+    oklch(0.90 0 0) 50%,
+    oklch(0.94 0 0) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
