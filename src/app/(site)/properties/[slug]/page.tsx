@@ -17,6 +17,7 @@ import {
   ArrowRight,
 } from "lucide-react"
 import { getProperty, getProperties } from "@/services/properties.service"
+import { getDocuments } from "@/services/documents.service"
 import { formatPrice, formatRent } from "@/utils/format-price"
 import { ROUTES } from "@/config/routes.config"
 import { Button } from "@/components/ui/button"
@@ -26,6 +27,15 @@ import { CompareButton } from "@/components/properties/compare-button"
 import { PropertyCard } from "@/components/properties/property-card"
 import { MortgageCalculator } from "@/components/properties/mortgage-calculator"
 import { ReportListingDialog } from "@/components/properties/report-listing-dialog"
+import { VirtualTour } from "@/components/properties/virtual-tour"
+import { FloorPlan } from "@/components/properties/floor-plan"
+import { VideoReel } from "@/components/properties/video-reel"
+import { DocumentVault } from "@/components/properties/document-vault"
+import { EmiBankCompare } from "@/components/properties/emi-bank-compare"
+import { RoiCalculator } from "@/components/properties/roi-calculator"
+import { OfferFlow } from "@/components/properties/offer-flow"
+import { ReviewsSection } from "@/components/properties/reviews-section"
+import { QASection } from "@/components/properties/qa-section"
 import { StructuredData } from "@/components/seo/structured-data"
 import { siteConfig } from "@/config/site.config"
 
@@ -41,6 +51,24 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
 
   const similarRes = await getProperties({ type: p.type, division: p.division, limit: 3 })
   const similar = similarRes.data.filter((s) => s.id !== p.id).slice(0, 3)
+
+  const docsRes = await getDocuments(p.id).catch(() => null)
+  const documents = docsRes?.data ?? []
+
+  const floorLevels = p.images.length >= 2
+    ? [
+        { label: "Ground", imageUrl: p.images[0], sizeSqft: Math.round(p.size * 0.55) },
+        { label: "Upper",  imageUrl: p.images[1], sizeSqft: Math.round(p.size * 0.45) },
+      ]
+    : []
+
+  const reels = p.images.slice(0, 4).map((img, i) => ({
+    id: `reel-${i}`,
+    videoUrl: p.videoUrl ?? "",
+    poster: img,
+    caption: i === 0 ? "Living room walkthrough" : i === 1 ? "Kitchen + utility tour" : i === 2 ? "Master bedroom" : "Balcony view",
+    duration: ["0:23", "0:31", "0:18", "0:42"][i] ?? "0:30",
+  }))
 
   const displayPrice = p.purpose === "rent" ? formatRent(p.price) : formatPrice(p.price)
   const publishedDate = new Intl.DateTimeFormat("en-BD", {
@@ -187,6 +215,25 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
               <p className="mt-4 text-sm leading-relaxed text-ink-600">{p.description}</p>
             </div>
 
+            <div className="grid gap-4 md:grid-cols-2">
+              <VirtualTour posterImage={p.images[0]} title="Virtual 360° Tour" />
+              {floorLevels.length > 0 && <FloorPlan levels={floorLevels} />}
+            </div>
+
+            <VideoReel reels={reels} />
+
+            {documents.length > 0 && <DocumentVault documents={documents} />}
+
+            {p.purpose === "sale" && (
+              <div className="grid gap-4">
+                <RoiCalculator propertyPrice={p.price} />
+                <EmiBankCompare propertyPrice={p.price} />
+              </div>
+            )}
+
+            <QASection propertyId={p.id} />
+            <ReviewsSection targetType="property" targetId={p.id} />
+
             {p.facilities.length > 0 && (
               <div className="surface-card p-6">
                 <h2 className="text-h3">Facilities</h2>
@@ -285,7 +332,18 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
               </div>
             </div>
 
-            {p.purpose === "sale" && <MortgageCalculator propertyPrice={p.price} />}
+            {p.purpose === "sale" && (
+              <>
+                <OfferFlow
+                  propertyId={p.id}
+                  propertyTitle={p.title}
+                  listingPrice={p.price}
+                  sellerId={p.sellerId}
+                  sellerName={p.sellerName}
+                />
+                <MortgageCalculator propertyPrice={p.price} />
+              </>
+            )}
 
             <ReportListingDialog propertyId={p.id} />
           </div>
