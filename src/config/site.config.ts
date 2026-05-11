@@ -5,6 +5,10 @@ export const siteConfig = {
   description:
     "Alivia Properties is a premier real estate platform in Bangladesh — showcasing exclusive developer projects and a trusted marketplace for buying, selling, and renting properties across the country.",
   url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+  // Marketplace destination. Default = same-origin /marketplace.
+  // Set NEXT_PUBLIC_MARKETPLACE_URL only AFTER the subdomain is configured
+  // on Vercel: Project → Settings → Domains → add `market-place.<your-domain>`.
+  marketplaceUrl: process.env.NEXT_PUBLIC_MARKETPLACE_URL || "/marketplace",
   logo: "/logo.svg",
   ogImage: "/og-image.jpg",
 
