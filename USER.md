@@ -112,12 +112,21 @@ Left column (main content):
 - Title + price (formatted BDT)
 - Specs grid: type, purpose, size, beds, baths, floor, total floors, area
 - Full description
+- **Virtual 360° Tour** — embedded panorama viewer with fullscreen toggle
+- **Floor Plan viewer** — multi-level tabs with zoom (+/−) and full-screen mode
+- **Property Reels** — short vertical video clips (living room, kitchen, master, balcony) with mute toggle
+- **Document Vault** — title deed, mutation, tax receipt, RAJUK plan, society NOC. Shows verified/pending status per document
 - Facilities checklist
+- **Investment ROI calculator** (sale only) — sliders for rent, vacancy, maintenance, tax, appreciation → gross yield, net yield, total return, break-even years
+- **Compare bank EMI** (sale only) — sortable table across 7 partner banks (City, BRAC, EBL, SCB, DBBL, IDLC, HSBC) with rate, monthly EMI, total interest, approval days, rating
+- **Q&A** — upvote questions, see agent-answered responses, post your own
+- **Reviews** — star distribution histogram + write-a-review form
 - Map placeholder (Google Maps / Mapbox integration pending)
 
 Right column (sidebar):
 - **Seller contact card** — name, phone, WhatsApp button, Call button
 - **Inquiry form** — name, phone, email, message → sends to seller
+- **Make an offer** (sale only) — dialog flow: offer amount with +/− vs list price, payment method (cash/mortgage/mixed), closing date, contingency chips (title verification / mortgage approval / society NOC / mutation transfer), optional message
 - **Mortgage Calculator** — enter price, down payment, interest rate, tenure → shows monthly EMI
 - **Report listing** button → opens dialog to flag suspicious listings
 
@@ -127,6 +136,105 @@ Bottom:
 **Save button (❤)** — appears on every property card and detail page. Saves to browser localStorage (no login required). Saved list visible in Buyer dashboard.
 
 **Compare button** — appears on property cards. Add up to 4 properties. A floating bar appears at the bottom of the screen when ≥ 2 are selected. Click "Compare" to go to `/compare`.
+
+### Marketplace — `/marketplace`
+
+The Alivia Materials & Services Marketplace connects property buyers and developers with verified construction suppliers, finishing-product retailers, utility-systems vendors and property service providers — all Bangladesh-based.
+
+**Entry point:** Click the gold **Marketplace** pill in the top info strip of the site header (visible on every page).
+
+#### Main Page — `/marketplace`
+
+The landing page shows:
+- **Hero banner** — headline, search hint, and a "Request a quote" CTA
+- **Category tabs** (sticky scroll-spy bar) — 5 groups: Raw Materials · Finishing Items · Utilities & Systems · Safety & Electronics · Services & Solutions. Clicking a tab smoothly scrolls to that group. The bar gains a shadow + brand-to-gold gradient progress stripe when the page is scrolled, and auto-centres the active tab in the rail on mobile.
+- **62 category cards** across the 5 groups — each shows a cover photo, category icon, name, description, and a "View Suppliers" link
+- **How It Works** — 3-step: Browse → Contact → Done
+- **"List your business" CTA** — for suppliers to apply to join the marketplace
+
+#### Category Page — `/marketplace/category/[slug]`
+
+Shows all verified suppliers and service providers for a specific category (e.g. Cement, Tiles, AC, CCTV).
+
+- **Hero** — category image with gradient overlay, group label, category name, description, supplier/verified/featured count chips
+- **Supplier grid** — 2–3 column grid of supplier cards (featured first, then by rating). Each card shows cover photo, kind badge (Supplier / Service), featured/verified badge, star rating, location, reply time, delivery days, price range, brand chips, Call and WhatsApp buttons. The cover image is clickable and links to the supplier's profile page.
+- **Empty state** — if no suppliers are listed yet, shows a "Request a quote" fallback with phone CTA
+- **Sidebar** — free 15-min consult card + related categories in the same group
+
+#### Supplier Profile — `/marketplace/supplier/[slug]`
+
+Full supplier or service-provider profile page.
+
+- **Hero** — cover image with gradient, Supplier/Service kind chip, Verified and Featured badges, supplier name, tagline, star rating + review count, quick stats row (years in business · reply time · delivery · location)
+- **Product / Service grid** — all offerings from this supplier, with:
+  - Cover image, optional badge (Best Seller / Premium / New / Eco / Popular), stock status chip, star rating
+  - Brand pill, product name, description (2-line truncated)
+  - MOQ and lead-time metadata
+  - Unit price formatted in BDT (auto-converts to Lakh for ≥ ৳10,00,000)
+  - In stock / On order indicator
+- **Sidebar** — contact card (Call + WhatsApp + Email), service areas, brands carried, certifications (with shield icon), and category links back to `/marketplace/category/[slug]`
+
+**5 category groups and their sub-categories:**
+
+| Group | Sub-categories (sample) |
+|-------|------------------------|
+| Raw Materials | Cement, Steel/TMT, Brick, Sand, Stone, Concrete, Wood, Glass |
+| Finishing Items | Tiles, Marble/Granite, Paint, Doors, Sanitary, Kitchen Cabinets, Lighting |
+| Utilities & Systems | Lift, Generator, AC, Solar, Water Supply, RO, Geyser |
+| Safety & Electronics | CCTV, Access Control, Fire Safety, Smart Home, Wiring, Switch/Socket |
+| Services & Solutions | Plumber, Electrician, Painter, Carpenter, Deep Cleaning, Security Guard, Driver, Gardener |
+
+---
+
+### Agents — `/agents`
+
+Directory of verified property professionals working with Alivia. Compact, info-dense cards with:
+- Avatar + name + verified / featured pill
+- Star rating + review count
+- Specialties (Residential / Commercial / Land / Luxury / Rental)
+- Service areas (Gulshan, Banani, Motijheel, etc.)
+- Active listings · closed deals
+- Average reply time (hours)
+- WhatsApp availability indicator
+
+**Agent Profile — `/agents/[slug]`**
+
+- Cover image + avatar, badges (Verified, Featured)
+- Years experience, license number, company
+- Star rating + review count
+- Bio, specialty pills, service areas, languages
+- Contact panel (phone, WhatsApp, email) + "Request callback" button
+- Listings by this agent (up to 6 cards)
+- Reviews section tied to the agent (separate from property reviews)
+
+### Pre-Approval — `/pre-approval`
+
+Indicative mortgage pre-approval check. Submit:
+- Personal: name, email, phone
+- Financial: monthly income, employment type (Salaried / Self-employed / Business owner), years employed, existing EMI total
+- Loan: desired loan amount, tenure (years), preferred bank (optional)
+
+Result tile shows: loan, tenure, estimated rate, estimated monthly EMI. Decision rule: DTI (existing EMI + new EMI) / income < 0.5 → **Pre-approved**, else **Did not qualify**. No credit-bureau hit.
+
+### Moving Checklist — `/moving-checklist`
+
+16 tasks grouped across 8 weeks (8 weeks before → After move). Tap to check off. Progress bar + count. State persists to `localStorage` key `alivia_moving_checklist` — no login required, survives refresh.
+
+Sample tasks: verify title deed and mutation, hire packers (compare 3 quotes), notify employer + KYC update, disconnect Titas/WASA/DESCO, pay registration + stamp duty, hand over keys + meter readings, submit mutation in new buyer's name.
+
+### Notifications — `/notifications`
+
+Full activity stream for the current user. Notification types:
+- **price_drop** — saved property dropped in price
+- **new_match** — saved-search hits
+- **inquiry_received** / **inquiry_replied**
+- **booking_confirmed** / **booking_cancelled**
+- **listing_approved** / **listing_rejected**
+- **offer_received** / **offer_accepted** / **offer_rejected**
+- **review_received**
+- **qa_answered**
+
+Header bell icon (added in site header / dashboard header) shows unread count badge and a quick dropdown of the 8 most recent items, with "Mark all read".
 
 ### Compare — `/compare`
 
@@ -439,6 +547,31 @@ All BDT amounts across the platform are formatted as:
 | Green shield + "Verified" | Admin has confirmed the listing is legitimate |
 | Gold star + "Featured" | Promoted listing (paid feature in production) |
 | "Verified Seller" label | Admin has verified the seller's identity and credentials |
+| Brand teal "Verified" pill on agent | Admin-verified agent profile (license + identity confirmed) |
+| "Verified" pill on a review | Reviewer is a confirmed past buyer / inquirer |
+| Green check on a document | Document has been validated by Alivia compliance team |
+
+---
+
+## Reviews & Q&A
+
+**Reviews** appear on property detail pages and agent profiles. Each review has a 1–5 star rating, title, body, optional pros/cons chips, and a helpful-vote count. The summary header shows average score and a per-star distribution histogram. Anyone can post a review while authenticated; submission flows through the same `reviewSchema` validation.
+
+**Q&A** lives on each property detail page. Public buyers can post questions; the listing agent (or admin) posts answers. Items show upvote counts and the answered question is highlighted in a brand-tinted card with author + relative time. Unanswered questions show "Awaiting answer…".
+
+---
+
+## Offer & Negotiation Flow
+
+For sale listings, buyers can submit a structured offer instead of (or alongside) sending a free-text inquiry. The offer dialog captures:
+
+- **Offer amount** with a live +/−% indicator vs list price (negative = below list, green; positive = above list, red)
+- **Payment method**: Cash / Mortgage / Mixed
+- **Closing date** (defaults to 60 days out)
+- **Contingencies** as toggleable chips: Title verification, Mortgage approval, Society NOC, Mutation transfer
+- Optional buyer message
+
+Once submitted, the offer enters a thread of `OfferMessage` items. Sellers can **counter** (new amount + note), **accept**, or **reject**; buyers can **withdraw**. State transitions: `submitted → countered → accepted | rejected | withdrawn`.
 
 ---
 
