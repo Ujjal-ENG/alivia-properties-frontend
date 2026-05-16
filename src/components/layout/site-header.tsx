@@ -1,0 +1,284 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  ArrowUpRight,
+  Building2,
+  ChevronDown,
+  LayoutDashboard,
+  Menu,
+  MessageCircle,
+  Phone,
+  ShieldCheck,
+  ShoppingBag,
+  Sparkles,
+} from "lucide-react";
+import { useSession } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import { MobileNav } from "@/components/layout/mobile-nav";
+import { cn } from "@/lib/utils";
+import { publicNav, authNav, type NavItem } from "@/config/nav.config";
+import { ROUTES } from "@/config/routes.config";
+import { siteConfig } from "@/config/site.config";
+import { getDashboardRoute } from "@/utils/auth-helpers";
+import type { UserRole } from "@/types/user.types";
+
+function getNavPath(href: string) {
+  return href.split("?")[0];
+}
+
+function isNavItemActive(pathname: string, href: string) {
+  const path = getNavPath(href);
+  return path === "/" ? pathname === "/" : pathname.startsWith(path);
+}
+
+function DropdownNav({ item }: { item: NavItem }) {
+  const pathname = usePathname();
+  const isActive = isNavItemActive(pathname, item.href);
+  const label = item.label === "About Us" ? "About" : item.label;
+
+  return (
+    <div className="group/nav relative">
+      <Link
+        href={item.href}
+        aria-current={isActive ? "page" : undefined}
+        className={cn(
+          "inline-flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-[0.9rem] px-3.5 py-2 text-[0.82rem] font-semibold transition-colors duration-150",
+          isActive
+            ? "bg-brand-700 text-white shadow-sm"
+            : "text-ink-600 hover:bg-white hover:text-ink-900",
+        )}
+      >
+        {label}
+        {item.children && (
+          <ChevronDown
+            className={cn(
+              "h-3 w-3 transition-transform duration-200 group-hover/nav:rotate-180",
+              isActive ? "opacity-60" : "opacity-40",
+            )}
+          />
+        )}
+      </Link>
+
+      {item.children && (
+        <div className="invisible absolute left-0 top-full z-50 mt-2 w-56 translate-y-2 opacity-0 transition-all duration-150 group-hover/nav:visible group-hover/nav:translate-y-0 group-hover/nav:opacity-100">
+          {/* Arrow pointer */}
+          <div className="ml-5 flex h-2.5 w-5 items-end overflow-hidden">
+            <div className="h-3.5 w-3.5 rotate-45 rounded-xs border-l border-t border-black/6 bg-white shadow-sm" />
+          </div>
+          {/* Dropdown panel */}
+          <div
+            className="rounded-2xl border border-black/6 bg-white/98 p-1.5 backdrop-blur-xl"
+            style={{ boxShadow: "var(--shadow-pop)" }}
+          >
+            {item.children.map((child) => (
+              <Link
+                key={child.href}
+                href={child.href}
+                className={cn(
+                  "block rounded-[0.8rem] px-4 py-2.5 text-[0.82rem] font-medium text-ink-700 transition-colors hover:bg-brand-50 hover:text-brand-800",
+                  isNavItemActive(pathname, child.href) && "bg-brand-50 text-brand-800",
+                )}
+              >
+                {child.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function SiteHeader() {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const { data: session } = useSession();
+
+  useEffect(() => {
+    const handler = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", handler, { passive: true });
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
+
+  return (
+    <>
+      <header className="sticky top-0 z-50 w-full">
+        {/* Top info strip */}
+        <div
+          className={cn(
+            "overflow-hidden bg-linear-to-r from-brand-900 to-brand-800 transition-all duration-300 ease-in-out",
+            scrolled ? "max-h-0" : "max-h-12",
+          )}
+        >
+          <div className="container-page flex h-11 items-center justify-between">
+            <div className="hidden items-center gap-3 md:flex">
+              <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-brand-400" />
+              <span className="text-[0.67rem] font-semibold uppercase tracking-[0.18em] text-brand-200">
+                RAJUK Registered Developer
+              </span>
+              <span className="h-3 w-px bg-brand-700" />
+              <span className="text-[0.67rem] font-medium uppercase tracking-[0.15em] text-brand-400">
+                Established 2011
+              </span>
+              <span className="h-3 w-px bg-brand-700" />
+              <span className="text-[0.67rem] font-medium uppercase tracking-[0.15em] text-brand-400">
+                Dhaka, Bangladesh
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3 md:ml-auto md:gap-5">
+              <Link
+                href={ROUTES.MARKETPLACE}
+                className="group/mp relative inline-flex items-center gap-1.5 overflow-hidden rounded-full bg-linear-to-r from-gold-500 to-gold-400 px-3 py-1 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-brand-950 shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_4px_14px_rgba(229,176,79,0.45)] transition-all duration-200 hover:-translate-y-px hover:from-gold-400 hover:to-gold-300 hover:shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_6px_20px_rgba(229,176,79,0.6)]"
+              >
+                <span className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 ease-out group-hover/mp:translate-x-full" />
+                <ShoppingBag className="h-3 w-3" />
+                Marketplace
+                <Sparkles className="h-3 w-3 animate-pulse text-brand-900" />
+              </Link>
+              <a
+                href={`tel:${siteConfig.contact.phoneRaw}`}
+                className="hidden items-center gap-1.5 text-[0.75rem] text-brand-300 transition-colors hover:text-white sm:flex"
+              >
+                <Phone className="h-3 w-3" />
+                {siteConfig.contact.phone}
+              </a>
+              <a
+                href={`https://wa.me/${siteConfig.contact.whatsApp}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden items-center gap-1.5 text-[0.75rem] text-brand-300 transition-colors hover:text-white sm:flex"
+              >
+                <MessageCircle className="h-3 w-3" />
+                WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Main nav bar */}
+        <div
+          className={cn(
+            "border-b border-black/5 bg-white/95 backdrop-blur-2xl transition-shadow duration-300",
+            scrolled && "shadow-sm",
+          )}
+        >
+          <div className="container-page py-2.5">
+            <div
+              className={cn(
+                "flex items-center justify-between gap-3 rounded-2xl border border-black/6 bg-white px-4 py-2.5 transition-shadow duration-300 md:px-5",
+                scrolled ? "shadow-md" : "shadow-sm",
+              )}
+            >
+              {/* Logo */}
+              <Link
+                href="/"
+                className="flex shrink-0 cursor-pointer items-center gap-3"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] bg-linear-to-br from-brand-600 to-brand-900 shadow-sm">
+                  <Building2 className="h-5 w-5 text-white" />
+                </div>
+                <div className="hidden sm:block">
+                  <span className="font-heading block text-[1.1rem] font-semibold leading-tight tracking-tight text-brand-900">
+                    Alivia
+                    <span className="text-gold-600"> Properties</span>
+                  </span>
+                  <span className="text-[0.58rem] font-medium uppercase tracking-[0.16em] text-ink-500">
+                    Bangladesh Real Estate
+                  </span>
+                </div>
+              </Link>
+
+              {/* Desktop nav */}
+              <div className="hidden flex-1 justify-center xl:flex">
+                <nav
+                  aria-label="Main navigation"
+                  className="inline-flex items-center gap-0.5 rounded-[1.15rem] border border-ink-100/90 bg-ink-50/90 p-1"
+                >
+                  {publicNav.map((item) => (
+                    <DropdownNav key={item.href} item={item} />
+                  ))}
+                </nav>
+              </div>
+
+              {/* Desktop CTAs */}
+              <div className="hidden items-center gap-1.5 xl:flex">
+                <Link href={ROUTES.CONSULTATION}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="cursor-pointer rounded-full px-4 text-[0.82rem] text-ink-600 hover:bg-ink-100/70 hover:text-ink-900"
+                  >
+                    Consult Expert
+                  </Button>
+                </Link>
+
+                <div className="mx-1 h-5 w-px bg-ink-200" />
+
+                {session ? (
+                  <Link href={getDashboardRoute(session.user.role as UserRole)}>
+                    <Button
+                      size="sm"
+                      className="cursor-pointer gap-1.5 rounded-full bg-brand-700 px-5 text-[0.82rem] text-white hover:bg-brand-800"
+                    >
+                      <LayoutDashboard className="h-3.5 w-3.5" />
+                      Dashboard
+                    </Button>
+                  </Link>
+                ) : (
+                  <>
+                    <Link href={authNav.login.href}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="cursor-pointer rounded-full px-4 text-[0.82rem] text-ink-700 hover:bg-ink-100/70 hover:text-ink-900"
+                      >
+                        Login
+                      </Button>
+                    </Link>
+                    <Link href={authNav.register.href}>
+                      <Button
+                        size="sm"
+                        className="cursor-pointer gap-1.5 rounded-full bg-brand-700 px-5 text-[0.82rem] text-white hover:bg-brand-800"
+                      >
+                        List Property
+                        <ArrowUpRight className="h-3.5 w-3.5" />
+                      </Button>
+                    </Link>
+                  </>
+                )}
+              </div>
+
+              {/* Mobile right side */}
+              <div className="flex items-center gap-2 xl:hidden">
+                {!session && (
+                  <Link href={authNav.register.href} className="hidden sm:block">
+                    <Button
+                      size="sm"
+                      className="cursor-pointer gap-1.5 rounded-full bg-brand-700 px-4 text-[0.82rem] text-white hover:bg-brand-800"
+                    >
+                      List Property
+                      <ArrowUpRight className="h-3.5 w-3.5" />
+                    </Button>
+                  </Link>
+                )}
+                <button
+                  className="cursor-pointer rounded-xl border border-ink-200 p-2.5 transition-colors hover:bg-ink-50"
+                  onClick={() => setMobileOpen(true)}
+                  aria-label="Open navigation menu"
+                >
+                  <Menu className="h-5 w-5 text-ink-700" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <MobileNav open={mobileOpen} onClose={() => setMobileOpen(false)} />
+    </>
+  );
+}
