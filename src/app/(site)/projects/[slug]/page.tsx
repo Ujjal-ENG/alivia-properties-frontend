@@ -23,7 +23,9 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   const project = res.data
 
   const status = PROJECT_STATUS_STYLES[project.status]
-  const handover = new Date(project.handoverDate).toLocaleDateString("en-BD", { month: "long", year: "numeric" })
+  const handover = project.handoverDate
+    ? new Date(project.handoverDate).toLocaleDateString("en-BD", { month: "long", year: "numeric" })
+    : "TBA"
 
   const schema = {
     "@context": "https://schema.org",
@@ -115,12 +117,18 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-                    {project.units.map((unit) => (
-                      <tr key={unit.type} className="hover:bg-ink-50">
-                        <td className="px-4 py-3 font-medium">{unit.type}</td>
+                    {(project.units ?? []).map((unit) => (
+                      <tr key={unit.type ?? unit.name} className="hover:bg-ink-50">
+                        <td className="px-4 py-3 font-medium">{unit.type ?? unit.name}</td>
                         <td className="px-4 py-3 text-muted-foreground">{unit.size}</td>
-                        <td className="px-4 py-3 text-brand-700 font-semibold">{formatPriceRange(unit.priceFrom, unit.priceTo)}</td>
-                        <td className="px-4 py-3">{unit.available}/{unit.total}</td>
+                        <td className="px-4 py-3 text-brand-700 font-semibold">
+                          {unit.priceFrom != null && unit.priceTo != null
+                            ? formatPriceRange(unit.priceFrom, unit.priceTo)
+                            : unit.price != null
+                              ? formatPriceRange(unit.price, unit.price)
+                              : "—"}
+                        </td>
+                        <td className="px-4 py-3">{unit.available ?? "—"}/{unit.total ?? unit.available ?? "—"}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -132,7 +140,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
             <div>
               <h2 className="text-h3 mb-4">Amenities</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {project.amenities.map((a) => (
+                {(project.amenities ?? []).map((a) => (
                   <div key={a} className="flex items-center gap-2 text-sm">
                     <span className="h-1.5 w-1.5 rounded-full bg-brand-500 shrink-0" />
                     {a}
@@ -145,7 +153,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
             <div>
               <h2 className="text-h3 mb-4">Specifications</h2>
               <div className="rounded-xl border border-border overflow-hidden">
-                {Object.entries(project.specifications).map(([key, value], i) => (
+                {Object.entries(project.specifications ?? {}).map(([key, value], i) => (
                   <div key={key} className={`grid grid-cols-2 px-4 py-3 text-sm ${i % 2 === 0 ? "bg-ink-50" : "bg-white"}`}>
                     <span className="font-medium text-muted-foreground">{key}</span>
                     <span>{value}</span>
@@ -158,7 +166,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
             <div>
               <h2 className="text-h3 mb-4">Nearby Landmarks</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {project.nearbyLandmarks.map((l) => (
+                {(project.nearbyLandmarks ?? []).map((l) => (
                   <div key={l.name} className="flex items-center gap-3 bg-ink-50 rounded-xl px-4 py-3 text-sm">
                     <MapPin className="h-4 w-4 text-brand-600 shrink-0" />
                     <span className="flex-1 font-medium">{l.name}</span>
@@ -174,7 +182,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
             {/* Price card */}
             <div className="bg-brand-700 text-white rounded-2xl p-5 space-y-2">
               <p className="text-brand-200 text-sm">Price Range</p>
-              <p className="text-2xl font-bold">{formatPriceRange(project.priceFrom, project.priceTo)}</p>
+              <p className="text-2xl font-bold">{formatPriceRange(project.priceFrom ?? 0, project.priceTo ?? project.priceFrom ?? 0)}</p>
               <p className="text-brand-300 text-xs">Prices may vary per unit type and floor</p>
             </div>
 
