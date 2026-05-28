@@ -29,7 +29,15 @@ export const publicNav: NavItem[] = [
     ],
   },
   { label: "Agents", href: ROUTES.AGENTS },
-  { label: "Marketplace", href: ROUTES.MARKETPLACE, highlight: true },
+  {
+    label: "Marketplace",
+    href: ROUTES.MARKETPLACE,
+    highlight: true,
+    children: [
+      { label: "Browse Marketplace", href: ROUTES.MARKETPLACE },
+      { label: "Get a Quote", href: ROUTES.MARKETPLACE_QUOTE },
+    ],
+  },
   {
     label: "Tools",
     href: ROUTES.PRE_APPROVAL,
