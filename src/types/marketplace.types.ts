@@ -17,7 +17,7 @@ export type MarketplaceProduct = {
   badge?: string
 }
 
-export type SupplierKind = "supplier" | "service"
+export type SupplierKind = "supplier" | "service" | "SUPPLIER" | "SERVICE"
 
 export type Supplier = {
   id: string
