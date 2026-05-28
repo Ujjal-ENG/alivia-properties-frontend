@@ -218,7 +218,7 @@ export function SiteHeader() {
 
                 <div className="mx-1 h-5 w-px bg-ink-200" />
 
-                {session ? (
+                {session?.user?.role ? (
                   <Link href={getDashboardRoute(session.user.role as UserRole)}>
                     <Button
                       size="sm"
