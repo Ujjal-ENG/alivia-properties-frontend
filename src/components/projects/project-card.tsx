@@ -19,10 +19,11 @@ const CARD_GRADIENTS: Record<ProjectStatus, string> = {
 
 export function ProjectCard({ project }: ProjectCardProps) {
   const status = PROJECT_STATUS_STYLES[project.status]
-  const handover = new Intl.DateTimeFormat("en-BD", {
-    month: "short",
-    year: "numeric",
-  }).format(new Date(project.handoverDate))
+  const handover = project.handoverDate
+    ? new Intl.DateTimeFormat("en-BD", { month: "short", year: "numeric" }).format(
+        new Date(project.handoverDate),
+      )
+    : "TBA"
 
   const gradient = CARD_GRADIENTS[project.status] ?? CARD_GRADIENTS.ongoing
 
@@ -31,7 +32,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
       <Link href={ROUTES.PROJECT_DETAIL(project.slug)} className="block">
         <div className={`relative h-60 overflow-hidden bg-linear-to-br ${gradient}`}>
           <Image
-            src={project.coverImage}
+            src={project.coverImage ?? project.coverImageUrl ?? ""}
             alt={project.name}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -91,7 +92,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
               {project.status === "completed" ? "Completed" : `Handover ${handover}`}
             </p>
             <p className="mt-1 text-sm font-semibold text-brand-700">
-              {formatPriceRange(project.priceFrom, project.priceTo)}
+              {formatPriceRange(project.priceFrom ?? 0, project.priceTo ?? project.priceFrom ?? 0)}
             </p>
           </div>
           <Link href={ROUTES.PROJECT_DETAIL(project.slug)}>
