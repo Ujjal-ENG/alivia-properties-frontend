@@ -24,7 +24,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       suppressHydrationWarning
       className={`${manrope.variable} ${geistMono.variable} ${cinzel.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+      <body
+        suppressHydrationWarning
+        className="min-h-full flex flex-col bg-background text-foreground"
+      >
         <SessionProvider session={session}>
           {children}
         </SessionProvider>
