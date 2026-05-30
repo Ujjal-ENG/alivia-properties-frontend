@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation"
 import {
-  Bell,
   ChevronRight,
   LogOut,
   Menu,
@@ -19,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { NotificationsBell } from "@/components/layout/notifications-bell"
 import { ROUTES } from "@/config/routes.config"
 
 interface BreadcrumbItem {
@@ -30,14 +30,12 @@ interface DashboardHeaderProps {
   title: string
   breadcrumbs?: BreadcrumbItem[]
   onOpenNav?: () => void
-  notificationCount?: number
 }
 
 export function DashboardHeader({
   title,
   breadcrumbs,
   onOpenNav,
-  notificationCount = 0,
 }: DashboardHeaderProps) {
   const router = useRouter()
   const { data: session } = useSession()
@@ -117,18 +115,7 @@ export function DashboardHeader({
         </button>
 
         {/* Notifications */}
-        <button
-          type="button"
-          className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border/80 bg-white text-ink-700 transition-colors hover:bg-brand-50"
-          aria-label={`Notifications${notificationCount ? `, ${notificationCount} new` : ""}`}
-        >
-          <Bell className="h-4 w-4" />
-          {notificationCount > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-gold-400 px-1 text-[0.65rem] font-bold text-ink-900 shadow-sm">
-              {notificationCount > 9 ? "9+" : notificationCount}
-            </span>
-          )}
-        </button>
+        <NotificationsBell />
 
         {/* Avatar dropdown */}
         <DropdownMenu>

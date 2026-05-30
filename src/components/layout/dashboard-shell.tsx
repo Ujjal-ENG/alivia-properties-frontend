@@ -69,7 +69,6 @@ export function DashboardShell({
           title={title}
           breadcrumbs={breadcrumbs}
           onOpenNav={() => setMobileOpen(true)}
-          notificationCount={pendingCount}
         />
         <main className="mt-6 min-w-0 max-w-full flex-1 pb-8">{children}</main>
       </div>

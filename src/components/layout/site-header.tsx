@@ -25,6 +25,9 @@ import { siteConfig } from "@/config/site.config";
 import { getDashboardRoute } from "@/utils/auth-helpers";
 import type { UserRole } from "@/types/user.types";
 
+const HEADER_COLLAPSE_SCROLL_Y = 96;
+const HEADER_EXPAND_SCROLL_Y = 24;
+
 function getNavPath(href: string) {
   return href.split("?")[0];
 }
@@ -45,7 +48,7 @@ function DropdownNav({ item }: { item: NavItem }) {
         href={item.href}
         aria-current={isActive ? "page" : undefined}
         className={cn(
-          "inline-flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-[0.9rem] px-3.5 py-2 text-[0.82rem] font-semibold transition-colors duration-150",
+          "inline-flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-[0.9rem] px-3 py-2 text-[0.8rem] font-semibold transition-colors duration-150",
           isActive
             ? "bg-brand-700 text-white shadow-sm"
             : "text-ink-600 hover:bg-white hover:text-ink-900",
@@ -98,22 +101,53 @@ export function SiteHeader() {
   const { data: session } = useSession();
 
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 40);
+    let isCollapsed = window.scrollY >= HEADER_COLLAPSE_SCROLL_Y;
+    let frameId: number | null = null;
+
+    setScrolled(isCollapsed);
+
+    const updateScrolledState = () => {
+      frameId = null;
+
+      const scrollY = window.scrollY;
+      const shouldCollapse = isCollapsed
+        ? scrollY > HEADER_EXPAND_SCROLL_Y
+        : scrollY >= HEADER_COLLAPSE_SCROLL_Y;
+
+      if (shouldCollapse !== isCollapsed) {
+        isCollapsed = shouldCollapse;
+        setScrolled(shouldCollapse);
+      }
+    };
+
+    const handler = () => {
+      if (frameId === null) {
+        frameId = window.requestAnimationFrame(updateScrolledState);
+      }
+    };
+
     window.addEventListener("scroll", handler, { passive: true });
-    return () => window.removeEventListener("scroll", handler);
+
+    return () => {
+      window.removeEventListener("scroll", handler);
+
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
+    };
   }, []);
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full">
+      <header className="sticky top-0 z-50 w-full [overflow-anchor:none]">
         {/* Top info strip */}
         <div
           className={cn(
-            "overflow-hidden bg-linear-to-r from-brand-900 to-brand-800 transition-all duration-300 ease-in-out",
+            "overflow-hidden bg-linear-to-r from-brand-900 to-brand-800 transition-[max-height] duration-300 ease-in-out",
             scrolled ? "max-h-0" : "max-h-12",
           )}
         >
-          <div className="container-page flex h-11 items-center justify-between">
+          <div className="mx-auto flex h-11 w-full max-w-400 items-center justify-between px-4 sm:px-6 lg:px-8">
             <div className="hidden items-center gap-3 md:flex">
               <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-brand-400" />
               <span className="text-[0.67rem] font-semibold uppercase tracking-[0.18em] text-brand-200">
@@ -129,7 +163,7 @@ export function SiteHeader() {
               </span>
             </div>
 
-            <div className="flex items-center gap-3 md:ml-auto md:gap-5">
+            <div className="ml-auto flex items-center gap-3 md:gap-5">
               <Link
                 href={ROUTES.MARKETPLACE}
                 className="group/mp relative inline-flex items-center gap-1.5 overflow-hidden rounded-full bg-linear-to-r from-gold-500 to-gold-400 px-3 py-1 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-brand-950 shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_4px_14px_rgba(229,176,79,0.45)] transition-all duration-200 hover:-translate-y-px hover:from-gold-400 hover:to-gold-300 hover:shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_6px_20px_rgba(229,176,79,0.6)]"
@@ -139,12 +173,14 @@ export function SiteHeader() {
                 Marketplace
                 <Sparkles className="h-3 w-3 animate-pulse text-brand-900" />
               </Link>
+              {/* Phone: icon-only on small screens, full number from sm */}
               <a
                 href={`tel:${siteConfig.contact.phoneRaw}`}
-                className="hidden items-center gap-1.5 text-[0.75rem] text-brand-300 transition-colors hover:text-white sm:flex"
+                aria-label={`Call ${siteConfig.contact.phone}`}
+                className="flex items-center gap-1.5 text-[0.75rem] text-brand-300 transition-colors hover:text-white"
               >
                 <Phone className="h-3 w-3" />
-                {siteConfig.contact.phone}
+                <span className="hidden sm:inline">{siteConfig.contact.phone}</span>
               </a>
               <a
                 href={`https://wa.me/${siteConfig.contact.whatsApp}`}
@@ -166,7 +202,7 @@ export function SiteHeader() {
             scrolled && "shadow-sm",
           )}
         >
-          <div className="container-page py-2.5">
+          <div className="mx-auto w-full max-w-400 px-4 py-2.5 sm:px-6 lg:px-8">
             <div
               className={cn(
                 "flex items-center justify-between gap-3 rounded-2xl border border-black/6 bg-white px-4 py-2.5 transition-shadow duration-300 md:px-5",
@@ -193,7 +229,7 @@ export function SiteHeader() {
               </Link>
 
               {/* Desktop nav */}
-              <div className="hidden flex-1 justify-center xl:flex">
+              <div className="hidden min-w-0 flex-1 justify-center min-[1500px]:flex">
                 <nav
                   aria-label="Main navigation"
                   className="inline-flex items-center gap-0.5 rounded-[1.15rem] border border-ink-100/90 bg-ink-50/90 p-1"
@@ -205,18 +241,18 @@ export function SiteHeader() {
               </div>
 
               {/* Desktop CTAs */}
-              <div className="hidden items-center gap-1.5 xl:flex">
+              <div className="hidden shrink-0 items-center gap-1.5 min-[1500px]:flex">
                 <Link href={ROUTES.CONSULTATION}>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="cursor-pointer rounded-full px-4 text-[0.82rem] text-ink-600 hover:bg-ink-100/70 hover:text-ink-900"
+                    className="cursor-pointer rounded-full px-3 text-[0.8rem] text-ink-600 hover:bg-ink-100/70 hover:text-ink-900"
                   >
                     Consult Expert
                   </Button>
                 </Link>
 
-                <div className="mx-1 h-5 w-px bg-ink-200" />
+                <div className="mx-0.5 h-5 w-px bg-ink-200" />
 
                 {session?.user?.role ? (
                   <Link href={getDashboardRoute(session.user.role as UserRole)}>
@@ -253,7 +289,7 @@ export function SiteHeader() {
               </div>
 
               {/* Mobile right side */}
-              <div className="flex items-center gap-2 xl:hidden">
+              <div className="flex items-center gap-2 min-[1500px]:hidden">
                 {!session && (
                   <Link href={authNav.register.href} className="hidden sm:block">
                     <Button
