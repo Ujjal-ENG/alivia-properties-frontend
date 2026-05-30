@@ -4,13 +4,17 @@ import { getInquiries } from "@/services/inquiries.service"
 import { DashboardPageHeader } from "@/components/dashboard/dashboard-page-header"
 import { DataTable, type DataTableColumn } from "@/components/dashboard/data-table"
 import { InquiryStatusBadge } from "@/components/dashboard/inquiry-status-badge"
+import { Button } from "@/components/ui/button"
+import { ROUTES } from "@/config/routes.config"
 import { formatDateTime } from "@/utils/format-date"
 import { getCurrentBuyer } from "@/utils/dashboard-session"
+import Link from "next/link"
+import { Eye } from "lucide-react"
 import type { Inquiry } from "@/types/inquiry.types"
 
 export default async function BuyerInquiriesPage() {
-  const buyer = await getCurrentBuyer()
-  const inquiries = await getInquiries({ buyerId: buyer.id })
+  await getCurrentBuyer()
+  const inquiries = await getInquiries()
 
   const columns: DataTableColumn<Inquiry>[] = [
     {
@@ -37,6 +41,18 @@ export default async function BuyerInquiriesPage() {
       key: "date",
       header: "Sent",
       render: (row) => formatDateTime(row.createdAt),
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      render: (row) => (
+        <Link href={ROUTES.BUYER_INQUIRY_DETAIL(row.id)}>
+          <Button size="sm" variant="outline" className="rounded-full">
+            <Eye className="size-3.5" />
+            View
+          </Button>
+        </Link>
+      ),
     },
   ]
 

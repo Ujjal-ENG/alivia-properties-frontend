@@ -1,5 +1,5 @@
 import { DashboardPageHeader } from "@/components/dashboard/dashboard-page-header"
-import { BuyerProfileForm } from "@/pages-sections/admin/admin-views"
+import { BuyerProfileForm } from "@/pages-sections/buyer/buyer-profile-form"
 import { getCurrentBuyer } from "@/utils/dashboard-session"
 
 export default async function BuyerProfilePage() {

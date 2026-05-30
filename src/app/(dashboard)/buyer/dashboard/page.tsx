@@ -19,6 +19,7 @@ export default async function BuyerDashboardPage() {
         buyer={buyer}
         inquiryCount={stats.totalInquiries}
         bookingCount={stats.totalBookings}
+        savedCountFromApi={stats.savedProperties}
       />
     </div>
   )

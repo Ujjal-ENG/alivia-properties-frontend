@@ -4,13 +4,13 @@ import { getBookings } from "@/services/bookings.service"
 import { DashboardPageHeader } from "@/components/dashboard/dashboard-page-header"
 import { DataTable, type DataTableColumn } from "@/components/dashboard/data-table"
 import { BookingStatusBadge } from "@/components/dashboard/booking-status-badge"
-import { formatDateTime } from "@/utils/format-date"
+import { formatDate, formatDateTime } from "@/utils/format-date"
 import { getCurrentBuyer } from "@/utils/dashboard-session"
 import type { Booking } from "@/types/booking.types"
 
 export default async function BuyerBookingsPage() {
-  const buyer = await getCurrentBuyer()
-  const bookings = await getBookings({ userId: buyer.id })
+  await getCurrentBuyer()
+  const bookings = await getBookings()
 
   const columns: DataTableColumn<Booking>[] = [
     {
@@ -26,7 +26,7 @@ export default async function BuyerBookingsPage() {
     {
       key: "schedule",
       header: "Schedule",
-      render: (row) => `${row.preferredDate} · ${row.preferredTime}`,
+      render: (row) => `${formatDate(row.preferredDate)} · ${row.preferredTime}`,
     },
     {
       key: "status",

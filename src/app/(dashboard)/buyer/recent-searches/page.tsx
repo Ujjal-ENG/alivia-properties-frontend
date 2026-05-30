@@ -3,10 +3,8 @@ import { DashboardPageHeader } from "@/components/dashboard/dashboard-page-heade
 import { Button } from "@/components/ui/button"
 import { ROUTES } from "@/config/routes.config"
 import { RecentSearchesView } from "@/pages-sections/buyer/buyer-views"
-import { getCurrentBuyer } from "@/utils/dashboard-session"
 
 export default async function BuyerRecentSearchesPage() {
-  const buyer = await getCurrentBuyer()
 
   return (
     <div>
@@ -19,7 +17,7 @@ export default async function BuyerRecentSearchesPage() {
           </Link>
         )}
       />
-      <RecentSearchesView fallbackItems={buyer.recentSearches} />
+      <RecentSearchesView />
     </div>
   )
 }
