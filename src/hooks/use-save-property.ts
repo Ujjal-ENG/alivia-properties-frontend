@@ -1,7 +1,9 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState } from "react"
+import { useSession } from "next-auth/react"
 import { LS_SAVED_PROPERTIES } from "@/lib/constants"
+import { propertiesService } from "@/services/properties.service"
 
 const SAVED_EVENT = "alivia:saved-properties"
 
@@ -15,6 +17,7 @@ function getSaved(): string[] {
 }
 
 export function useSaveProperty(propertyId: string) {
+  const { data: session } = useSession()
   // Lazy init — reads localStorage once on mount (SSR-safe)
   const [saved, setSaved] = useState(() => getSaved().includes(propertyId))
 
@@ -31,7 +34,7 @@ export function useSaveProperty(propertyId: string) {
     }
   }, [propertyId])
 
-  const toggle = useCallback(() => {
+  async function toggle() {
     const current = getSaved()
     const isSaved = current.includes(propertyId)
     const next = isSaved
@@ -40,7 +43,21 @@ export function useSaveProperty(propertyId: string) {
     localStorage.setItem(LS_SAVED_PROPERTIES, JSON.stringify(next))
     window.dispatchEvent(new Event(SAVED_EVENT))
     setSaved(!isSaved)
-  }, [propertyId])
+
+    if (session?.user?.role === "buyer" && session.accessToken) {
+      try {
+        if (isSaved) {
+          await propertiesService.unsave(propertyId, session.accessToken)
+        } else {
+          await propertiesService.save(propertyId, session.accessToken)
+        }
+      } catch {
+        localStorage.setItem(LS_SAVED_PROPERTIES, JSON.stringify(current))
+        window.dispatchEvent(new Event(SAVED_EVENT))
+        setSaved(isSaved)
+      }
+    }
+  }
 
   return { saved, toggle }
 }

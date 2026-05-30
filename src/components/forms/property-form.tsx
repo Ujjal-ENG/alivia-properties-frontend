@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { ImagePlus, Loader2, Trash2 } from "lucide-react"
@@ -61,7 +62,7 @@ function getDefaultValues(initialProperty?: Property, contactDefaults?: Property
     address: initialProperty?.address ?? "",
     mapPin: initialProperty?.mapPin ?? "",
     size: initialProperty?.size ?? 0,
-    sizeUnit: initialProperty?.sizeUnit ?? "sqft",
+    sizeUnit: (initialProperty?.sizeUnit ?? "sqft") as "sqft" | "katha" | "shotangsho" | "bigha",
     bedrooms: initialProperty?.bedrooms ?? 0,
     bathrooms: initialProperty?.bathrooms ?? 0,
     balconies: initialProperty?.balconies ?? 0,
@@ -78,6 +79,7 @@ function getDefaultValues(initialProperty?: Property, contactDefaults?: Property
 
 export function PropertyForm({ mode, initialProperty, contactDefaults }: PropertyFormProps) {
   const router = useRouter()
+  const { data: session } = useSession()
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   const form = useForm<PropertyFormValues, undefined, PropertySubmitValues>({
@@ -110,11 +112,16 @@ export function PropertyForm({ mode, initialProperty, contactDefaults }: Propert
   async function onSubmit(values: PropertySubmitValues) {
     setSubmitError(null)
 
+    if (!session?.accessToken) {
+      setSubmitError("Please sign in again to save this listing.")
+      return
+    }
+
     try {
       if (mode === "edit" && initialProperty) {
-        await updateProperty(initialProperty.id, values)
+        await updateProperty(initialProperty.id, values, session.accessToken)
       } else {
-        await createProperty(values)
+        await createProperty(values, session.accessToken)
       }
 
       router.push(ROUTES.SELLER_PROPERTIES)
@@ -134,7 +141,7 @@ export function PropertyForm({ mode, initialProperty, contactDefaults }: Propert
           {mode === "edit" ? "Update property details" : "Create property listing"}
         </h1>
         <p className="mt-2 text-sm text-ink-500">
-          All fields stay API-ready. Mock backend stores listing in shared in-memory property store.
+          Submit a complete listing with market-ready details, media, and seller contact information.
         </p>
       </div>
 
@@ -459,7 +466,7 @@ export function PropertyForm({ mode, initialProperty, contactDefaults }: Propert
                 <label htmlFor="images" className="flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-[1.25rem] border border-dashed border-brand-200 bg-brand-50/40 p-4 text-center">
                   <ImagePlus className="h-5 w-5 text-brand-600" />
                   <p className="mt-2 text-sm font-medium text-ink-800">Upload property images</p>
-                  <p className="mt-1 text-xs text-ink-500">Files convert to dummy data URLs for mock backend.</p>
+                  <p className="mt-1 text-xs text-ink-500">Images are attached as secure URLs or temporary previews during submission.</p>
                 </label>
                 <input
                   id="images"

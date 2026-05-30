@@ -11,7 +11,7 @@ export function filterProperties(properties: Property[], params: PropertyQueryPa
         p.area.toLowerCase().includes(q) ||
         p.district.toLowerCase().includes(q) ||
         p.division.toLowerCase().includes(q) ||
-        p.address.toLowerCase().includes(q),
+        (p.address ?? "").toLowerCase().includes(q),
     )
   }
   if (params.purpose) result = result.filter((p) => p.purpose === params.purpose)
