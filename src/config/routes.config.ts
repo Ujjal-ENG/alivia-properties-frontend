@@ -30,6 +30,8 @@ export const ROUTES = {
   LOGIN: "/login",
   REGISTER: "/register",
   FORGOT_PASSWORD: "/forgot-password",
+  RESET_PASSWORD: "/reset-password",
+  VERIFY_EMAIL: "/verify-email",
   UNAUTHORIZED: "/unauthorized",
 
   // Admin dashboard
@@ -40,9 +42,16 @@ export const ROUTES = {
   ADMIN_USERS: "/admin/users",
   ADMIN_SELLERS: "/admin/sellers",
   ADMIN_INQUIRIES: "/admin/inquiries",
+  ADMIN_INQUIRY_DETAIL: (id: string) => `/admin/inquiries/${id}`,
+  ADMIN_MARKETPLACE_CATEGORIES: "/admin/marketplace/categories",
+  ADMIN_MARKETPLACE_QUOTES: "/admin/marketplace-quotes",
+  ADMIN_MARKETPLACE_QUOTE_DETAIL: (id: string) => `/admin/marketplace-quotes/${id}`,
   ADMIN_BOOKINGS: "/admin/bookings",
+  ADMIN_BOOKING_DETAIL: (id: string) => `/admin/bookings/${id}`,
   ADMIN_REPORTS: "/admin/reports",
   ADMIN_BLOG: "/admin/blog",
+  ADMIN_BLOG_CREATE: "/admin/blog/create",
+  ADMIN_BLOG_EDIT: (id: string) => `/admin/blog/${id}/edit`,
   ADMIN_SETTINGS: "/admin/settings",
 
   // Seller dashboard
@@ -51,6 +60,9 @@ export const ROUTES = {
   SELLER_PROPERTY_CREATE: "/seller/properties/create",
   SELLER_PROPERTY_EDIT: (id: string) => `/seller/properties/${id}/edit`,
   SELLER_INQUIRIES: "/seller/inquiries",
+  SELLER_INQUIRY_DETAIL: (id: string) => `/seller/inquiries/${id}`,
+  SELLER_MARKETPLACE_QUOTES: "/seller/marketplace-quotes",
+  SELLER_MARKETPLACE_QUOTE_DETAIL: (id: string) => `/seller/marketplace-quotes/${id}`,
   SELLER_BOOKINGS: "/seller/bookings",
   SELLER_PROFILE: "/seller/profile",
 
@@ -59,6 +71,9 @@ export const ROUTES = {
   BUYER_SAVED: "/buyer/saved-properties",
   BUYER_SEARCHES: "/buyer/recent-searches",
   BUYER_INQUIRIES: "/buyer/inquiries",
+  BUYER_INQUIRY_DETAIL: (id: string) => `/buyer/inquiries/${id}`,
+  BUYER_MARKETPLACE_QUOTES: "/buyer/marketplace-quotes",
+  BUYER_MARKETPLACE_QUOTE_DETAIL: (id: string) => `/buyer/marketplace-quotes/${id}`,
   BUYER_BOOKINGS: "/buyer/bookings",
   BUYER_PROFILE: "/buyer/profile",
 
@@ -89,5 +104,7 @@ export const ROUTES = {
     MARKETPLACE_PRODUCTS: "/marketplace/products",
     MARKETPLACE_SUPPLIERS: "/marketplace/suppliers",
     MARKETPLACE_QUOTES: "/marketplace/quotes",
+    MARKETPLACE_ADMIN_CATEGORIES: "/marketplace/admin/categories",
+    MARKETPLACE_ADMIN_CATEGORY: (slug: string) => `/marketplace/admin/categories/${slug}`,
   },
 } as const

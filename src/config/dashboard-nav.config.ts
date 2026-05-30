@@ -18,7 +18,10 @@ export const adminNav: DashboardNavItem[] = [
   { label: "Users", href: ROUTES.ADMIN_USERS, icon: "Users", section: "People" },
   { label: "Sellers", href: ROUTES.ADMIN_SELLERS, icon: "UserCheck", section: "People" },
 
+  { label: "Categories", href: ROUTES.ADMIN_MARKETPLACE_CATEGORIES, icon: "LayoutGrid", section: "Marketplace" },
+
   { label: "Inquiries", href: ROUTES.ADMIN_INQUIRIES, icon: "MessageSquare", section: "Activity" },
+  { label: "Marketplace Quotes", href: ROUTES.ADMIN_MARKETPLACE_QUOTES, icon: "ClipboardList", section: "Activity" },
   { label: "Bookings", href: ROUTES.ADMIN_BOOKINGS, icon: "CalendarCheck", section: "Activity" },
   { label: "Reports", href: ROUTES.ADMIN_REPORTS, icon: "Flag", section: "Activity" },
 
@@ -31,6 +34,7 @@ export const sellerNav: DashboardNavItem[] = [
   { label: "My Properties", href: ROUTES.SELLER_PROPERTIES, icon: "Home", section: "Listings" },
   { label: "Add Property", href: ROUTES.SELLER_PROPERTY_CREATE, icon: "PlusCircle", section: "Listings" },
   { label: "Inquiries", href: ROUTES.SELLER_INQUIRIES, icon: "MessageSquare", section: "Activity" },
+  { label: "Marketplace Quotes", href: ROUTES.SELLER_MARKETPLACE_QUOTES, icon: "ClipboardList", section: "Activity" },
   { label: "Bookings", href: ROUTES.SELLER_BOOKINGS, icon: "CalendarCheck", section: "Activity" },
   { label: "Profile", href: ROUTES.SELLER_PROFILE, icon: "User", section: "Account" },
 ]
@@ -40,6 +44,7 @@ export const buyerNav: DashboardNavItem[] = [
   { label: "Saved Properties", href: ROUTES.BUYER_SAVED, icon: "Heart", section: "Discovery" },
   { label: "Recent Searches", href: ROUTES.BUYER_SEARCHES, icon: "Search", section: "Discovery" },
   { label: "Inquiries", href: ROUTES.BUYER_INQUIRIES, icon: "MessageSquare", section: "Activity" },
+  { label: "Marketplace Quotes", href: ROUTES.BUYER_MARKETPLACE_QUOTES, icon: "ClipboardList", section: "Activity" },
   { label: "Bookings", href: ROUTES.BUYER_BOOKINGS, icon: "CalendarCheck", section: "Activity" },
   { label: "Profile", href: ROUTES.BUYER_PROFILE, icon: "User", section: "Account" },
 ]
