@@ -8,8 +8,7 @@ export const dynamic = "force-dynamic"
 export const metadata = { title: "Notifications — Alivia Properties" }
 
 export default async function NotificationsPage() {
-  const userId = "user-buyer-1"
-  const res = await getNotifications({ userId, limit: 50 }).catch(() => null)
+  const res = await getNotifications({ limit: 50 }).catch(() => null)
   const items = res?.data.items ?? []
   const unread = res?.data.unreadCount ?? 0
 

@@ -279,6 +279,10 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    /* Guard against stray horizontal overflow (decorative blurs, sub-pixel
+       rounding) without creating a scroll container — `clip` keeps the
+       sticky header working, unlike `overflow-x: hidden`. */
+    overflow-x: clip;
   }
   body {
     @apply bg-background text-foreground;
