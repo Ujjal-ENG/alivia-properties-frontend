@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic"
 
 import Link from "next/link"
+import { auth } from "@/auth"
 import { getProperties } from "@/services/properties.service"
 import { DashboardPageHeader } from "@/components/dashboard/dashboard-page-header"
 import { Button } from "@/components/ui/button"
@@ -10,7 +11,12 @@ import { getCurrentSeller } from "@/utils/dashboard-session"
 
 export default async function SellerPropertiesPage() {
   const seller = await getCurrentSeller()
-  const properties = await getProperties({ sellerId: seller.id, limit: 50 })
+  const session = await auth()
+  const emptyPage = { data: [], meta: { page: 1, limit: 50, total: 0, totalPages: 0 } }
+  const properties = await getProperties(
+    { sellerId: seller.id, limit: 50 },
+    session?.accessToken,
+  ).catch(() => emptyPage)
 
   return (
     <div>

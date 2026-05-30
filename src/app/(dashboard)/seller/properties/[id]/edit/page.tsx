@@ -3,7 +3,8 @@ export const dynamic = "force-dynamic"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ChevronLeft } from "lucide-react"
-import { getProperty } from "@/services/properties.service"
+import { auth } from "@/auth"
+import { getProperties, getPropertyById } from "@/services/properties.service"
 import { PropertyForm } from "@/components/forms/property-form"
 import { DashboardPageHeader } from "@/components/dashboard/dashboard-page-header"
 import { Button } from "@/components/ui/button"
@@ -17,11 +18,21 @@ interface SellerEditPropertyPageProps {
 export default async function SellerEditPropertyPage({ params }: SellerEditPropertyPageProps) {
   const { id } = await params
   const seller = await getCurrentSeller()
-  const property = await getProperty(id)
+  const session = await auth()
+  const property = await getPropertyById(id, session?.accessToken)
+    .catch(async () => {
+      const fallback = await getProperties({ sellerId: seller.id, limit: 100 }, session?.accessToken)
+        .then((response) => response.data.find((item) => item.id === id) ?? null)
+        .catch(() => null)
 
-  if (!property.success || property.data.sellerId !== seller.id) {
-    notFound()
-  }
+      if (!fallback) throw new Error("Property lookup failed")
+      return fallback
+    })
+    .then((data) => ({ success: true as const, data }))
+    .catch(() => ({ success: false as const, data: null }))
+
+  if (!property.success) notFound()
+  if (property.data.sellerId !== seller.id) notFound()
 
   return (
     <div className="space-y-6">

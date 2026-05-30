@@ -8,9 +8,10 @@ import { getCurrentSeller } from "@/utils/dashboard-session"
 
 export default async function SellerBookingsPage() {
   const seller = await getCurrentSeller()
+  const emptyPage = { data: [], meta: { page: 1, limit: 50, total: 0, totalPages: 0 } }
   const [bookings, properties] = await Promise.all([
     getBookings(),
-    getProperties({ sellerId: seller.id, limit: 50 }),
+    getProperties({ sellerId: seller.id, limit: 50 }).catch(() => emptyPage),
   ])
 
   const propertyIds = new Set(properties.data.map((property) => property.id))

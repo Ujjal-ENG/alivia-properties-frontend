@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic"
 
 import Link from "next/link"
+import { auth } from "@/auth"
 import { BarChart3, Clock3, Eye, Home, MessageSquare } from "lucide-react"
 import { getSellerStats } from "@/services/dashboard.service"
 import { getInquiries } from "@/services/inquiries.service"
@@ -19,10 +20,12 @@ import type { Property } from "@/types/property.types"
 
 export default async function SellerDashboardPage() {
   const seller = await getCurrentSeller()
+  const session = await auth()
+  const emptyPage = { data: [], meta: { page: 1, limit: 6, total: 0, totalPages: 0 } }
   const [stats, inquiries, properties] = await Promise.all([
     getSellerStats(seller.id),
-    getInquiries({ sellerId: seller.id }),
-    getProperties({ sellerId: seller.id, limit: 6 }),
+    getInquiries(),
+    getProperties({ sellerId: seller.id, limit: 6 }, session?.accessToken).catch(() => emptyPage),
   ])
 
   const inquiryColumns: DataTableColumn<Inquiry>[] = [
