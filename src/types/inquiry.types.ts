@@ -8,12 +8,15 @@ export type Inquiry = {
   status: InquiryStatus
   propertyId?: string
   propertyTitle?: string
+  propertySlug?: string
   projectId?: string
   projectName?: string
+  projectSlug?: string
   name: string
   email: string
   phone: string
   message: string
+  reply?: string
   sellerId?: string
   buyerId?: string
   createdAt: string

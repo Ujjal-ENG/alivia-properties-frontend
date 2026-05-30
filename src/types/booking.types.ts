@@ -12,8 +12,10 @@ export type Booking = {
   status: BookingStatus
   projectId?: string
   projectName?: string
+  projectSlug?: string
   propertyId?: string
   propertyTitle?: string
+  propertySlug?: string
   name: string
   email: string
   phone: string
@@ -24,4 +26,6 @@ export type Booking = {
   assignedTo?: string
   createdAt: string
   confirmedAt?: string
+  cancelledAt?: string
+  completedAt?: string
 }
