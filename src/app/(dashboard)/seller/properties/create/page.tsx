@@ -28,7 +28,7 @@ export default async function SellerCreatePropertyPage() {
         mode="create"
         contactDefaults={{
           name: seller.name,
-          phone: seller.phone.replace(/-/g, ""),
+          phone: (seller.phone ?? "").replace(/-/g, ""),
           whatsApp: seller.whatsApp,
         }}
       />
