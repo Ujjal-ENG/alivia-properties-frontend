@@ -1,9 +1,14 @@
+export const dynamic = "force-dynamic"
+
 import Link from "next/link"
 import Image from "next/image"
 import { Clock, ArrowRight } from "lucide-react"
-import { DUMMY_BLOG_POSTS, BLOG_CATEGORIES } from "@/data/dummy-blog-posts"
 import { SectionHeader } from "@/components/common/section-header"
 import { ROUTES } from "@/config/routes.config"
+import { blogService } from "@/services/blog.service"
+
+const FALLBACK_BLOG_IMAGE =
+  "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80"
 
 interface BlogPageProps {
   searchParams: Promise<{ category?: string }>
@@ -11,9 +16,17 @@ interface BlogPageProps {
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {
   const { category } = await searchParams
-  const posts = category
-    ? DUMMY_BLOG_POSTS.filter((p) => p.category === category)
-    : DUMMY_BLOG_POSTS
+  const postsRes = await blogService.list({ category, limit: 24 }).catch(() => ({
+    data: [],
+    meta: { page: 1, limit: 24, total: 0, totalPages: 0 },
+  }))
+  const allPostsRes = await blogService.list({ limit: 50 }).catch(() => ({
+    data: [],
+    meta: { page: 1, limit: 50, total: 0, totalPages: 0 },
+  }))
+
+  const posts = postsRes.data
+  const categories = Array.from(new Set(allPostsRes.data.map((post) => post.category))).sort()
 
   return (
     <div className="section-y">
@@ -25,53 +38,68 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
           align="left"
         />
 
-        {/* Category tabs */}
-        <div className="flex flex-wrap gap-2 mt-8 mb-10">
+        <div className="mb-10 mt-8 flex flex-wrap gap-2">
           <Link
             href={ROUTES.BLOG}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-              !category ? "bg-brand-600 text-white border-brand-600" : "border-border hover:border-brand-300 hover:text-brand-700"
+            className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
+              !category ? "border-brand-600 bg-brand-600 text-white" : "border-border hover:border-brand-300 hover:text-brand-700"
             }`}
           >
             All
           </Link>
-          {BLOG_CATEGORIES.map((cat) => (
+          {categories.map((item) => (
             <Link
-              key={cat}
-              href={`${ROUTES.BLOG}?category=${encodeURIComponent(cat)}`}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-                category === cat ? "bg-brand-600 text-white border-brand-600" : "border-border hover:border-brand-300 hover:text-brand-700"
+              key={item}
+              href={`${ROUTES.BLOG}?category=${encodeURIComponent(item)}`}
+              className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
+                category === item ? "border-brand-600 bg-brand-600 text-white" : "border-border hover:border-brand-300 hover:text-brand-700"
               }`}
             >
-              {cat}
+              {item}
             </Link>
           ))}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {posts.map((post) => (
-            <article key={post.id} className="group bg-white rounded-2xl overflow-hidden border border-border hover:shadow-card transition-shadow">
-              <Link href={ROUTES.BLOG_POST(post.slug)} className="block relative h-48 overflow-hidden bg-muted">
-                <Image src={post.coverImage} alt={post.title} fill sizes="33vw" className="object-cover group-hover:scale-105 transition-transform duration-300" />
-                <div className="absolute top-3 left-3">
-                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-brand-600 text-white">{post.category}</span>
+            <article key={post.id} className="group overflow-hidden rounded-2xl border border-border bg-white transition-shadow hover:shadow-card">
+              <Link href={ROUTES.BLOG_POST(post.slug)} className="relative block h-48 overflow-hidden bg-muted">
+                <Image
+                  src={post.coverImage || FALLBACK_BLOG_IMAGE}
+                  alt={post.title}
+                  fill
+                  sizes="33vw"
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+                <div className="absolute left-3 top-3">
+                  <span className="rounded-full bg-brand-600 px-2.5 py-0.5 text-xs font-semibold text-white">{post.category}</span>
                 </div>
               </Link>
-              <div className="p-5 space-y-3">
+              <div className="space-y-3 p-5">
                 <Link href={ROUTES.BLOG_POST(post.slug)}>
-                  <h2 className="text-sm font-bold line-clamp-2 hover:text-brand-700 transition-colors leading-snug">{post.title}</h2>
+                  <h2 className="line-clamp-2 text-sm font-bold leading-snug transition-colors hover:text-brand-700">{post.title}</h2>
                 </Link>
-                <p className="text-xs text-muted-foreground line-clamp-2">{post.excerpt}</p>
-                <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border">
-                  <span>{post.author.name}</span>
-                  <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{post.readTime} min read</span>
+                <p className="line-clamp-2 text-xs text-muted-foreground">{post.excerpt}</p>
+                <div className="border-t border-border pt-1 text-xs text-muted-foreground">
+                  <div className="flex items-center justify-between gap-3">
+                    <span>{typeof post.author === "string" ? post.author : post.author.name}</span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {post.readTime ?? post.readMinutes ?? 5} min read
+                    </span>
+                  </div>
                 </div>
-                <Link href={ROUTES.BLOG_POST(post.slug)} className="inline-flex items-center gap-1 text-xs text-brand-700 font-semibold hover:underline">
+                <Link href={ROUTES.BLOG_POST(post.slug)} className="inline-flex items-center gap-1 text-xs font-semibold text-brand-700 hover:underline">
                   Read More <ArrowRight className="h-3 w-3" />
                 </Link>
               </div>
             </article>
           ))}
+          {posts.length === 0 && (
+            <div className="col-span-full rounded-2xl border border-dashed border-border px-6 py-16 text-center text-sm text-ink-500">
+              No articles found for this category yet.
+            </div>
+          )}
         </div>
       </div>
     </div>
