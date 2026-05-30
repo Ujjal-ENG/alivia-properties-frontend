@@ -1,0 +1,405 @@
+"use client"
+
+import { useMemo, useState } from "react"
+import Link from "next/link"
+import { useSession } from "next-auth/react"
+import { AlertCircle, CheckCircle2, Eye, Loader2, Mail, MessageSquareReply, Phone } from "lucide-react"
+
+import { DataTable, type DataTableColumn } from "@/components/dashboard/data-table"
+import { QuoteStatusBadge } from "@/components/dashboard/quote-status-badge"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
+import { ROUTES } from "@/config/routes.config"
+import { cn } from "@/lib/utils"
+import { ApiError } from "@/services/http-client"
+import { quotesService } from "@/services/quotes.service"
+import type { QuoteRequest, QuoteStatus } from "@/types/quote.types"
+import { formatDate } from "@/utils/format-date"
+
+const STATUS_FILTERS: { value: QuoteStatus | "all"; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "PENDING", label: "Pending" },
+  { value: "RESPONDED", label: "Responded" },
+  { value: "CLOSED", label: "Closed" },
+]
+
+function formatMoney(value?: number | null) {
+  if (value == null) return "-"
+  return `BDT ${value.toLocaleString("en-BD")}`
+}
+
+export function AdminMarketplaceQuotesTable({
+  quotes,
+  detailBasePath = ROUTES.ADMIN_MARKETPLACE_QUOTES,
+}: {
+  quotes: QuoteRequest[]
+  detailBasePath?: string
+}) {
+  const { data: session } = useSession()
+  const [rows, setRows] = useState(quotes)
+  const [statusFilter, setStatusFilter] = useState<QuoteStatus | "all">("all")
+  const [selectedQuoteId, setSelectedQuoteId] = useState<string | null>(null)
+  const [draftStatus, setDraftStatus] = useState<QuoteStatus>("PENDING")
+  const [draftReply, setDraftReply] = useState("")
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [saveSuccess, setSaveSuccess] = useState(false)
+
+  const selectedQuote = useMemo(
+    () => rows.find((quote) => quote.id === selectedQuoteId) ?? null,
+    [rows, selectedQuoteId],
+  )
+
+  const filtered = useMemo(
+    () =>
+      statusFilter === "all"
+        ? rows
+        : rows.filter((quote) => quote.status === statusFilter),
+    [rows, statusFilter],
+  )
+
+  function openReview(quote: QuoteRequest) {
+    setSelectedQuoteId(quote.id)
+    setDraftStatus(quote.status)
+    setDraftReply(quote.reply ?? "")
+    setSaveError(null)
+    setSaveSuccess(false)
+  }
+
+  function closeReview(open: boolean) {
+    if (open) return
+    if (saving) return
+    setSelectedQuoteId(null)
+    setSaveError(null)
+    setSaveSuccess(false)
+  }
+
+  async function saveQuoteUpdate() {
+    if (!selectedQuote) return
+
+    const reply = draftReply.trim()
+    if (draftStatus === "RESPONDED" && reply.length < 2) {
+      setSaveError("Write a reply before marking this quote as responded.")
+      return
+    }
+
+    setSaving(true)
+    setSaveError(null)
+    setSaveSuccess(false)
+
+    try {
+      const updated = await quotesService.update(
+        selectedQuote.id,
+        {
+          status: draftStatus,
+          reply: reply || undefined,
+        },
+        session?.accessToken,
+      )
+
+      setRows((current) =>
+        current.map((quote) =>
+          quote.id === selectedQuote.id
+            ? {
+                ...quote,
+                ...updated,
+                supplier: updated.supplier ?? quote.supplier,
+                product: updated.product ?? quote.product,
+                buyer: updated.buyer ?? quote.buyer,
+              }
+            : quote,
+        ),
+      )
+      setSaveSuccess(true)
+      window.setTimeout(() => {
+        setSelectedQuoteId(null)
+        setSaveSuccess(false)
+      }, 700)
+    } catch (err) {
+      setSaveError(
+        err instanceof ApiError
+          ? err.message
+          : err instanceof Error
+            ? err.message
+            : "Could not update this quote request.",
+      )
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const columns: DataTableColumn<QuoteRequest>[] = [
+    {
+      key: "customer",
+      header: "Customer",
+      primaryOnMobile: true,
+      render: (quote) => (
+        <div className="min-w-0">
+          <p className="truncate font-semibold text-ink-900">{quote.name}</p>
+          <p className="mt-0.5 truncate text-xs text-ink-500">{quote.email}</p>
+        </div>
+      ),
+    },
+    {
+      key: "request",
+      header: "Request",
+      render: (quote) => (
+        <div className="min-w-0">
+          <p className="truncate text-xs font-medium text-ink-800">
+            {quote.product?.name ?? quote.supplier?.name ?? quote.categorySlug ?? "General quote"}
+          </p>
+          <p className="mt-0.5 line-clamp-2 max-w-[22rem] text-xs text-ink-500">
+            {quote.message}
+          </p>
+        </div>
+      ),
+    },
+    {
+      key: "supplier",
+      header: "Supplier",
+      hideOnMobile: true,
+      render: (quote) =>
+        quote.supplier ? (
+          <Link
+            href={ROUTES.MARKETPLACE_SUPPLIER(quote.supplier.slug)}
+            className="text-xs font-medium text-brand-700 hover:text-brand-800"
+          >
+            {quote.supplier.name}
+          </Link>
+        ) : (
+          <span className="text-xs text-ink-500">Manual routing</span>
+        ),
+    },
+    {
+      key: "budget",
+      header: "Budget",
+      hideOnMobile: true,
+      render: (quote) => (
+        <div className="text-xs text-ink-700">
+          <p className="font-medium">{formatMoney(quote.budget)}</p>
+          {quote.quantity ? (
+            <p className="mt-0.5 text-ink-500">
+              {quote.quantity} {quote.unit ?? "units"}
+            </p>
+          ) : null}
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (quote) => <QuoteStatusBadge status={quote.status} />,
+    },
+    {
+      key: "created",
+      header: "Submitted",
+      hideOnMobile: true,
+      render: (quote) => (
+        <span className="text-xs text-ink-500">{formatDate(quote.createdAt)}</span>
+      ),
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      render: (quote) => (
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="default"
+            className="rounded-full"
+            onClick={() => openReview(quote)}
+          >
+            <MessageSquareReply className="size-3.5" />
+            Review
+          </Button>
+          <Link href={`${detailBasePath}/${quote.id}`}>
+            <Button size="icon" variant="outline" className="size-8 rounded-full" aria-label="Open quote detail">
+              <Eye className="size-3.5" />
+            </Button>
+          </Link>
+          <Link href={`mailto:${quote.email}`}>
+            <Button size="icon" variant="outline" className="size-8 rounded-full" aria-label="Email customer">
+              <Mail className="size-3.5" />
+            </Button>
+          </Link>
+          <Link href={`tel:${quote.phone}`}>
+            <Button size="icon" variant="outline" className="size-8 rounded-full" aria-label="Call customer">
+              <Phone className="size-3.5" />
+            </Button>
+          </Link>
+        </div>
+      ),
+    },
+  ]
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-2">
+        {STATUS_FILTERS.map((filter) => (
+          <button
+            key={filter.value}
+            type="button"
+            onClick={() => setStatusFilter(filter.value)}
+            className={cn(
+              "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
+              statusFilter === filter.value
+                ? "border-brand-700 bg-brand-700 text-white"
+                : "border-border/70 bg-white text-ink-700 hover:bg-brand-50",
+            )}
+          >
+            {filter.label}
+          </button>
+        ))}
+        <span className="ml-auto text-xs text-ink-500">
+          {filtered.length} of {rows.length}
+        </span>
+      </div>
+      <DataTable
+        columns={columns}
+        data={filtered}
+        rowKey={(quote) => quote.id}
+        emptyMessage="No marketplace quote requests match this filter."
+      />
+
+      <Dialog open={Boolean(selectedQuote)} onOpenChange={closeReview}>
+        <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-2xl">
+          {selectedQuote ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>Review quote request</DialogTitle>
+                <DialogDescription>
+                  Reply to the customer and keep the request status current.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="grid gap-4">
+                <section className="rounded-lg border border-border/70 bg-ink-50/40 p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-ink-900">{selectedQuote.name}</p>
+                      <p className="mt-0.5 text-xs text-ink-500">
+                        {selectedQuote.email} · {selectedQuote.phone}
+                      </p>
+                    </div>
+                    <QuoteStatusBadge status={selectedQuote.status} />
+                  </div>
+                  <dl className="mt-4 grid gap-3 text-xs sm:grid-cols-3">
+                    <div>
+                      <dt className="font-semibold uppercase tracking-[0.14em] text-ink-500">Request</dt>
+                      <dd className="mt-1 text-ink-800">
+                        {selectedQuote.product?.name ??
+                          selectedQuote.supplier?.name ??
+                          selectedQuote.categorySlug ??
+                          "General quote"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="font-semibold uppercase tracking-[0.14em] text-ink-500">Budget</dt>
+                      <dd className="mt-1 text-ink-800">{formatMoney(selectedQuote.budget)}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-semibold uppercase tracking-[0.14em] text-ink-500">Submitted</dt>
+                      <dd className="mt-1 text-ink-800">{formatDate(selectedQuote.createdAt)}</dd>
+                    </div>
+                  </dl>
+                </section>
+
+                <section className="space-y-2">
+                  <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-500">
+                    Requirement
+                  </h3>
+                  <p className="rounded-lg border border-border/70 bg-white p-3 text-sm leading-6 text-ink-700">
+                    {selectedQuote.message}
+                  </p>
+                </section>
+
+                <section className="grid gap-3">
+                  <label htmlFor="quote-status" className="text-sm font-medium text-ink-800">
+                    Status
+                  </label>
+                  <select
+                    id="quote-status"
+                    value={draftStatus}
+                    onChange={(event) => setDraftStatus(event.target.value as QuoteStatus)}
+                    disabled={saving}
+                    className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-600 focus:ring-3 focus:ring-brand-600/20 disabled:opacity-60"
+                  >
+                    <option value="PENDING">Pending</option>
+                    <option value="RESPONDED">Responded</option>
+                    <option value="CLOSED">Closed</option>
+                  </select>
+                </section>
+
+                <section className="grid gap-3">
+                  <label htmlFor="quote-reply" className="text-sm font-medium text-ink-800">
+                    Reply
+                  </label>
+                  <Textarea
+                    id="quote-reply"
+                    rows={7}
+                    value={draftReply}
+                    onChange={(event) => setDraftReply(event.target.value)}
+                    disabled={saving}
+                    maxLength={4000}
+                    placeholder="Write the supplier/admin response the buyer will see in their dashboard."
+                    className="resize-y bg-white text-sm"
+                  />
+                  <div className="flex items-center justify-between gap-3 text-xs text-ink-500">
+                    <span>{draftReply.trim().length > 0 ? "Visible in the buyer quote panel." : "No reply yet."}</span>
+                    <span>{draftReply.length}/4000</span>
+                  </div>
+                </section>
+
+                {saveError ? (
+                  <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+                    <AlertCircle className="mt-0.5 size-4 shrink-0" />
+                    <span>{saveError}</span>
+                  </div>
+                ) : null}
+
+                {saveSuccess ? (
+                  <div className="flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                    <CheckCircle2 className="mt-0.5 size-4 shrink-0" />
+                    <span>Quote request updated.</span>
+                  </div>
+                ) : null}
+              </div>
+
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={saving}
+                  onClick={() => closeReview(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="button" disabled={saving} onClick={saveQuoteUpdate}>
+                  {saving ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" />
+                      Saving
+                    </>
+                  ) : (
+                    <>
+                      <MessageSquareReply className="size-4" />
+                      Save reply
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}

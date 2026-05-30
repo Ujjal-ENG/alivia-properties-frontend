@@ -1,0 +1,290 @@
+"use client"
+
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import {
+  ArrowLeft,
+  CheckCircle2,
+  ExternalLink,
+  Loader2,
+  Mail,
+  MessageSquareReply,
+  Phone,
+} from "lucide-react"
+
+import { QuoteStatusBadge } from "@/components/dashboard/quote-status-badge"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { ROUTES } from "@/config/routes.config"
+import { ApiError } from "@/services/http-client"
+import { quotesService } from "@/services/quotes.service"
+import type { QuoteRequest, QuoteStatus } from "@/types/quote.types"
+import { formatDateTime } from "@/utils/format-date"
+
+const STATUS_OPTIONS: { value: QuoteStatus; label: string }[] = [
+  { value: "PENDING", label: "Pending" },
+  { value: "RESPONDED", label: "Responded" },
+  { value: "CLOSED", label: "Closed" },
+]
+
+type MarketplaceQuoteDetailPanelProps = {
+  quote: QuoteRequest
+  token?: string
+  role: "admin" | "seller" | "buyer"
+  backHref: string
+}
+
+function quoteSubject(quote: QuoteRequest) {
+  return quote.product?.name ?? quote.supplier?.name ?? quote.categorySlug ?? "Marketplace quote"
+}
+
+function formatMoney(value?: number | null) {
+  if (value == null) return "-"
+  return `BDT ${value.toLocaleString("en-BD")}`
+}
+
+function relatedHref(quote: QuoteRequest) {
+  if (quote.product) return ROUTES.MARKETPLACE_PRODUCT(quote.product.slug)
+  if (quote.supplier) return ROUTES.MARKETPLACE_SUPPLIER(quote.supplier.slug)
+  if (quote.categorySlug) return ROUTES.MARKETPLACE_CATEGORY(quote.categorySlug)
+  return ROUTES.MARKETPLACE
+}
+
+export function MarketplaceQuoteDetailPanel({
+  quote,
+  token,
+  role,
+  backHref,
+}: MarketplaceQuoteDetailPanelProps) {
+  const router = useRouter()
+  const [current, setCurrent] = useState(quote)
+  const [status, setStatus] = useState<QuoteStatus>(quote.status)
+  const [reply, setReply] = useState(quote.reply ?? "")
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [saved, setSaved] = useState(false)
+  const canManage = role === "admin" || role === "seller"
+
+  async function save() {
+    setSaving(true)
+    setError(null)
+    setSaved(false)
+
+    try {
+      const updated = await quotesService.update(
+        current.id,
+        {
+          status,
+          reply: reply.trim() !== (current.reply ?? "").trim() ? reply.trim() : undefined,
+        },
+        token,
+      )
+      setCurrent({
+        ...current,
+        ...updated,
+        supplier: updated.supplier ?? current.supplier,
+        product: updated.product ?? current.product,
+        buyer: updated.buyer ?? current.buyer,
+      })
+      setStatus(updated.status)
+      setReply(updated.reply ?? reply)
+      setSaved(true)
+      router.refresh()
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : err instanceof Error
+            ? err.message
+            : "Could not update this quote request.",
+      )
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="space-y-5">
+      <Link
+        href={backHref}
+        className="inline-flex items-center gap-2 text-sm font-semibold text-brand-700 hover:text-brand-800"
+      >
+        <ArrowLeft className="size-4" />
+        Back to quotes
+      </Link>
+
+      <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
+        <section className="surface-card overflow-hidden">
+          <div className="border-b border-border/70 bg-ink-950 px-5 py-5 text-white">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-100">
+                Marketplace quote
+              </p>
+              <QuoteStatusBadge status={current.status} />
+            </div>
+            <h1 className="mt-3 text-2xl font-semibold">{quoteSubject(current)}</h1>
+            <p className="mt-2 text-sm text-white/70">
+              Submitted {formatDateTime(current.createdAt)}
+            </p>
+          </div>
+
+          <div className="space-y-5 p-5">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-[1rem] border border-border bg-white p-4">
+                <p className="text-xs uppercase tracking-[0.14em] text-ink-400">Customer</p>
+                <p className="mt-2 font-semibold text-ink-900">{current.name}</p>
+                {current.company ? (
+                  <p className="mt-1 text-xs text-ink-500">{current.company}</p>
+                ) : null}
+              </div>
+              <a
+                href={`mailto:${current.email}`}
+                className="rounded-[1rem] border border-border bg-white p-4 transition-colors hover:border-brand-200 hover:bg-brand-50"
+              >
+                <p className="flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-ink-400">
+                  <Mail className="size-3.5" />
+                  Email
+                </p>
+                <p className="mt-2 truncate font-semibold text-ink-900">{current.email}</p>
+              </a>
+              <a
+                href={`tel:${current.phone}`}
+                className="rounded-[1rem] border border-border bg-white p-4 transition-colors hover:border-brand-200 hover:bg-brand-50"
+              >
+                <p className="flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-ink-400">
+                  <Phone className="size-3.5" />
+                  Phone
+                </p>
+                <p className="mt-2 font-semibold text-ink-900">{current.phone}</p>
+              </a>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-4">
+              <div className="rounded-[1rem] border border-border bg-white p-4">
+                <p className="text-xs uppercase tracking-[0.14em] text-ink-400">Budget</p>
+                <p className="mt-2 font-semibold text-ink-900">{formatMoney(current.budget)}</p>
+              </div>
+              <div className="rounded-[1rem] border border-border bg-white p-4">
+                <p className="text-xs uppercase tracking-[0.14em] text-ink-400">Quantity</p>
+                <p className="mt-2 font-semibold text-ink-900">
+                  {current.quantity ? `${current.quantity} ${current.unit ?? "units"}` : "-"}
+                </p>
+              </div>
+              <div className="rounded-[1rem] border border-border bg-white p-4">
+                <p className="text-xs uppercase tracking-[0.14em] text-ink-400">City</p>
+                <p className="mt-2 font-semibold text-ink-900">{current.city ?? "-"}</p>
+              </div>
+              <div className="rounded-[1rem] border border-border bg-white p-4">
+                <p className="text-xs uppercase tracking-[0.14em] text-ink-400">Delivery</p>
+                <p className="mt-2 font-semibold text-ink-900">
+                  {current.deliveryDate ? formatDateTime(current.deliveryDate) : "-"}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-[1rem] border border-border bg-white p-5">
+              <p className="text-xs uppercase tracking-[0.14em] text-ink-400">Requirement</p>
+              <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-ink-700">
+                {current.message}
+              </p>
+            </div>
+
+            {current.reply ? (
+              <div className="rounded-[1rem] border border-emerald-200 bg-emerald-50 p-5">
+                <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
+                  <MessageSquareReply className="size-4" />
+                  Latest reply
+                </p>
+                <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-emerald-950">
+                  {current.reply}
+                </p>
+                {current.repliedAt ? (
+                  <p className="mt-3 text-xs text-emerald-700">
+                    Sent {formatDateTime(current.repliedAt)}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        </section>
+
+        <aside className="space-y-5">
+          <div className="surface-card p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-700">
+              Routed to
+            </p>
+            <h2 className="mt-2 text-lg font-semibold text-ink-900">{quoteSubject(current)}</h2>
+            <p className="mt-2 text-sm text-ink-500">
+              {current.supplier?.name ?? "Marketplace team"}
+            </p>
+            <Link href={relatedHref(current)}>
+              <Button variant="outline" className="mt-4 w-full rounded-full">
+                <ExternalLink className="size-4" />
+                Open related page
+              </Button>
+            </Link>
+          </div>
+
+          {canManage ? (
+            <div className="surface-card p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-700">
+                Response
+              </p>
+
+              <label className="mt-4 block text-sm font-medium text-ink-800" htmlFor="quote-status">
+                Status
+              </label>
+              <select
+                id="quote-status"
+                value={status}
+                onChange={(event) => setStatus(event.target.value as QuoteStatus)}
+                className="mt-2 h-10 w-full rounded-lg border border-border bg-white px-3 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+              >
+                {STATUS_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+
+              <label className="mt-4 block text-sm font-medium text-ink-800" htmlFor="quote-reply">
+                Reply
+              </label>
+              <Textarea
+                id="quote-reply"
+                rows={7}
+                value={reply}
+                onChange={(event) => setReply(event.target.value)}
+                placeholder="Write the supplier response the buyer will see..."
+                className="mt-2"
+              />
+
+              {error ? (
+                <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {error}
+                </p>
+              ) : null}
+              {saved ? (
+                <p className="mt-3 flex items-center gap-2 text-sm font-medium text-emerald-700">
+                  <CheckCircle2 className="size-4" />
+                  Quote updated
+                </p>
+              ) : null}
+
+              <Button
+                type="button"
+                onClick={save}
+                disabled={saving}
+                className="mt-4 w-full rounded-full bg-brand-700 text-white hover:bg-brand-800"
+              >
+                {saving ? <Loader2 className="size-4 animate-spin" /> : <MessageSquareReply className="size-4" />}
+                Save response
+              </Button>
+            </div>
+          ) : null}
+        </aside>
+      </div>
+    </div>
+  )
+}
