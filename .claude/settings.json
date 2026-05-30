@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(agent-browser snapshot -i -c -d 4 2>&1)",
+      "PowerShell(agent-browser get text \"body\" 2>&1)",
+      "PowerShell($bytes = New-Object byte[] 32; [System.Security.Cryptography.RandomNumberGenerator]::Create\\(\\).GetBytes\\($bytes\\); $secret = [Convert]::ToBase64String\\($bytes\\); Write-Output \"AUTH_SECRET=$secret\")",
+      "PowerShell(agent-browser open http://localhost:3000)",
+      "PowerShell(agent-browser wait --load networkidle)",
+      "PowerShell(agent-browser snapshot -i -c -d 3 2>&1)",
+      "PowerShell(agent-browser open http://localhost:3000/marketplace/quote)",
+      "PowerShell(agent-browser fill @e6 \"Rahim Uddin\"; agent-browser fill @e8 \"+8801712345678\"; agent-browser fill @e10 \"rahim.test@example.com\"; agent-browser fill @e23 \"Need 500 bags of cement delivered to Bashundhara R/A by next week.\"; agent-browser snapshot -i -c -d 3 2>&1 | Select-String \"submit|Submit|spinbutton|textbox\" | Select-Object -First 20)",
+      "PowerShell(agent-browser get value @e6; agent-browser get value @e8; agent-browser get value @e10; agent-browser get value @e23 2>&1)",
+      "PowerShell(agent-browser eval \"document.querySelectorAll\\('input,textarea'\\).length\" 2>&1)",
+      "PowerShell(agent-browser eval \"Array.from\\(document.querySelectorAll\\('input,textarea'\\)\\).map\\(e => \\({name: e.name, type: e.type, value: e.value}\\)\\)\" 2>&1)",
+      "PowerShell(\"---\")",
+      "PowerShell(agent-browser fill \"input[name=name]\" \"Rahim Uddin\" 2>&1)",
+      "PowerShell(agent-browser fill \"input[name=phone]\" \"+8801712345678\" 2>&1)",
+      "PowerShell(agent-browser fill \"input[name=email]\" \"rahim.test@example.com\" 2>&1)",
+      "PowerShell(agent-browser fill \"textarea[name=message]\" \"Need 500 bags of cement delivered to Bashundhara R/A by next week.\" 2>&1)",
+      "PowerShell(agent-browser eval \"Array.from\\(document.querySelectorAll\\('input,textarea'\\)\\).map\\(e => e.name + '=' + e.value\\).join\\('; '\\)\" 2>&1)",
+      "PowerShell(agent-browser eval \"document.body.innerText\" 2>&1)",
+      "PowerShell(docker exec alivia-api ls /app/src/modules/quotes 2>&1)",
+      "PowerShell(docker exec alivia-api grep -c \"QuoteRequest\" /app/prisma/schema.prisma 2>&1)",
+      "PowerShell(docker exec alivia-api pnpm exec prisma generate 2>&1)",
+      "PowerShell(docker restart alivia-api 2>&1)"
+    ]
+  }
+}
