@@ -23,6 +23,67 @@ type LoginResult =
   | { ok: true; data: BackendLoginResponse }
   | { ok: false; status: number; message: string };
 
+type RefreshResult =
+  | { ok: true; data: BackendLoginResponse }
+  | { ok: false; message: string };
+
+function parseBackendAuthPayload(json: unknown): BackendLoginResponse | null {
+  if (!json || typeof json !== "object") return null;
+
+  const payload =
+    "data" in json
+      ? (json as { data?: BackendLoginResponse }).data
+      : (json as BackendLoginResponse);
+
+  if (!payload?.user || !payload.accessToken || !payload.refreshToken) return null;
+  return payload;
+}
+
+function getAccessTokenExpiresAt(accessToken: string): number {
+  try {
+    const [, rawPayload] = accessToken.split(".");
+    if (!rawPayload) return Date.now() + 14 * 60 * 1000;
+
+    const normalized = rawPayload.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+    const parsed = JSON.parse(Buffer.from(padded, "base64").toString("utf8")) as {
+      exp?: number;
+    };
+
+    if (typeof parsed.exp === "number") return parsed.exp * 1000;
+  } catch {}
+
+  return Date.now() + 14 * 60 * 1000;
+}
+
+async function refreshAccessToken(refreshToken: string): Promise<RefreshResult> {
+  let res: Response;
+
+  try {
+    res = await fetch(`${API_BASE_URL}/auth/refresh`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ refreshToken }),
+    });
+  } catch {
+    return { ok: false, message: "Network error while refreshing session." };
+  }
+
+  if (!res.ok) {
+    return { ok: false, message: "Session expired. Please sign in again." };
+  }
+
+  const payload = parseBackendAuthPayload(await res.json());
+  if (!payload) {
+    return { ok: false, message: "Invalid refresh response from server." };
+  }
+
+  return { ok: true, data: payload };
+}
+
 // Auth.js v5 forwards `code` to the client on signIn({ redirect: false }).
 class BackendLoginError extends CredentialsSignin {
   code: string;
@@ -75,15 +136,8 @@ async function loginAgainstBackend(
   }
 
   // NestJS TransformInterceptor wraps responses in { data: ... }
-  const json = (await res.json()) as
-    | { data?: BackendLoginResponse }
-    | BackendLoginResponse;
-  const payload =
-    json && typeof json === "object" && "data" in json
-      ? (json as { data: BackendLoginResponse }).data
-      : (json as BackendLoginResponse);
-
-  if (!payload?.user || !payload.accessToken) {
+  const payload = parseBackendAuthPayload(await res.json());
+  if (!payload) {
     return {
       ok: false,
       status: 500,
@@ -94,6 +148,7 @@ async function loginAgainstBackend(
 }
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
+  trustHost: true,
   providers: [
     Credentials({
       credentials: {
@@ -135,13 +190,43 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   },
 
   callbacks: {
-    jwt({ token, user }) {
+    async jwt({ token, user }) {
       if (user) {
         token.role = (user as { role: UserRole }).role;
         token.isVerified = (user as { isVerified: boolean }).isVerified;
         token.accessToken = (user as { accessToken?: string }).accessToken;
         token.refreshToken = (user as { refreshToken?: string }).refreshToken;
+        token.accessTokenExpires = token.accessToken
+          ? getAccessTokenExpiresAt(token.accessToken as string)
+          : undefined;
+        token.error = undefined;
       }
+
+      const expiresAt = token.accessTokenExpires as number | undefined;
+      const hasFreshAccessToken =
+        typeof token.accessToken === "string" &&
+        typeof expiresAt === "number" &&
+        Date.now() < expiresAt - 30_000;
+
+      if (hasFreshAccessToken || typeof token.refreshToken !== "string") {
+        return token;
+      }
+
+      const refreshed = await refreshAccessToken(token.refreshToken);
+      if (!refreshed.ok) {
+        token.accessToken = undefined;
+        token.accessTokenExpires = undefined;
+        token.refreshToken = undefined;
+        token.error = "RefreshAccessTokenError";
+        return token;
+      }
+
+      token.accessToken = refreshed.data.accessToken;
+      token.refreshToken = refreshed.data.refreshToken;
+      token.accessTokenExpires = getAccessTokenExpiresAt(refreshed.data.accessToken);
+      token.role = normalizeRole(refreshed.data.user.role);
+      token.isVerified = refreshed.data.user.isVerified;
+      token.error = undefined;
       return token;
     },
     session({ session, token }) {
@@ -152,6 +237,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           (token.isVerified as boolean | undefined) ?? false;
       }
       session.accessToken = token.accessToken as string | undefined;
+      session.error = token.error as "RefreshAccessTokenError" | undefined;
       return session;
     },
   },

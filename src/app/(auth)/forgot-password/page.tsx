@@ -10,52 +10,84 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { ROUTES } from "@/config/routes.config"
+import { authService } from "@/services/auth.service"
+import { ApiError } from "@/services/http-client"
 
 const schema = z.object({ email: z.string().email("Invalid email address") })
 type Input = z.infer<typeof schema>
 
 export default function ForgotPasswordPage() {
   const [sent, setSent] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const form = useForm<Input>({ resolver: zodResolver(schema) })
 
-  async function onSubmit() {
-    await new Promise((r) => setTimeout(r, 600))
-    setSent(true)
+  async function onSubmit(values: Input) {
+    setSubmitError(null)
+
+    try {
+      await authService.forgotPassword(values.email)
+      setSent(true)
+    } catch (error) {
+      setSubmitError(
+        error instanceof ApiError
+          ? error.message
+          : error instanceof Error
+            ? error.message
+            : "Could not send the reset email right now.",
+      )
+    }
   }
 
   return (
     <>
-      <Link href={ROUTES.LOGIN} className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-6">
+      <Link href={ROUTES.LOGIN} className="mb-6 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
         <ArrowLeft className="h-3.5 w-3.5" /> Back to Login
       </Link>
 
       <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-1">Reset your password</h1>
+        <h1 className="mb-1 text-2xl font-bold">Reset your password</h1>
         <p className="text-sm text-muted-foreground">
           Enter your registered email and we&apos;ll send you a reset link.
         </p>
       </div>
 
       {sent ? (
-        <div className="flex flex-col items-center py-6 text-center gap-3">
+        <div className="flex flex-col items-center gap-3 py-6 text-center">
           <CheckCircle className="h-10 w-10 text-green-500" />
           <h3 className="font-bold">Check your inbox</h3>
           <p className="text-sm text-muted-foreground">
             If an account exists for that email, a reset link has been sent.
           </p>
-          <Link href={ROUTES.LOGIN} className="text-sm text-brand-700 hover:underline mt-2">Return to Login</Link>
+          <Link href={ROUTES.LOGIN} className="mt-2 text-sm text-brand-700 hover:underline">
+            Return to Login
+          </Link>
         </div>
       ) : (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField control={form.control} name="email" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email Address</FormLabel>
-                <FormControl><Input type="email" placeholder="you@example.com" {...field} value={field.value ?? ""} /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
-            <Button type="submit" className="w-full bg-brand-600 hover:bg-brand-700 text-white" disabled={form.formState.isSubmitting}>
+            {submitError && (
+              <div aria-live="polite" className="rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+                {submitError}
+              </div>
+            )}
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email Address</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="you@example.com" {...field} value={field.value ?? ""} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              type="submit"
+              className="w-full bg-brand-600 text-white hover:bg-brand-700"
+              disabled={form.formState.isSubmitting}
+            >
               {form.formState.isSubmitting ? "Sending…" : "Send Reset Link"}
             </Button>
           </form>
