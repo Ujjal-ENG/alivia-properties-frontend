@@ -313,28 +313,333 @@ export function SkBuyerDashboard() {
 
 export function SkHomePage() {
   return (
-    <div className="space-y-0">
-      {/* Hero */}
-      <div className="min-h-[520px] bg-brand-900 px-4 py-20">
-        <div className="container-page space-y-6">
-          <Sk className="h-5 w-32 rounded-full bg-white/10" />
-          <Sk className="h-12 w-3/4 bg-white/10" />
-          <Sk className="h-12 w-1/2 bg-white/10" />
-          <Sk className="h-5 w-96 max-w-full bg-white/10" />
-          <Sk className="h-14 w-full max-w-2xl rounded-2xl bg-white/10" />
+    <main className="bg-white">
+      <SkHomeHero />
+      <SkNumbersBand />
+      <SkFeatureBand />
+      <SkLandingProjects />
+      <SkCorridors />
+      <SkLandingListings />
+      <SkProcess />
+      <SkTestimonials />
+      <SkFounder />
+      <SkExpertCta />
+      <SkInsights />
+    </main>
+  )
+}
+
+function SkHomeHero() {
+  return (
+    <section className="relative overflow-hidden bg-linear-to-b from-gold-50/70 via-white to-brand-50/40">
+      <div className="container-page relative py-14 lg:py-20">
+        <div className="grid items-start gap-10 lg:grid-cols-[1.15fr_0.85fr]">
+          <div className="min-w-0">
+            <Sk className="h-8 w-72 max-w-full rounded-full bg-brand-100" />
+            <div className="mt-5 space-y-3">
+              <Sk className="h-11 w-full max-w-3xl bg-brand-100" />
+              <Sk className="h-11 w-11/12 max-w-2xl bg-brand-100" />
+              <Sk className="h-11 w-7/12 max-w-xl bg-gold-100" />
+            </div>
+            <div className="mt-5 max-w-xl space-y-2">
+              <Sk className="h-4 w-full" />
+              <Sk className="h-4 w-5/6" />
+            </div>
+            <div className="mt-7 max-w-xl rounded-3xl border border-black/5 bg-white/95 p-2.5 shadow-(--shadow-elevated)">
+              <div className="grid grid-cols-3 gap-1 rounded-2xl bg-ink-50 p-1">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Sk key={i} className="h-9 rounded-xl" />
+                ))}
+              </div>
+              <div className="mt-2.5 flex items-center gap-2 px-1.5 pb-1">
+                <Sk className="h-11 flex-1 rounded-xl" />
+                <Sk className="h-11 w-28 rounded-xl bg-brand-100" />
+              </div>
+            </div>
+            <div className="mt-9 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Sk className="h-8 w-20 bg-brand-100" />
+                  <Sk className="h-3 w-24" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="min-w-0 space-y-4">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="flex gap-4 rounded-3xl border border-black/5 bg-white p-3 shadow-(--shadow-card)">
+                <Sk className="h-24 w-28 shrink-0 rounded-2xl" />
+                <div className="min-w-0 flex-1 space-y-2 py-1">
+                  <Sk className="h-5 w-20 rounded-full bg-brand-100" />
+                  <Sk className="h-5 w-4/5" />
+                  <Sk className="h-3 w-2/3" />
+                  <Sk className="h-6 w-28 bg-gold-100" />
+                </div>
+              </div>
+            ))}
+            <div className="rounded-3xl bg-linear-to-br from-brand-800 to-brand-950 p-5 shadow-(--shadow-elevated)">
+              <Sk className="h-3 w-36 bg-white/10" />
+              <Sk className="mt-3 h-7 w-64 max-w-full bg-white/10" />
+              <Sk className="mt-3 h-4 w-full bg-white/10" />
+              <Sk className="mt-2 h-4 w-4/5 bg-white/10" />
+              <div className="mt-4 flex gap-2.5">
+                <Sk className="h-9 w-28 rounded-full bg-gold-400/20" />
+                <Sk className="h-9 w-24 rounded-full bg-white/10" />
+              </div>
+            </div>
+            <Sk className="h-5 w-48" />
+          </div>
         </div>
       </div>
+    </section>
+  )
+}
 
-      {/* Sections */}
-      <div className="section-y container-page space-y-6">
-        <Sk className="h-6 w-48" />
-        <SkProjectGrid count={3} />
-      </div>
-      <div className="section-y container-page space-y-6 bg-ink-50">
-        <Sk className="h-6 w-48" />
-        <SkPropertyGrid count={6} />
-      </div>
+function SkSectionHeader({ centered = false }: { centered?: boolean }) {
+  return (
+    <div className={cn("mb-8 max-w-2xl", centered && "mx-auto text-center")}>
+      <Sk className={cn("h-3 w-28 rounded-full", centered && "mx-auto")} />
+      <Sk className={cn("mt-3 h-8 w-full max-w-xl bg-brand-100", centered && "mx-auto")} />
+      <Sk className={cn("mt-2 h-8 w-4/5 max-w-lg bg-brand-100", centered && "mx-auto")} />
+      <Sk className={cn("mt-3 h-4 w-11/12 max-w-md", centered && "mx-auto")} />
     </div>
+  )
+}
+
+function SkNumbersBand() {
+  return (
+    <section className="bg-brand-950 text-white">
+      <div className="container-page py-14 md:py-16">
+        <div className="mb-9 max-w-2xl">
+          <Sk className="h-3 w-32 rounded-full bg-white/10" />
+          <Sk className="mt-3 h-8 w-full max-w-xl bg-white/10" />
+          <Sk className="mt-2 h-8 w-3/4 bg-white/10" />
+        </div>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="rounded-3xl border border-white/10 bg-white/[0.04] px-5 py-7">
+              <Sk className="h-10 w-24 bg-gold-400/20" />
+              <Sk className="mt-3 h-3 w-28 bg-white/10" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function SkFeatureBand() {
+  return (
+    <section className="bg-ink-50/60">
+      <div className="container-page section-y-sm">
+        <SkSectionHeader centered />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="rounded-3xl border border-black/5 bg-white p-6 shadow-(--shadow-card)">
+              <Sk className="h-12 w-12 rounded-2xl bg-brand-100" />
+              <Sk className="mt-4 h-5 w-36" />
+              <Sk className="mt-3 h-4 w-full" />
+              <Sk className="mt-2 h-4 w-4/5" />
+            </div>
+          ))}
+        </div>
+        <div className="mt-9 flex flex-wrap justify-center gap-3">
+          <Sk className="h-11 w-48 rounded-full bg-brand-100" />
+          <Sk className="h-11 w-40 rounded-full" />
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function SkLandingProjects() {
+  return (
+    <section className="container-page section-y-sm">
+      <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+        <SkSectionHeader />
+        <div className="flex shrink-0 gap-1.5 rounded-2xl border border-ink-100 bg-ink-50/80 p-1">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Sk key={i} className="h-8 w-20 rounded-xl" />
+          ))}
+        </div>
+      </div>
+      <SkProjectGrid count={6} />
+    </section>
+  )
+}
+
+function SkCorridors() {
+  return (
+    <section className="bg-brand-50/50">
+      <div className="container-page section-y-sm">
+        <SkSectionHeader />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="rounded-3xl border border-black/5 bg-white p-6 shadow-(--shadow-card)">
+              <Sk className="h-6 w-24 rounded-full bg-gold-100" />
+              <Sk className="mt-4 h-6 w-40" />
+              <Sk className="mt-3 h-4 w-full" />
+              <Sk className="mt-2 h-4 w-5/6" />
+              <Sk className="mt-4 h-4 w-28 bg-brand-100" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function SkLandingListings() {
+  return (
+    <section className="container-page section-y-sm">
+      <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+        <SkSectionHeader />
+        <Sk className="h-9 w-44 shrink-0 rounded-full" />
+      </div>
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <SkPropertyGrid count={4} />
+        <div className="rounded-3xl bg-linear-to-br from-brand-800 to-brand-950 p-7 shadow-(--shadow-elevated)">
+          <Sk className="h-3 w-36 bg-white/10" />
+          <Sk className="mt-3 h-8 w-full bg-white/10" />
+          <Sk className="mt-2 h-8 w-3/4 bg-white/10" />
+          <div className="mt-5 space-y-2.5">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Sk key={i} className="h-5 w-11/12 bg-white/10" />
+            ))}
+          </div>
+          <Sk className="mt-6 h-11 w-full rounded-full bg-gold-400/20" />
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function SkProcess() {
+  return (
+    <section className="container-page section-y-sm">
+      <SkSectionHeader />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="rounded-3xl border border-black/5 bg-white p-6 shadow-(--shadow-card)">
+            <Sk className="h-12 w-12 rounded-2xl bg-brand-100" />
+            <Sk className="mt-4 h-5 w-32" />
+            <Sk className="mt-3 h-4 w-full" />
+            <Sk className="mt-2 h-4 w-4/5" />
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function SkTestimonials() {
+  return (
+    <section className="bg-ink-50/60">
+      <div className="container-page section-y-sm">
+        <SkSectionHeader centered />
+        <div className="grid gap-5 md:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="rounded-3xl border border-black/5 bg-white p-6 shadow-(--shadow-card)">
+              <Sk className="h-7 w-7 bg-gold-100" />
+              <Sk className="mt-4 h-4 w-full" />
+              <Sk className="mt-2 h-4 w-full" />
+              <Sk className="mt-2 h-4 w-4/5" />
+              <div className="mt-5 flex items-center gap-3 border-t border-border/60 pt-4">
+                <Sk className="h-10 w-10 rounded-full bg-brand-100" />
+                <div className="flex-1 space-y-2">
+                  <Sk className="h-4 w-32" />
+                  <Sk className="h-3 w-40" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function SkFounder() {
+  return (
+    <section className="bg-brand-950 text-white">
+      <div className="container-page section-y-sm">
+        <div className="grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-7">
+            <div className="flex items-center gap-4">
+              <Sk className="h-16 w-16 shrink-0 rounded-2xl bg-white/10" />
+              <div className="flex-1 space-y-2">
+                <Sk className="h-5 w-40 bg-white/10" />
+                <Sk className="h-3 w-32 bg-white/10" />
+              </div>
+            </div>
+            <Sk className="mt-6 h-7 w-7 bg-gold-400/20" />
+            <Sk className="mt-3 h-4 w-full bg-white/10" />
+            <Sk className="mt-2 h-4 w-11/12 bg-white/10" />
+            <Sk className="mt-2 h-4 w-5/6 bg-white/10" />
+          </div>
+          <div>
+            <Sk className="h-3 w-32 bg-gold-400/20" />
+            <Sk className="mt-3 h-8 w-full max-w-xl bg-white/10" />
+            <Sk className="mt-2 h-8 w-4/5 bg-white/10" />
+            <Sk className="mt-4 h-4 w-full max-w-xl bg-white/10" />
+            <Sk className="mt-2 h-4 w-5/6 bg-white/10" />
+            <div className="mt-7 grid gap-4 sm:grid-cols-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                  <Sk className="h-10 w-10 rounded-xl bg-gold-400/20" />
+                  <Sk className="mt-3 h-4 w-24 bg-white/10" />
+                  <Sk className="mt-2 h-3 w-full bg-white/10" />
+                </div>
+              ))}
+            </div>
+            <Sk className="mt-7 h-11 w-40 rounded-full bg-white/10" />
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function SkExpertCta() {
+  return (
+    <section className="container-page section-y-sm">
+      <div className="rounded-3xl bg-linear-to-br from-brand-700 via-brand-800 to-brand-900 p-8 shadow-(--shadow-elevated) sm:p-12">
+        <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
+          <div>
+            <Sk className="h-3 w-32 bg-gold-400/20" />
+            <Sk className="mt-3 h-8 w-full max-w-xl bg-white/10" />
+            <Sk className="mt-2 h-8 w-3/4 bg-white/10" />
+            <Sk className="mt-4 h-4 w-full max-w-xl bg-white/10" />
+            <Sk className="mt-2 h-4 w-5/6 bg-white/10" />
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Sk className="h-11 w-48 rounded-full bg-gold-400/20" />
+              <Sk className="h-11 w-36 rounded-full bg-white/10" />
+            </div>
+          </div>
+          <div className="grid gap-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+                <Sk className="h-4 w-36 bg-white/10" />
+                <Sk className="mt-2 h-3 w-11/12 bg-white/10" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function SkInsights() {
+  return (
+    <section className="container-page section-y-sm">
+      <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+        <SkSectionHeader />
+        <Sk className="h-9 w-32 shrink-0 rounded-full" />
+      </div>
+      <SkBlogGrid count={3} />
+    </section>
   )
 }
 
