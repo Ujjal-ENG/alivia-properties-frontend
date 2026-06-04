@@ -12,12 +12,15 @@ export const metadata: Metadata = {
     "Request a quote from verified suppliers and service providers in Bangladesh. Free, fast, no obligation.",
 }
 
+export const dynamic = "force-dynamic"
+
 type Props = {
   searchParams: Promise<{
     supplierId?: string
     supplierSlug?: string
     productId?: string
     productSlug?: string
+    variantId?: string
     categorySlug?: string
   }>
 }
@@ -32,7 +35,11 @@ export default async function MarketplaceQuotePage({ searchParams }: Props) {
   let supplierId = params.supplierId
   let productName: string | undefined
   let productId = params.productId
+  let variantName: string | undefined
+  let variants
   let categoryName: string | undefined
+  let categoryVariants
+  let categoryAttributes
 
   if (params.supplierSlug) {
     try {
@@ -49,8 +56,24 @@ export default async function MarketplaceQuotePage({ searchParams }: Props) {
       const product = await marketplaceService.productBySlug(params.productSlug)
       productName = product.name
       productId ??= product.id
+      variants = product.variants
+      variantName = product.variants?.find((variant) => variant.id === params.variantId)?.name
       supplierName ??= product.supplier?.name
       supplierId ??= product.supplier?.id
+    } catch {
+      /* ignore */
+    }
+  }
+
+  if (params.productId && !variants) {
+    try {
+      const products = await marketplaceService.listProducts({ limit: 100 })
+      const product = products.data.find((item) => item.id === params.productId)
+      productName = product?.name ?? productName
+      variants = product?.variants
+      variantName = product?.variants?.find((variant) => variant.id === params.variantId)?.name
+      supplierName ??= product?.supplier?.name
+      supplierId ??= product?.supplier?.id
     } catch {
       /* ignore */
     }
@@ -59,7 +82,15 @@ export default async function MarketplaceQuotePage({ searchParams }: Props) {
   if (params.categorySlug) {
     try {
       const categories = await marketplaceService.listCategories()
-      categoryName = categories.find(c => c.slug === params.categorySlug)?.name
+      const category = categories.find((c) => c.slug === params.categorySlug)
+      categoryName = category?.name
+      categoryVariants = category?.variants
+      categoryAttributes = category?.attributes
+      // When a specific product variant wasn't resolved, fall back to the
+      // category's configured variant for the "Requesting from" label.
+      if (!variantName && params.variantId) {
+        variantName = category?.variants?.find((v) => v.id === params.variantId)?.name
+      }
     } catch {
       /* ignore */
     }
@@ -101,8 +132,13 @@ export default async function MarketplaceQuotePage({ searchParams }: Props) {
                 supplierName,
                 productId,
                 productName,
+                variantId: params.variantId,
+                variantName,
+                variants,
                 categorySlug: params.categorySlug,
                 categoryName,
+                categoryVariants,
+                categoryAttributes,
               }}
               redirectOnSuccess
             />
