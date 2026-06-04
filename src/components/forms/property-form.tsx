@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { ImagePlus, Loader2, Trash2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { z } from "zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
+import { FileUploader } from "@/components/common/file-uploader"
 import { propertySchema } from "@/schemas/property.schema"
 import { createProperty, updateProperty } from "@/services/properties.service"
 import { PROPERTY_TYPE_OPTIONS, SIZE_UNIT_OPTIONS } from "@/data/property-types"
@@ -30,22 +31,6 @@ interface PropertyFormProps {
     phone: string
     whatsApp?: string
   }
-}
-
-async function filesToDataUrls(files: FileList | null): Promise<string[]> {
-  if (!files) return []
-
-  const readers = Array.from(files).map(
-    (file) =>
-      new Promise<string>((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = () => resolve(String(reader.result))
-        reader.onerror = () => reject(reader.error)
-        reader.readAsDataURL(file)
-      }),
-  )
-
-  return Promise.all(readers)
 }
 
 function getDefaultValues(initialProperty?: Property, contactDefaults?: PropertyFormProps["contactDefaults"]): PropertyFormValues {
@@ -95,19 +80,6 @@ export function PropertyForm({ mode, initialProperty, contactDefaults }: Propert
     () => BD_DIVISIONS.find((division) => division.name === selectedDivision)?.districts.map((district) => district.name) ?? [],
     [selectedDivision],
   )
-
-  async function handleImageChange(files: FileList | null) {
-    const nextUrls = await filesToDataUrls(files)
-    form.setValue("images", nextUrls, { shouldValidate: true, shouldDirty: true })
-  }
-
-  function removeImage(index: number) {
-    form.setValue(
-      "images",
-      imageValues.filter((_, currentIndex) => currentIndex !== index),
-      { shouldValidate: true, shouldDirty: true },
-    )
-  }
 
   async function onSubmit(values: PropertySubmitValues) {
     setSubmitError(null)
@@ -462,20 +434,14 @@ export function PropertyForm({ mode, initialProperty, contactDefaults }: Propert
 
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <label htmlFor="images" className="text-sm font-medium leading-none">Images</label>
-                <label htmlFor="images" className="flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-[1.25rem] border border-dashed border-brand-200 bg-brand-50/40 p-4 text-center">
-                  <ImagePlus className="h-5 w-5 text-brand-600" />
-                  <p className="mt-2 text-sm font-medium text-ink-800">Upload property images</p>
-                  <p className="mt-1 text-xs text-ink-500">Images are attached as secure URLs or temporary previews during submission.</p>
-                </label>
-                <input
-                  id="images"
-                  name="images"
-                  type="file"
+                <FileUploader
+                  kind="property-image"
                   multiple
-                  accept="image/*"
-                  onChange={(event) => void handleImageChange(event.target.files)}
-                  className="hidden"
+                  label="Images"
+                  value={imageValues}
+                  onChange={(urls) =>
+                    form.setValue("images", urls, { shouldValidate: true, shouldDirty: true })
+                  }
                 />
                 {form.formState.errors.images?.message && (
                   <p className="text-sm text-red-600">{form.formState.errors.images.message}</p>
@@ -497,24 +463,6 @@ export function PropertyForm({ mode, initialProperty, contactDefaults }: Propert
               />
             </div>
 
-            {imageValues.length > 0 && (
-              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {imageValues.map((image, index) => (
-                  <div key={image} className="relative overflow-hidden rounded-[1rem] border border-border">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={image} alt={`Property preview ${index + 1}`} className="h-28 w-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-ink-700 transition-colors hover:bg-red-50 hover:text-red-600"
-                      aria-label={`Remove image ${index + 1}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
 
           <div className="surface-card grid gap-4 p-5 md:grid-cols-2">
