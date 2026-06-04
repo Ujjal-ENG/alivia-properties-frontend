@@ -6,6 +6,7 @@ import { auth } from "@/auth"
 import { DashboardPageHeader } from "@/components/dashboard/dashboard-page-header"
 import { AdminMarketplaceQuotesTable } from "@/pages-sections/admin/admin-marketplace-quotes-table"
 import { quotesService } from "@/services/quotes.service"
+import { usersService } from "@/services/users.service"
 
 export default async function AdminMarketplaceQuotesPage() {
   const session = await auth()
@@ -15,6 +16,10 @@ export default async function AdminMarketplaceQuotesPage() {
       data: [],
       meta: { page: 1, limit: 100, total: 0, totalPages: 0 },
     }))
+  const salesReps = await usersService
+    .list({ role: "SELLER", limit: 100 }, session?.accessToken)
+    .then((res) => res.data)
+    .catch(() => [])
 
   return (
     <div>
@@ -24,7 +29,7 @@ export default async function AdminMarketplaceQuotesPage() {
         title="Marketplace Quotes"
         description="Review quote requests submitted from marketplace suppliers, products, and categories."
       />
-      <AdminMarketplaceQuotesTable quotes={quotes.data} />
+      <AdminMarketplaceQuotesTable quotes={quotes.data} salesReps={salesReps} />
     </div>
   )
 }
