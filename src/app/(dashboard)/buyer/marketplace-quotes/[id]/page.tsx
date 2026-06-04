@@ -31,6 +31,7 @@ export default async function BuyerMarketplaceQuoteDetailPage({
       />
       <MarketplaceQuoteDetailPanel
         quote={quote}
+        token={session?.accessToken}
         role="buyer"
         backHref={ROUTES.BUYER_MARKETPLACE_QUOTES}
       />
