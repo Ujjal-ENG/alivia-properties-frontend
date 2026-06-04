@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import Image from "next/image"
 import { notFound } from "next/navigation"
 import {
   ArrowLeft,
@@ -14,11 +15,28 @@ import {
 import { Button } from "@/components/ui/button"
 import { ROUTES } from "@/config/routes.config"
 import { marketplaceService } from "@/services/marketplace.service"
+import type { ProductVariant } from "@/types/marketplace.types"
 
 export const dynamic = "force-dynamic"
 
 type PageProps = {
   params: Promise<{ slug: string }>
+}
+
+function initials(name: string) {
+  return name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase()
+}
+
+function variantMeta(variant: ProductVariant) {
+  return (variant.specs ?? [])
+    .map((spec) => `${spec.value}${spec.unit ? ` ${spec.unit}` : ""}`)
+    .filter(Boolean)
+    .join(" / ")
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -143,14 +161,23 @@ export default async function MarketplaceCategoryPage({ params }: PageProps) {
                     className="rounded-2xl border border-border/70 bg-white p-4 shadow-(--shadow-card)"
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <Link
-                          href={ROUTES.MARKETPLACE_SUPPLIER(s.slug)}
-                          className="font-medium text-ink-900 hover:text-brand-700"
-                        >
-                          {s.name}
-                        </Link>
-                        <p className="mt-0.5 text-xs text-ink-600">{s.location}</p>
+                      <div className="flex min-w-0 items-start gap-3">
+                        <div className="relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-ink-50 text-sm font-semibold text-brand-700">
+                          {s.logo ? (
+                            <Image src={s.logo} alt={`${s.name} logo`} fill sizes="48px" className="object-contain p-1.5" />
+                          ) : (
+                            initials(s.name)
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <Link
+                            href={ROUTES.MARKETPLACE_SUPPLIER(s.slug)}
+                            className="font-medium text-ink-900 hover:text-brand-700"
+                          >
+                            {s.name}
+                          </Link>
+                          <p className="mt-0.5 text-xs text-ink-600">{s.location}</p>
+                        </div>
                       </div>
                       {s.isVerified && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-semibold text-brand-700">
@@ -166,8 +193,45 @@ export default async function MarketplaceCategoryPage({ params }: PageProps) {
                         <Star className="size-3 fill-gold-400 text-gold-400" />
                         {s.rating.toFixed(1)} ({s.reviewCount})
                       </span>
-                      {s.priceRange && <span>· {s.priceRange}</span>}
+                      {s.priceRange && <span>{s.priceRange}</span>}
                     </div>
+                    {s.products && s.products.length > 0 && (
+                      <div className="mt-4 space-y-3 border-t border-border/60 pt-3">
+                        {s.products.slice(0, 2).map((product) => (
+                          <div key={product.id} className="rounded-lg bg-ink-50/70 p-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-semibold text-ink-900">
+                                  {product.name}
+                                </p>
+                                <p className="mt-0.5 text-[11px] text-ink-500">
+                                  {product.variants?.length ?? 0} variants
+                                </p>
+                              </div>
+                              <Link href={ROUTES.MARKETPLACE_PRODUCT(product.slug)}>
+                                <Button size="sm" variant="outline" className="h-8 rounded-full px-3 text-xs">
+                                  View
+                                </Button>
+                              </Link>
+                            </div>
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {(product.variants ?? []).slice(0, 4).map((variant) => (
+                                <Link
+                                  key={variant.id}
+                                  href={`${ROUTES.MARKETPLACE_QUOTE}?supplierSlug=${s.slug}&productSlug=${product.slug}&productId=${product.id}&variantId=${variant.id}&categorySlug=${slug}`}
+                                  title={variantMeta(variant)}
+                                >
+                                  <Button size="sm" variant="outline" className="h-8 rounded-full px-3 text-xs">
+                                    {variant.name}
+                                  </Button>
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
                     <div className="mt-4 flex gap-2 border-t border-border/60 pt-3">
                       <Link
                         href={ROUTES.MARKETPLACE_SUPPLIER(s.slug)}
@@ -178,7 +242,7 @@ export default async function MarketplaceCategoryPage({ params }: PageProps) {
                         </Button>
                       </Link>
                       <Link
-                        href={`${ROUTES.MARKETPLACE_QUOTE}?supplierSlug=${s.slug}`}
+                        href={`${ROUTES.MARKETPLACE_QUOTE}?supplierSlug=${s.slug}&categorySlug=${slug}`}
                         className="flex-1"
                       >
                         <Button size="sm" className="w-full gap-1.5">
