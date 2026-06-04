@@ -16,11 +16,19 @@ import { Button } from "@/components/ui/button"
 import { ROUTES } from "@/config/routes.config"
 import { marketplaceService } from "@/services/marketplace.service"
 import { ApiError } from "@/services/http-client"
+import type { ProductVariant } from "@/types/marketplace.types"
 
 export const dynamic = "force-dynamic"
 
 type PageProps = {
   params: Promise<{ slug: string }>
+}
+
+function variantMeta(variant: ProductVariant) {
+  return (variant.specs ?? [])
+    .map((spec) => `${spec.value}${spec.unit ? ` ${spec.unit}` : ""}`)
+    .filter(Boolean)
+    .join(" / ")
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -48,7 +56,7 @@ export default async function MarketplaceProductPage({ params }: PageProps) {
   }
 
   const supplier = product.supplier
-  const quoteHref = `${ROUTES.MARKETPLACE_QUOTE}?productId=${product.id}${supplier ? `&supplierSlug=${supplier.slug}` : ""}`
+  const quoteHref = `${ROUTES.MARKETPLACE_QUOTE}?productId=${product.id}&productSlug=${product.slug}${supplier ? `&supplierSlug=${supplier.slug}` : ""}`
 
   return (
     <main className="bg-white">
@@ -92,10 +100,10 @@ export default async function MarketplaceProductPage({ params }: PageProps) {
             <p className="mt-3 text-sm text-ink-700 sm:text-base">{product.description}</p>
 
             <div className="mt-5 flex flex-wrap items-baseline gap-3">
-              <span className="font-heading text-3xl font-semibold text-brand-700">
-                ৳{product.price.toLocaleString("en-BD")}
+              <span className="font-heading text-2xl font-semibold text-brand-700">
+                Price on request
               </span>
-              <span className="text-sm text-ink-500">/ {product.unit}</span>
+              <span className="text-sm text-ink-500">quoted after quantity and delivery location</span>
               {product.inStock ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-[11px] font-semibold text-green-700">
                   <CheckCircle2 className="size-3" /> In stock
@@ -138,6 +146,32 @@ export default async function MarketplaceProductPage({ params }: PageProps) {
                 </div>
               )}
             </dl>
+
+            {product.variants && product.variants.length > 0 && (
+              <div className="mt-6 rounded-2xl border border-border/70 bg-white p-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-700">
+                  Choose variant
+                </p>
+                <div className="mt-3 grid gap-2">
+                  {product.variants.map((variant) => (
+                    <div
+                      key={variant.id}
+                      className="flex flex-col gap-3 rounded-xl border border-border/70 bg-ink-50/50 p-3 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-ink-900">{variant.name}</p>
+                        <p className="mt-0.5 text-xs text-ink-500">{variantMeta(variant)}</p>
+                      </div>
+                      <Link href={`${quoteHref}&variantId=${variant.id}`}>
+                        <Button size="sm" className="w-full gap-1.5 rounded-full sm:w-auto">
+                          <FileText className="size-3.5" /> Quote variant
+                        </Button>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="mt-6 flex flex-wrap gap-2">
               <Link href={quoteHref}>
