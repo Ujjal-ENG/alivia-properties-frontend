@@ -20,11 +20,19 @@ import { Button } from "@/components/ui/button"
 import { ROUTES } from "@/config/routes.config"
 import { marketplaceService } from "@/services/marketplace.service"
 import { ApiError } from "@/services/http-client"
+import type { ProductVariant } from "@/types/marketplace.types"
 
 export const dynamic = "force-dynamic"
 
 type PageProps = {
   params: Promise<{ slug: string }>
+}
+
+function variantMeta(variant: ProductVariant) {
+  return (variant.specs ?? [])
+    .map((spec) => `${spec.value}${spec.unit ? ` ${spec.unit}` : ""}`)
+    .filter(Boolean)
+    .join(" / ")
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -206,15 +214,30 @@ export default async function SupplierProfilePage({ params }: PageProps) {
                     <div className="flex flex-1 flex-col p-4">
                       <p className="font-medium text-ink-900">{p.name}</p>
                       <p className="mt-1 line-clamp-2 text-sm text-ink-600">{p.description}</p>
-                      <div className="mt-3 flex items-baseline gap-1.5 text-sm">
+                      <div className="mt-3 text-sm">
                         <span className="font-heading text-base font-semibold text-brand-700">
-                          ৳{p.price.toLocaleString("en-BD")}
+                          Price on request
                         </span>
-                        <span className="text-xs text-ink-500">/ {p.unit}</span>
+                        <span className="ml-1 text-xs text-ink-500">/ {p.unit}</span>
                       </div>
+                      {p.variants && p.variants.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {p.variants.slice(0, 4).map((variant) => (
+                            <Link
+                              key={variant.id}
+                              href={`${ROUTES.MARKETPLACE_QUOTE}?productId=${p.id}&productSlug=${p.slug}&supplierSlug=${supplier.slug}&variantId=${variant.id}`}
+                              title={variantMeta(variant)}
+                            >
+                              <Button size="sm" variant="outline" className="h-8 rounded-full px-3 text-xs">
+                                {variant.name}
+                              </Button>
+                            </Link>
+                          ))}
+                        </div>
+                      )}
                       <div className="mt-auto pt-3">
                         <Link
-                          href={`${ROUTES.MARKETPLACE_QUOTE}?productId=${p.id}&supplierSlug=${supplier.slug}`}
+                          href={`${ROUTES.MARKETPLACE_QUOTE}?productId=${p.id}&productSlug=${p.slug}&supplierSlug=${supplier.slug}`}
                         >
                           <Button size="sm" variant="outline" className="w-full gap-1.5">
                             <FileText className="size-3.5" />
