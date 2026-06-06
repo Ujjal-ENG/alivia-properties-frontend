@@ -14,6 +14,8 @@ import {
   ShieldCheck,
   ShoppingBag,
   Sparkles,
+  Store,
+  TrendingUp,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
@@ -104,6 +106,9 @@ export function SiteHeader() {
     let isCollapsed = window.scrollY >= HEADER_COLLAPSE_SCROLL_Y;
     let frameId: number | null = null;
 
+    // Sync the initial collapsed state from the real scroll position on mount
+    // (window is unavailable during SSR). Intentional one-shot, not a cascade.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setScrolled(isCollapsed);
 
     const updateScrolledState = () => {
@@ -163,7 +168,36 @@ export function SiteHeader() {
               </span>
             </div>
 
-            <div className="ml-auto flex items-center gap-3 md:gap-5">
+            <div className="ml-auto flex items-center gap-3 md:gap-4">
+              {/* Partner CTAs — open a quick registration form (lands in admin).
+                  Animated (sheen sweep + breathing glow + icon bob) to catch the
+                  eye; all motion is disabled under prefers-reduced-motion. */}
+              <Link
+                href={ROUTES.BECOME_SUPPLIER}
+                className="cta-pill-supplier group/sup relative hidden items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:-translate-y-px hover:bg-white/20 md:inline-flex"
+              >
+                <span
+                  className="pointer-events-none absolute inset-0 overflow-hidden rounded-full"
+                  aria-hidden="true"
+                >
+                  <span className="cta-pill-sheen absolute inset-y-0 left-0 w-6 bg-linear-to-r from-transparent via-white/55 to-transparent" />
+                </span>
+                <Store className="cta-pill-icon relative h-3 w-3 transition-transform duration-200 group-hover/sup:scale-110" />
+                <span className="relative">Be a Supplier</span>
+              </Link>
+              <Link
+                href={ROUTES.BECOME_INVESTOR}
+                className="cta-pill-investor group/inv relative hidden items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:-translate-y-px hover:bg-white/20 md:inline-flex"
+              >
+                <span
+                  className="pointer-events-none absolute inset-0 overflow-hidden rounded-full"
+                  aria-hidden="true"
+                >
+                  <span className="cta-pill-sheen cta-pill-sheen--delayed absolute inset-y-0 left-0 w-6 bg-linear-to-r from-transparent via-white/55 to-transparent" />
+                </span>
+                <TrendingUp className="cta-pill-icon relative h-3 w-3 transition-transform duration-200 group-hover/inv:scale-110" />
+                <span className="relative">Be an Investor</span>
+              </Link>
               <Link
                 href={ROUTES.MARKETPLACE}
                 className="group/mp relative inline-flex items-center gap-1.5 overflow-hidden rounded-full bg-linear-to-r from-gold-500 to-gold-400 px-3 py-1 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-brand-950 shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_4px_14px_rgba(229,176,79,0.45)] transition-all duration-200 hover:-translate-y-px hover:from-gold-400 hover:to-gold-300 hover:shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_6px_20px_rgba(229,176,79,0.6)]"

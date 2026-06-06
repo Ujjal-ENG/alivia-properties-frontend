@@ -1,9 +1,5 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { useRouter } from "next/navigation"
 import {
   ArrowRight,
   Building2,
@@ -13,28 +9,32 @@ import {
   Search,
   ShieldCheck,
   Sparkles,
-} from "lucide-react"
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-import { Button } from "@/components/ui/button"
-import { ROUTES } from "@/config/routes.config"
-import { siteConfig } from "@/config/site.config"
+import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/config/routes.config";
+import { siteConfig } from "@/config/site.config";
 
 export type HeroProjectCard = {
-  slug: string
-  name: string
-  location: string
-  price: string
-  status: string
-  cover: string | null
-}
+  slug: string;
+  name: string;
+  location: string;
+  price: string;
+  status: string;
+  cover: string | null;
+};
 
-type Tab = "properties" | "projects" | "consultation"
+type Tab = "properties" | "projects" | "consultation";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "properties", label: "Browse Properties" },
   { id: "projects", label: "Explore Projects" },
   { id: "consultation", label: "Book Consultation" },
-]
+];
 
 const STATS = [
   { value: `${siteConfig.stats.totalListings}+`, label: "Verified listings" },
@@ -44,22 +44,22 @@ const STATS = [
     value: `${(siteConfig.stats.happyFamilies / 1000).toFixed(1)}K+`,
     label: "Happy families",
   },
-]
+];
 
 export function HomeHero({ projects }: { projects: HeroProjectCard[] }) {
-  const router = useRouter()
-  const [tab, setTab] = useState<Tab>("properties")
-  const [query, setQuery] = useState("")
+  const router = useRouter();
+  const [tab, setTab] = useState<Tab>("properties");
+  const [query, setQuery] = useState("");
 
   function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    const q = query.trim()
+    e.preventDefault();
+    const q = query.trim();
     if (tab === "consultation") {
-      router.push(ROUTES.CONSULTATION)
-      return
+      router.push(ROUTES.CONSULTATION);
+      return;
     }
-    const base = tab === "projects" ? ROUTES.PROJECTS : ROUTES.PROPERTIES
-    router.push(q ? `${base}?search=${encodeURIComponent(q)}` : base)
+    const base = tab === "projects" ? ROUTES.PROJECTS : ROUTES.PROPERTIES;
+    router.push(q ? `${base}?search=${encodeURIComponent(q)}` : base);
   }
 
   return (
@@ -80,17 +80,19 @@ export function HomeHero({ projects }: { projects: HeroProjectCard[] }) {
           <div className="min-w-0">
             <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/80 px-3.5 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-brand-700 shadow-sm backdrop-blur">
               <ShieldCheck className="h-3.5 w-3.5 text-brand-600" />
-              Bangladesh&apos;s trust-first real estate platform
+              First in Bangladesh&apos;s reliable real estate platform
             </span>
 
             <h1 className="mt-5 font-heading text-4xl font-bold uppercase leading-[1.05] tracking-tight text-brand-950 sm:text-5xl lg:text-6xl">
-              Discover homes, projects &amp;{" "}
-              <span className="text-gold-600">addresses</span> across Bangladesh.
+              Discover homes, Commercial Properties and your
+              <span className="text-gold-600"> addresses</span> at{" "}
+              <strong>Jolshiri</strong>
             </h1>
 
             <p className="mt-5 max-w-xl text-base leading-relaxed text-ink-600">
-              Premium projects, verified listings, and expert consultation — all in
-              one trusted platform built for families, investors, and businesses.
+              Premium projects, verified listings, and expert consultation — all
+              in one trusted platform built for families, investors, and
+              businesses.
             </p>
 
             {/* Search card */}
@@ -133,7 +135,11 @@ export function HomeHero({ projects }: { projects: HeroProjectCard[] }) {
                     aria-label="Search"
                   />
                 </div>
-                <Button type="submit" size="lg" className="gap-2 rounded-xl px-5">
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="gap-2 rounded-xl px-5"
+                >
                   <Search className="h-4 w-4" />
                   <span className="hidden sm:inline">Search</span>
                 </Button>
@@ -202,14 +208,14 @@ export function HomeHero({ projects }: { projects: HeroProjectCard[] }) {
                 className="absolute -right-4 -top-4 h-24 w-24 text-gold-400/15"
               />
               <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-gold-300">
-                No cost, no pressure
+                Limited cost, no pressure
               </p>
               <h3 className="mt-1.5 font-heading text-xl font-semibold">
-                Free expert consultation
+                Reliable expert consultation
               </h3>
               <p className="mt-1.5 text-sm text-brand-100">
-                Talk to a property advisor about your next move — buying, renting, or
-                investing.
+                Talk to a property advisor about your next move — buying,
+                renting, or investing.
               </p>
               <div className="mt-4 flex flex-wrap items-center gap-2.5">
                 <Link href={ROUTES.CONSULTATION}>
@@ -241,5 +247,5 @@ export function HomeHero({ projects }: { projects: HeroProjectCard[] }) {
         </div>
       </div>
     </section>
-  )
+  );
 }
