@@ -2,8 +2,8 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
-import { ArrowLeft, Eye, Loader2, Save } from "lucide-react"
+import { useRef, useState } from "react"
+import { ArrowLeft, Eye, ImagePlus, Loader2, Save, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,12 +11,15 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { ROUTES } from "@/config/routes.config"
 import { blogService, type BlogPost, type BlogPostInput } from "@/services/blog.service"
+import { uploadsService } from "@/services/uploads.service"
 import { ApiError } from "@/services/http-client"
 
 type AdminBlogEditorFormProps = {
   post?: BlogPost
   token?: string
 }
+
+const MAX_IMAGE_MB = 5
 
 function slugify(value: string) {
   return value
@@ -35,6 +38,8 @@ function toDateTimeLocal(value?: string) {
 
 export function AdminBlogEditorForm({ post, token }: AdminBlogEditorFormProps) {
   const router = useRouter()
+  const coverInputRef = useRef<HTMLInputElement>(null)
+  const avatarInputRef = useRef<HTMLInputElement>(null)
   const [title, setTitle] = useState(post?.title ?? "")
   const [slug, setSlug] = useState(post?.slug ?? "")
   const [slugTouched, setSlugTouched] = useState(Boolean(post?.slug))
@@ -48,6 +53,7 @@ export function AdminBlogEditorForm({ post, token }: AdminBlogEditorFormProps) {
   const [readMinutes, setReadMinutes] = useState(String(post?.readMinutes ?? post?.readTime ?? 5))
   const [isPublished, setIsPublished] = useState(post?.isPublished ?? false)
   const [publishedAt, setPublishedAt] = useState(toDateTimeLocal(post?.publishedAt))
+  const [uploading, setUploading] = useState<"cover" | "avatar" | null>(null)
   const [saving, setSaving] = useState<"draft" | "publish" | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -98,6 +104,48 @@ export function AdminBlogEditorForm({ post, token }: AdminBlogEditorFormProps) {
       )
     } finally {
       setSaving(null)
+    }
+  }
+
+  async function uploadImage(file: File, target: "cover" | "avatar") {
+    if (!token) {
+      setError("You must be signed in to upload images.")
+      return
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setError("Please upload an image file.")
+      return
+    }
+
+    if (file.size > MAX_IMAGE_MB * 1024 * 1024) {
+      setError(`Image is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Max ${MAX_IMAGE_MB} MB.`)
+      return
+    }
+
+    setUploading(target)
+    setError(null)
+
+    try {
+      const result = await uploadsService.uploadFile(
+        file,
+        target === "cover" ? "blog-image" : "avatar",
+        token,
+      )
+      if (target === "cover") setCoverImage(result.publicUrl)
+      else setAuthorAvatar(result.publicUrl)
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? `Upload failed (${err.status}): ${err.message}`
+          : err instanceof Error
+            ? err.message
+            : "Could not upload image.",
+      )
+    } finally {
+      setUploading(null)
+      if (target === "cover" && coverInputRef.current) coverInputRef.current.value = ""
+      if (target === "avatar" && avatarInputRef.current) avatarInputRef.current.value = ""
     }
   }
 
@@ -245,23 +293,106 @@ export function AdminBlogEditorForm({ post, token }: AdminBlogEditorFormProps) {
 
             <div>
               <Label htmlFor="blog-author-avatar">Author avatar URL</Label>
-              <Input
-                id="blog-author-avatar"
-                value={authorAvatar}
-                onChange={(event) => setAuthorAvatar(event.target.value)}
-                placeholder="https://..."
-                className="mt-2 h-11"
+              <div className="mt-2 flex gap-2">
+                <Input
+                  id="blog-author-avatar"
+                  value={authorAvatar}
+                  onChange={(event) => setAuthorAvatar(event.target.value)}
+                  placeholder="https://..."
+                  className="h-11"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-11 rounded-full"
+                  disabled={saving !== null || uploading !== null}
+                  onClick={() => avatarInputRef.current?.click()}
+                >
+                  {uploading === "avatar" ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <ImagePlus className="size-4" />
+                  )}
+                </Button>
+                {authorAvatar ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="h-11 rounded-full text-red-600 hover:bg-red-50"
+                    disabled={saving !== null || uploading !== null}
+                    onClick={() => setAuthorAvatar("")}
+                  >
+                    <X className="size-4" />
+                  </Button>
+                ) : null}
+              </div>
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(event) => {
+                  const file = event.target.files?.[0]
+                  if (file) void uploadImage(file, "avatar")
+                }}
               />
             </div>
 
             <div>
               <Label htmlFor="blog-cover">Cover image URL</Label>
-              <Input
-                id="blog-cover"
-                value={coverImage}
-                onChange={(event) => setCoverImage(event.target.value)}
-                placeholder="https://..."
-                className="mt-2 h-11"
+              {coverImage ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={coverImage}
+                  alt="Blog cover preview"
+                  className="mt-2 h-36 w-full rounded-2xl border border-border object-cover"
+                />
+              ) : null}
+              <div className="mt-2 flex gap-2">
+                <Input
+                  id="blog-cover"
+                  value={coverImage}
+                  onChange={(event) => setCoverImage(event.target.value)}
+                  placeholder="https://..."
+                  className="h-11"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-11 rounded-full"
+                  disabled={saving !== null || uploading !== null}
+                  onClick={() => coverInputRef.current?.click()}
+                >
+                  {uploading === "cover" ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <ImagePlus className="size-4" />
+                  )}
+                </Button>
+                {coverImage ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="h-11 rounded-full text-red-600 hover:bg-red-50"
+                    disabled={saving !== null || uploading !== null}
+                    onClick={() => setCoverImage("")}
+                  >
+                    <X className="size-4" />
+                  </Button>
+                ) : null}
+              </div>
+              <p className="mt-1 text-xs text-ink-500">
+                Uploads to MinIO bucket `blog-images`. Recommended cover: 1200x630px.
+              </p>
+              <input
+                ref={coverInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(event) => {
+                  const file = event.target.files?.[0]
+                  if (file) void uploadImage(file, "cover")
+                }}
               />
             </div>
 

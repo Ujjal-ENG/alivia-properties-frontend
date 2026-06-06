@@ -15,6 +15,7 @@ import {
 
 import { QuoteStatusBadge } from "@/components/dashboard/quote-status-badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { ROUTES } from "@/config/routes.config"
 import { ApiError } from "@/services/http-client"
@@ -23,8 +24,13 @@ import type { QuoteRequest, QuoteStatus } from "@/types/quote.types"
 import { formatDateTime } from "@/utils/format-date"
 
 const STATUS_OPTIONS: { value: QuoteStatus; label: string }[] = [
-  { value: "PENDING", label: "Pending" },
-  { value: "RESPONDED", label: "Responded" },
+  { value: "NEW", label: "New" },
+  { value: "ASSIGNED", label: "Assigned" },
+  { value: "CONTACTED", label: "Contacted" },
+  { value: "NEGOTIATING", label: "Negotiating" },
+  { value: "QUOTE_SENT", label: "Quote sent" },
+  { value: "WON", label: "Won" },
+  { value: "LOST", label: "Lost" },
   { value: "CLOSED", label: "Closed" },
 ]
 
@@ -36,7 +42,7 @@ type MarketplaceQuoteDetailPanelProps = {
 }
 
 function quoteSubject(quote: QuoteRequest) {
-  return quote.product?.name ?? quote.supplier?.name ?? quote.categorySlug ?? "Marketplace quote"
+  return quote.variantName ?? quote.product?.name ?? quote.supplier?.name ?? quote.categorySlug ?? "Marketplace quote"
 }
 
 function formatMoney(value?: number | null) {
@@ -61,6 +67,8 @@ export function MarketplaceQuoteDetailPanel({
   const [current, setCurrent] = useState(quote)
   const [status, setStatus] = useState<QuoteStatus>(quote.status)
   const [reply, setReply] = useState(quote.reply ?? "")
+  const [note, setNote] = useState("")
+  const [finalPrice, setFinalPrice] = useState(quote.finalQuotedPrice == null ? "" : String(quote.finalQuotedPrice))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
@@ -74,10 +82,14 @@ export function MarketplaceQuoteDetailPanel({
     try {
       const updated = await quotesService.update(
         current.id,
-        {
-          status,
-          reply: reply.trim() !== (current.reply ?? "").trim() ? reply.trim() : undefined,
-        },
+        canManage
+          ? {
+              status,
+              finalQuotedPrice: finalPrice ? Number(finalPrice) : undefined,
+              reply: reply.trim() !== (current.reply ?? "").trim() ? reply.trim() : undefined,
+              note: note.trim() || undefined,
+            }
+          : { note: note.trim() },
         token,
       )
       setCurrent({
@@ -89,6 +101,8 @@ export function MarketplaceQuoteDetailPanel({
       })
       setStatus(updated.status)
       setReply(updated.reply ?? reply)
+      setNote("")
+      setFinalPrice(updated.finalQuotedPrice == null ? "" : String(updated.finalQuotedPrice))
       setSaved(true)
       router.refresh()
     } catch (err) {
@@ -162,8 +176,8 @@ export function MarketplaceQuoteDetailPanel({
 
             <div className="grid gap-3 sm:grid-cols-4">
               <div className="rounded-[1rem] border border-border bg-white p-4">
-                <p className="text-xs uppercase tracking-[0.14em] text-ink-400">Budget</p>
-                <p className="mt-2 font-semibold text-ink-900">{formatMoney(current.budget)}</p>
+                <p className="text-xs uppercase tracking-[0.14em] text-ink-400">Final quote</p>
+                <p className="mt-2 font-semibold text-ink-900">{formatMoney(current.finalQuotedPrice)}</p>
               </div>
               <div className="rounded-[1rem] border border-border bg-white p-4">
                 <p className="text-xs uppercase tracking-[0.14em] text-ink-400">Quantity</p>
@@ -172,8 +186,8 @@ export function MarketplaceQuoteDetailPanel({
                 </p>
               </div>
               <div className="rounded-[1rem] border border-border bg-white p-4">
-                <p className="text-xs uppercase tracking-[0.14em] text-ink-400">City</p>
-                <p className="mt-2 font-semibold text-ink-900">{current.city ?? "-"}</p>
+                <p className="text-xs uppercase tracking-[0.14em] text-ink-400">Location</p>
+                <p className="mt-2 font-semibold text-ink-900">{current.deliveryLocation ?? current.city ?? "-"}</p>
               </div>
               <div className="rounded-[1rem] border border-border bg-white p-4">
                 <p className="text-xs uppercase tracking-[0.14em] text-ink-400">Delivery</p>
@@ -182,6 +196,30 @@ export function MarketplaceQuoteDetailPanel({
                 </p>
               </div>
             </div>
+
+            {(current.variantName || (current.specs?.length ?? 0) > 0) ? (
+              <div className="rounded-[1rem] border border-brand-100 bg-brand-50/60 p-5">
+                <p className="text-xs uppercase tracking-[0.14em] text-brand-700">Selected variant</p>
+                {current.variantName ? (
+                  <p className="mt-2 font-semibold text-ink-900">{current.variantName}</p>
+                ) : null}
+                {current.specs?.length ? (
+                  <dl className="mt-3 grid gap-x-4 gap-y-1.5 sm:grid-cols-2">
+                    {current.specs.map((spec) => (
+                      <div key={spec.key} className="flex items-baseline justify-between gap-2 text-sm">
+                        <dt className="text-ink-500">{spec.label}</dt>
+                        <dd className="font-medium text-ink-900">
+                          {spec.value}
+                          {spec.unit ? ` ${spec.unit}` : ""}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                ) : current.variantLabel ? (
+                  <p className="mt-1 text-sm text-ink-600">{current.variantLabel}</p>
+                ) : null}
+              </div>
+            ) : null}
 
             <div className="rounded-[1rem] border border-border bg-white p-5">
               <p className="text-xs uppercase tracking-[0.14em] text-ink-400">Requirement</p>
@@ -204,6 +242,29 @@ export function MarketplaceQuoteDetailPanel({
                     Sent {formatDateTime(current.repliedAt)}
                   </p>
                 ) : null}
+              </div>
+            ) : null}
+
+            {current.conversation && current.conversation.length > 0 ? (
+              <div className="rounded-[1rem] border border-border bg-white p-5">
+                <p className="text-xs uppercase tracking-[0.14em] text-ink-400">
+                  Conversation thread
+                </p>
+                <div className="mt-4 space-y-3">
+                  {current.conversation.map((entry) => (
+                    <div key={entry.id} className="rounded-xl border border-border/70 bg-ink-50/50 p-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-600">
+                          {entry.authorRole} / {entry.channel}
+                        </p>
+                        <p className="text-xs text-ink-500">{formatDateTime(entry.createdAt)}</p>
+                      </div>
+                      <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-ink-800">
+                        {entry.body}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : null}
           </div>
@@ -248,6 +309,20 @@ export function MarketplaceQuoteDetailPanel({
                 ))}
               </select>
 
+              <label className="mt-4 block text-sm font-medium text-ink-800" htmlFor="quote-final-price">
+                Final quoted price
+              </label>
+              <Input
+                id="quote-final-price"
+                type="number"
+                min={0}
+                step="any"
+                value={finalPrice}
+                onChange={(event) => setFinalPrice(event.target.value)}
+                placeholder="BDT"
+                className="mt-2"
+              />
+
               <label className="mt-4 block text-sm font-medium text-ink-800" htmlFor="quote-reply">
                 Reply
               </label>
@@ -257,6 +332,18 @@ export function MarketplaceQuoteDetailPanel({
                 value={reply}
                 onChange={(event) => setReply(event.target.value)}
                 placeholder="Write the supplier response the buyer will see..."
+                className="mt-2"
+              />
+
+              <label className="mt-4 block text-sm font-medium text-ink-800" htmlFor="quote-note">
+                Conversation note
+              </label>
+              <Textarea
+                id="quote-note"
+                rows={4}
+                value={note}
+                onChange={(event) => setNote(event.target.value)}
+                placeholder="Add a call note or negotiation update..."
                 className="mt-2"
               />
 
@@ -282,7 +369,40 @@ export function MarketplaceQuoteDetailPanel({
                 Save response
               </Button>
             </div>
-          ) : null}
+          ) : (
+            <div className="surface-card p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-700">
+                Message sales
+              </p>
+              <Textarea
+                rows={5}
+                value={note}
+                onChange={(event) => setNote(event.target.value)}
+                placeholder="Add a message or clarification for the sales team..."
+                className="mt-4"
+              />
+              {error ? (
+                <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {error}
+                </p>
+              ) : null}
+              {saved ? (
+                <p className="mt-3 flex items-center gap-2 text-sm font-medium text-emerald-700">
+                  <CheckCircle2 className="size-4" />
+                  Message added
+                </p>
+              ) : null}
+              <Button
+                type="button"
+                onClick={save}
+                disabled={saving || note.trim().length < 2}
+                className="mt-4 w-full rounded-full bg-brand-700 text-white hover:bg-brand-800"
+              >
+                {saving ? <Loader2 className="size-4 animate-spin" /> : <MessageSquareReply className="size-4" />}
+                Add message
+              </Button>
+            </div>
+          )}
         </aside>
       </div>
     </div>
