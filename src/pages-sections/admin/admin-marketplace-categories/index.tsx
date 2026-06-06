@@ -1,12 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { CheckCircle2, FolderPlus, Layers, Plus } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { CheckCircle2, FolderPlus, Layers, Package, Plus } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import type { MarketplaceCategory } from "@/services/marketplace.service"
+import { CategoryCard } from "./CategoryCard"
 import { CategoryFormDialog } from "./CategoryFormDialog"
 import { CategoryRow } from "./CategoryRow"
 import { DeleteDialog } from "./DeleteDialog"
@@ -17,53 +19,46 @@ export function AdminMarketplaceCategoriesPanel({
 }: {
   initialCategories: MarketplaceCategory[]
 }) {
+  const router = useRouter()
   const [categories, setCategories] = useState(initialCategories)
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [dialogMode, setDialogMode] = useState<DialogMode>("item")
+  const [dialogMode, setDialogMode] = useState<DialogMode>("department")
+  const [defaultParent, setDefaultParent] = useState("")
   const [editing, setEditing] = useState<MarketplaceCategory | null>(null)
   const [deletingCat, setDeletingCat] = useState<MarketplaceCategory | null>(null)
   const [flashSlug, setFlashSlug] = useState<string | null>(null)
   const [filterText, setFilterText] = useState("")
 
-  const parents = categories
-    .filter((c) => c.parentSlug == null)
-    .sort((a, b) => a.order - b.order)
+  const lvl = (c: MarketplaceCategory) => c.level ?? (c.parentSlug ? "SUBCATEGORY" : "DEPARTMENT")
+  const sortOrder = (a: MarketplaceCategory, b: MarketplaceCategory) => a.order - b.order
 
-  const filtered = filterText.trim()
-    ? categories.filter(
-        (c) =>
-          c.name.toLowerCase().includes(filterText.toLowerCase()) ||
-          c.slug.toLowerCase().includes(filterText.toLowerCase()),
-      )
-    : categories
+  const departments = categories.filter((c) => lvl(c) === "DEPARTMENT").sort(sortOrder)
+  const categoriesUnder = (deptSlug: string) =>
+    categories.filter((c) => lvl(c) === "CATEGORY" && c.parentSlug === deptSlug).sort(sortOrder)
+  const subsUnder = (catSlug: string) =>
+    categories.filter((c) => lvl(c) === "SUBCATEGORY" && c.parentSlug === catSlug).sort(sortOrder)
 
-  const grouped = parents
-    .map((p) => ({
-      parent: p,
-      children: filtered
-        .filter((c) => c.parentSlug === p.slug)
-        .sort((a, b) => a.order - b.order),
-    }))
-    .filter((g) =>
-      filterText
-        ? filtered.some((c) => c.slug === g.parent.slug || c.parentSlug === g.parent.slug)
-        : true,
-    )
+  const q = filterText.trim().toLowerCase()
+  const matches = (c: MarketplaceCategory) =>
+    !q || c.name.toLowerCase().includes(q) || c.slug.toLowerCase().includes(q)
 
-  const orphans = filtered.filter(
-    (c) => c.parentSlug != null && !parents.some((p) => p.slug === c.parentSlug),
-  )
-
-  function openCreate(mode: DialogMode) {
+  function openCreate(mode: DialogMode, parent = "") {
     setEditing(null)
     setDialogMode(mode)
+    setDefaultParent(parent)
     setDialogOpen(true)
   }
 
   function openEdit(cat: MarketplaceCategory) {
     setEditing(cat)
     setDialogMode(detectMode(cat))
+    setDefaultParent(cat.parentSlug ?? "")
     setDialogOpen(true)
+  }
+
+  function openAddChild(parent: MarketplaceCategory) {
+    const childMode: DialogMode = lvl(parent) === "DEPARTMENT" ? "category" : "subcategory"
+    openCreate(childMode, parent.slug)
   }
 
   function handleSaved(cat: MarketplaceCategory) {
@@ -73,110 +68,148 @@ export function AdminMarketplaceCategoriesPanel({
     })
     setFlashSlug(cat.slug)
     window.setTimeout(() => setFlashSlug(null), 2000)
+    // Purge Next's client Router Cache so the public marketplace pages
+    // (force-dynamic) re-fetch fresh data on the next navigation in this session.
+    router.refresh()
   }
 
   function handleDeleted(slug: string) {
-    setCategories((prev) => prev.filter((c) => c.slug !== slug && c.parentSlug !== slug))
+    setCategories((prev) => {
+      const catChildren = prev.filter((c) => c.parentSlug === slug).map((c) => c.slug)
+      const doomed = new Set([slug, ...catChildren])
+      // also drop grandchildren (subcategories of removed categories)
+      prev.forEach((c) => {
+        if (c.parentSlug && catChildren.includes(c.parentSlug)) doomed.add(c.slug)
+      })
+      return prev.filter((c) => !doomed.has(c.slug))
+    })
+    router.refresh()
   }
 
-  const totalGroups = parents.length
-  const totalItems = categories.filter((c) => c.parentSlug != null).length
+  const flash = (slug: string) =>
+    flashSlug === slug && "ring-2 ring-brand-400 ring-offset-2 rounded-xl"
+
+  const totalDepartments = departments.length
+  const totalCategories = categories.filter((c) => lvl(c) === "CATEGORY").length
+  const subcats = categories.filter((c) => lvl(c) === "SUBCATEGORY")
+  const withImages = subcats.filter((c) => c.image?.url || c.iconUrl).length
 
   return (
     <div className="space-y-6">
       {/* Stats + controls */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex flex-wrap gap-3">
-          <div className="rounded-xl border border-border/60 bg-white px-4 py-2">
-            <p className="text-xs text-ink-500">Groups</p>
-            <p className="text-xl font-bold text-ink-900">{totalGroups}</p>
-          </div>
-          <div className="rounded-xl border border-border/60 bg-white px-4 py-2">
-            <p className="text-xs text-ink-500">Sub-categories</p>
-            <p className="text-xl font-bold text-ink-900">{totalItems}</p>
-          </div>
-          <div className="rounded-xl border border-border/60 bg-white px-4 py-2">
-            <p className="text-xs text-ink-500">With images</p>
-            <p className="text-xl font-bold text-brand-700">
-              {categories.filter((c) => c.iconUrl).length}
-            </p>
-          </div>
+          <Stat label="Departments" value={totalDepartments} />
+          <Stat label="Categories" value={totalCategories} />
+          <Stat label="Subcategories" value={subcats.length} />
+          <Stat label="Subcat. images" value={withImages} accent="brand" />
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <Input
-            placeholder="Filter categories…"
+            placeholder="Filter…"
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}
-            className="h-9 w-44 rounded-full text-sm"
+            className="h-9 w-40 rounded-full text-sm"
           />
           <Button
             variant="outline"
-            onClick={() => openCreate("group")}
+            onClick={() => openCreate("department")}
             className="rounded-full gap-1.5 border-brand-300 text-brand-700 hover:bg-brand-50"
           >
-            <FolderPlus className="size-4" />
-            New Group
+            <FolderPlus className="size-4" /> Department
           </Button>
-          <Button onClick={() => openCreate("item")} className="rounded-full gap-1.5">
-            <Plus className="size-4" />
-            New Sub-category
+          <Button
+            variant="outline"
+            onClick={() => openCreate("category")}
+            className="rounded-full gap-1.5"
+          >
+            <Package className="size-4" /> Category
+          </Button>
+          <Button onClick={() => openCreate("subcategory")} className="rounded-full gap-1.5">
+            <Plus className="size-4" /> Subcategory
           </Button>
         </div>
       </div>
 
       {/* Explainer */}
       <div className="rounded-xl border border-brand-100 bg-brand-50/60 px-4 py-3 text-xs text-brand-800">
-        <strong>Groups</strong> are top-level sections (e.g. "Raw Materials").
-        Each group contains <strong>sub-categories</strong> that appear as image cards on the marketplace.
-        Create groups first, then add sub-categories inside them.
+        Build the tree top-down: <strong>Departments</strong> → <strong>Categories</strong> →{" "}
+        <strong>Subcategories</strong>. Subcategories carry the image tile and quote configuration
+        buyers see in the wizard. Use the <Plus className="inline size-3" /> on a row to add a child.
       </div>
 
-      {/* Category tree */}
-      {grouped.length === 0 && orphans.length === 0 ? (
+      {/* Tree */}
+      {departments.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border py-16 text-center text-ink-500">
           <Layers className="mx-auto mb-2 size-8 text-ink-300" />
-          <p className="text-sm font-medium">No categories yet.</p>
+          <p className="text-sm font-medium">No departments yet.</p>
           <p className="mt-1 text-xs">
-            Click <strong>New Group</strong> to start, then add sub-categories inside it.
+            Click <strong>Department</strong> to start, then add categories and subcategories.
           </p>
         </div>
       ) : (
-        <div className="space-y-5">
-          {grouped.map(({ parent, children }) => (
-            <div key={parent.slug} className="space-y-1.5">
-              <div className={cn(flashSlug === parent.slug && "ring-2 ring-brand-400 ring-offset-2 rounded-xl")}>
-                <CategoryRow cat={parent} depth={0} onEdit={openEdit} onDelete={setDeletingCat} />
-              </div>
-              {children.length > 0 && (
-                <div className="space-y-1">
-                  {children.map((child) => (
-                    <div key={child.slug} className={cn(flashSlug === child.slug && "ring-2 ring-brand-400 ring-offset-2 rounded-xl")}>
-                      <CategoryRow cat={child} depth={1} onEdit={openEdit} onDelete={setDeletingCat} />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+        <div className="space-y-8">
+          {departments
+            .filter(
+              (d) =>
+                matches(d) ||
+                categoriesUnder(d.slug).some(
+                  (c) => matches(c) || subsUnder(c.slug).some(matches),
+                ),
+            )
+            .map((dept) => {
+              const cats = categoriesUnder(dept.slug).filter(
+                (c) => matches(c) || subsUnder(c.slug).some(matches),
+              )
+              return (
+                <div key={dept.slug} className="space-y-3">
+                  <div className={cn(flash(dept.slug))}>
+                    <CategoryRow
+                      cat={dept}
+                      depth={0}
+                      onEdit={openEdit}
+                      onDelete={setDeletingCat}
+                      onAddChild={openAddChild}
+                    />
+                  </div>
 
-          {orphans.length > 0 && (
-            <div className="space-y-1.5">
-              <p className="text-xs font-semibold uppercase tracking-widest text-ink-400">Uncategorised</p>
-              {orphans.map((cat) => (
-                <div key={cat.slug} className={cn(flashSlug === cat.slug && "ring-2 ring-brand-400 ring-offset-2 rounded-xl")}>
-                  <CategoryRow cat={cat} depth={1} onEdit={openEdit} onDelete={setDeletingCat} />
+                  {cats.length === 0 ? (
+                    <div className="ml-6 rounded-xl border border-dashed border-border/70 px-4 py-6 text-center text-xs text-ink-500">
+                      No categories under this department.{" "}
+                      <button
+                        type="button"
+                        onClick={() => openAddChild(dept)}
+                        className="font-medium text-brand-700 underline-offset-2 hover:underline"
+                      >
+                        Add the first one
+                      </button>
+                      .
+                    </div>
+                  ) : (
+                    <div className="ml-0 grid grid-cols-1 gap-4 md:ml-6 md:grid-cols-2">
+                      {cats.map((category) => (
+                        <CategoryCard
+                          key={category.slug}
+                          category={category}
+                          subcategories={subsUnder(category.slug).filter(matches)}
+                          onEdit={openEdit}
+                          onDelete={setDeletingCat}
+                          onAddChild={openAddChild}
+                          flashSlug={flashSlug}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
-          )}
+              )
+            })}
         </div>
       )}
 
       {flashSlug && (
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-700 shadow-lg">
-          <CheckCircle2 className="size-4" />
-          Saved successfully
+          <CheckCircle2 className="size-4" /> Saved successfully
         </div>
       )}
 
@@ -185,15 +218,23 @@ export function AdminMarketplaceCategoriesPanel({
         onOpenChange={setDialogOpen}
         mode={dialogMode}
         editing={editing}
-        parents={parents}
+        categories={categories}
+        defaultParent={defaultParent}
         onSaved={handleSaved}
       />
 
-      <DeleteDialog
-        cat={deletingCat}
-        onClose={() => setDeletingCat(null)}
-        onDeleted={handleDeleted}
-      />
+      <DeleteDialog cat={deletingCat} onClose={() => setDeletingCat(null)} onDeleted={handleDeleted} />
+    </div>
+  )
+}
+
+function Stat({ label, value, accent }: { label: string; value: number; accent?: "brand" }) {
+  return (
+    <div className="rounded-xl border border-border/60 bg-white px-4 py-2">
+      <p className="text-xs text-ink-500">{label}</p>
+      <p className={cn("text-xl font-bold", accent === "brand" ? "text-brand-700" : "text-ink-900")}>
+        {value}
+      </p>
     </div>
   )
 }

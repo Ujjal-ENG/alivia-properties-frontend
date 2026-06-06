@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react"
 import Image from "next/image"
-import { AlertCircle, ImagePlus, Layers, Loader2, Plus, X } from "lucide-react"
+import { AlertCircle, ImagePlus, Layers, Loader2, Package, X } from "lucide-react"
 import { useSession } from "next-auth/react"
 
 import { Button } from "@/components/ui/button"
@@ -18,40 +18,80 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { ApiError } from "@/services/http-client"
-import { marketplaceService, type MarketplaceCategory } from "@/services/marketplace.service"
-import { type DialogMode, type FormState, emptyForm, toFormState } from "./types"
-import { uploadImage } from "./upload"
+import {
+  marketplaceService,
+  type CategoryAttributeInput,
+  type CategoryVariantInput,
+  type MarketplaceCategory,
+} from "@/services/marketplace.service"
+import { RfqConfigEditor } from "./RfqConfigEditor"
+import {
+  LEVEL_BY_MODE,
+  MODE_LABEL,
+  type DialogMode,
+  type FormState,
+  emptyForm,
+  toFormState,
+} from "./types"
+import { uploadImage, uploadImageRef } from "./upload"
 
-const MAX_FILE_MB = 5
+const MAX_FILE_MB = 8
 
 type Props = {
   open: boolean
   onOpenChange: (v: boolean) => void
   mode: DialogMode
   editing: MarketplaceCategory | null
-  parents: MarketplaceCategory[]
+  /** All taxonomy nodes — used to populate the parent dropdown by level. */
+  categories: MarketplaceCategory[]
+  /** Pre-selected parent slug when adding a child from a row. */
+  defaultParent?: string
   onSaved: (cat: MarketplaceCategory) => void
 }
 
-export function CategoryFormDialog({ open, onOpenChange, mode, editing, parents, onSaved }: Props) {
+export function CategoryFormDialog({
+  open,
+  onOpenChange,
+  mode,
+  editing,
+  categories,
+  defaultParent = "",
+  onSaved,
+}: Props) {
   const { data: session } = useSession()
-  const [form, setForm] = useState<FormState>(editing ? toFormState(editing) : emptyForm(mode))
+  const [form, setForm] = useState<FormState>(
+    editing ? toFormState(editing) : emptyForm(mode, defaultParent),
+  )
   const [uploadingImage, setUploadingImage] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  // Reset form when dialog target changes
-  const prevKey = useRef("")
-  const nextKey = `${mode}:${editing?.slug ?? "new"}`
-  if (nextKey !== prevKey.current) {
-    prevKey.current = nextKey
-    const next = editing ? toFormState(editing) : emptyForm(mode)
-    if (JSON.stringify(next) !== JSON.stringify(form)) setForm(next)
+  // Reset the form when the dialog target changes (adjust-state-during-render).
+  const targetKey = `${mode}:${editing?.slug ?? `new:${defaultParent}`}`
+  const [prevKey, setPrevKey] = useState(targetKey)
+  if (targetKey !== prevKey) {
+    setPrevKey(targetKey)
+    setForm(editing ? toFormState(editing) : emptyForm(mode, defaultParent))
   }
+
+  const isDepartment = mode === "department"
+  const isSubcategory = mode === "subcategory"
+  const needsParent = mode !== "department"
+
+  const parentOptions = categories.filter((c) =>
+    mode === "category" ? c.level === "DEPARTMENT" : c.level === "CATEGORY",
+  )
+
+  const previewUrl = isSubcategory ? (form.image?.url ?? "") : form.iconUrl
 
   function set(field: keyof FormState, value: string) {
     setForm((f) => ({ ...f, [field]: value }))
+    setError(null)
+  }
+
+  function patch(partial: Partial<FormState>) {
+    setForm((f) => ({ ...f, ...partial }))
     setError(null)
   }
 
@@ -62,7 +102,10 @@ export function CategoryFormDialog({ open, onOpenChange, mode, editing, parents,
   async function handleImagePick(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    if (!session?.accessToken) { setError("You must be logged in to upload images."); return }
+    if (!session?.accessToken) {
+      setError("You must be logged in to upload images.")
+      return
+    }
     if (file.size > MAX_FILE_MB * 1024 * 1024) {
       setError(`File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Max ${MAX_FILE_MB} MB.`)
       return
@@ -70,8 +113,13 @@ export function CategoryFormDialog({ open, onOpenChange, mode, editing, parents,
     setUploadingImage(true)
     setError(null)
     try {
-      const url = await uploadImage(file, session.accessToken)
-      set("iconUrl", url)
+      if (isSubcategory) {
+        const image = await uploadImageRef(file, session.accessToken)
+        patch({ image })
+      } else {
+        const url = await uploadImage(file, session.accessToken)
+        patch({ iconUrl: url })
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed.")
     } finally {
@@ -80,24 +128,68 @@ export function CategoryFormDialog({ open, onOpenChange, mode, editing, parents,
     }
   }
 
+  function removeImage() {
+    if (isSubcategory) patch({ image: null })
+    else patch({ iconUrl: "" })
+  }
+
   async function handleSave() {
-    if (!form.name.trim()) { setError("Name is required"); return }
-    if (!form.slug.trim()) { setError("Slug is required"); return }
-    if (mode === "item" && !form.parentSlug.trim()) { setError("Select a parent group"); return }
-    if (!session?.accessToken) { setError("Not authenticated"); return }
+    if (!form.name.trim()) return setError("Name is required")
+    if (!form.slug.trim()) return setError("Slug is required")
+    if (needsParent && !form.parentSlug.trim()) {
+      return setError(`Select a parent ${mode === "category" ? "department" : "category"}`)
+    }
+    if (!session?.accessToken) return setError("Not authenticated")
 
     setSaving(true)
     setError(null)
     try {
+      // Quote config only applies to subcategories (where buyers request quotes).
+      const variants: CategoryVariantInput[] = isSubcategory
+        ? form.variants
+            .filter((v) => v.name.trim())
+            .map((v, i) => ({
+              id: v.id,
+              name: v.name.trim(),
+              unit: v.unit.trim() || undefined,
+              order: i,
+              isActive: v.isActive,
+            }))
+        : []
+      const attributes: CategoryAttributeInput[] = isSubcategory
+        ? form.attributes
+            .filter((a) => a.label.trim())
+            .map((a, i) => ({
+              id: a.id,
+              label: a.label.trim(),
+              type: a.type,
+              options:
+                a.type === "SELECT"
+                  ? a.options.split(",").map((o) => o.trim()).filter(Boolean)
+                  : [],
+              unit: a.unit.trim() || undefined,
+              required: a.required,
+              order: i,
+            }))
+        : []
+
+      const parentSlug = isDepartment ? null : form.parentSlug.trim() || null
+      const order = parseInt(form.order, 10) || 0
+
       const saved = editing
         ? await marketplaceService.adminUpdateCategory(
             editing.slug,
             {
               name: form.name.trim(),
+              level: LEVEL_BY_MODE[mode],
               description: form.description.trim() || null,
-              iconUrl: form.iconUrl.trim() || null,
-              parentSlug: mode === "group" ? null : form.parentSlug.trim() || null,
-              order: parseInt(form.order, 10) || 0,
+              iconUrl: isSubcategory ? form.iconUrl.trim() || null : form.iconUrl.trim() || null,
+              image: isSubcategory ? form.image : null,
+              parentSlug,
+              order,
+              isActive: form.isActive,
+              variants,
+              attributes,
             },
             session.accessToken,
           )
@@ -105,10 +197,15 @@ export function CategoryFormDialog({ open, onOpenChange, mode, editing, parents,
             {
               slug: form.slug.trim(),
               name: form.name.trim(),
+              level: LEVEL_BY_MODE[mode],
               description: form.description.trim() || undefined,
               iconUrl: form.iconUrl.trim() || undefined,
-              parentSlug: mode === "group" ? undefined : form.parentSlug.trim() || undefined,
-              order: parseInt(form.order, 10) || 0,
+              image: isSubcategory ? form.image : undefined,
+              parentSlug: parentSlug ?? undefined,
+              order,
+              isActive: form.isActive,
+              variants,
+              attributes,
             },
             session.accessToken,
           )
@@ -121,29 +218,31 @@ export function CategoryFormDialog({ open, onOpenChange, mode, editing, parents,
     }
   }
 
-  const isGroup = mode === "group"
-  const title = editing
-    ? `Edit ${isGroup ? "group" : "sub-category"}`
-    : isGroup ? "New category group" : "New sub-category"
+  const badgeIcon = isDepartment ? <Layers className="size-3" /> : isSubcategory ? <ImagePlus className="size-3" /> : <Package className="size-3" />
+  const title = `${editing ? "Edit" : "New"} ${MODE_LABEL[mode].toLowerCase()}`
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!saving && !uploadingImage) onOpenChange(v) }}>
       <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <div className="mb-2">
-            <span className={cn(
-              "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold",
-              isGroup ? "bg-brand-100 text-brand-700" : "bg-gold-50 text-gold-700 border border-gold-200",
-            )}>
-              {isGroup ? <Layers className="size-3" /> : <Plus className="size-3" />}
-              {isGroup ? "Top-level group" : "Sub-category"}
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold",
+                isDepartment && "bg-brand-100 text-brand-700",
+                mode === "category" && "bg-ink-100 text-ink-700",
+                isSubcategory && "border border-gold-200 bg-gold-50 text-gold-700",
+              )}
+            >
+              {badgeIcon}
+              {MODE_LABEL[mode]}
             </span>
           </div>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            {isGroup
-              ? `A group is a top-level section (e.g. "Raw Materials"). Sub-categories are added inside groups.`
-              : "A sub-category lives inside a group and has its own image card on the marketplace."}
+            {isDepartment && "A department is the top level (e.g. \"Raw Materials\")."}
+            {mode === "category" && "A category sits inside a department (e.g. \"Tiles\")."}
+            {isSubcategory && "A subcategory is the image tile buyers pick (e.g. \"Wall Tiles\")."}
           </DialogDescription>
         </DialogHeader>
 
@@ -151,8 +250,8 @@ export function CategoryFormDialog({ open, onOpenChange, mode, editing, parents,
           {/* Image upload */}
           <div className="flex items-center gap-4">
             <div className="relative size-20 shrink-0 overflow-hidden rounded-xl border border-border bg-ink-50">
-              {form.iconUrl ? (
-                <Image src={form.iconUrl} alt="Category" fill className="object-cover" unoptimized />
+              {previewUrl ? (
+                <Image src={previewUrl} alt="Preview" fill className="object-cover" unoptimized />
               ) : (
                 <div className="flex size-full items-center justify-center text-ink-400">
                   <ImagePlus className="size-7" />
@@ -166,10 +265,12 @@ export function CategoryFormDialog({ open, onOpenChange, mode, editing, parents,
             </div>
             <div className="flex-1 space-y-1.5">
               <p className="text-sm font-medium text-ink-800">
-                {isGroup ? "Group image (optional)" : "Category image"}
+                {isSubcategory ? "Subcategory image" : `${MODE_LABEL[mode]} icon (optional)`}
               </p>
               <p className="text-xs text-ink-500">
-                {isGroup ? "Recommended: 1200×400px." : "Recommended: 400×300px."}
+                {isSubcategory
+                  ? "The unique tile shown in the quote wizard. Recommended: 800×600px."
+                  : "Recommended: 1200×400px."}
               </p>
               <div className="flex gap-2">
                 <Button
@@ -181,10 +282,10 @@ export function CategoryFormDialog({ open, onOpenChange, mode, editing, parents,
                   {uploadingImage ? <Loader2 className="size-3 animate-spin" /> : <ImagePlus className="size-3" />}
                   {uploadingImage ? "Uploading…" : "Upload to MinIO"}
                 </Button>
-                {form.iconUrl && (
+                {previewUrl && (
                   <Button
                     type="button" size="sm" variant="ghost" disabled={saving}
-                    onClick={() => set("iconUrl", "")}
+                    onClick={removeImage}
                     className="rounded-full text-xs text-destructive hover:bg-destructive/10"
                   >
                     <X className="size-3" /> Remove
@@ -201,7 +302,7 @@ export function CategoryFormDialog({ open, onOpenChange, mode, editing, parents,
             <Input
               value={form.name}
               onChange={(e) => { set("name", e.target.value); if (!editing) set("slug", autoSlug(e.target.value)) }}
-              placeholder={isGroup ? "e.g. Raw Materials" : "e.g. Cement"}
+              placeholder={isDepartment ? "e.g. Raw Materials" : isSubcategory ? "e.g. Wall Tiles" : "e.g. Tiles"}
               disabled={saving}
             />
           </div>
@@ -212,7 +313,7 @@ export function CategoryFormDialog({ open, onOpenChange, mode, editing, parents,
             <Input
               value={form.slug}
               onChange={(e) => set("slug", e.target.value)}
-              placeholder={isGroup ? "e.g. raw-materials" : "e.g. cement"}
+              placeholder={isDepartment ? "e.g. raw-materials" : isSubcategory ? "e.g. wall-tiles" : "e.g. tiles"}
               disabled={saving || Boolean(editing)}
               className={editing ? "bg-ink-50 text-ink-500" : ""}
             />
@@ -227,40 +328,72 @@ export function CategoryFormDialog({ open, onOpenChange, mode, editing, parents,
             <Textarea
               value={form.description}
               onChange={(e) => set("description", e.target.value)}
-              placeholder={isGroup ? "Short description of this group" : "Short description shown on the category card"}
+              placeholder="Short description"
               rows={2} disabled={saving} className="resize-none text-sm"
             />
           </div>
 
-          {/* Parent group (items only) */}
-          {!isGroup && (
+          {/* Parent (category + subcategory) */}
+          {needsParent && (
             <div className="grid gap-1.5">
-              <label className="text-sm font-medium text-ink-800">Parent group *</label>
+              <label className="text-sm font-medium text-ink-800">
+                Parent {mode === "category" ? "department" : "category"} *
+              </label>
               <select
                 value={form.parentSlug}
                 onChange={(e) => set("parentSlug", e.target.value)}
                 disabled={saving}
                 className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-ink-900 outline-none focus:border-brand-600 focus:ring-3 focus:ring-brand-600/20 disabled:opacity-60"
               >
-                <option value="">— Select a group —</option>
-                {parents.map((p) => <option key={p.slug} value={p.slug}>{p.name}</option>)}
+                <option value="">— Select a {mode === "category" ? "department" : "category"} —</option>
+                {parentOptions.map((p) => <option key={p.slug} value={p.slug}>{p.name}</option>)}
               </select>
-              {parents.length === 0 && (
-                <p className="text-xs text-amber-600">No groups yet. Create a group first.</p>
+              {parentOptions.length === 0 && (
+                <p className="text-xs text-amber-600">
+                  No {mode === "category" ? "departments" : "categories"} yet. Create one first.
+                </p>
               )}
             </div>
           )}
 
-          {/* Display order */}
-          <div className="grid gap-1.5">
-            <label className="text-sm font-medium text-ink-800">Display order</label>
-            <Input
-              type="number" min={0} value={form.order}
-              onChange={(e) => set("order", e.target.value)}
-              disabled={saving} className="w-28"
-            />
-            <p className="text-xs text-ink-500">Lower number appears first within its group.</p>
+          {/* Order + active */}
+          <div className="flex flex-wrap items-end gap-5">
+            <div className="grid gap-1.5">
+              <label className="text-sm font-medium text-ink-800">Display order</label>
+              <Input
+                type="number" min={0} value={form.order}
+                onChange={(e) => set("order", e.target.value)}
+                disabled={saving} className="w-28"
+              />
+            </div>
+            <label className="flex cursor-pointer items-center gap-2 pb-2 text-sm text-ink-800">
+              <input
+                type="checkbox"
+                checked={form.isActive}
+                onChange={(e) => patch({ isActive: e.target.checked })}
+                disabled={saving}
+                className="size-4 accent-brand-600"
+              />
+              Visible to customers
+            </label>
           </div>
+
+          {/* RFQ configuration — subcategories only */}
+          {isSubcategory && (
+            <div className="grid gap-1.5">
+              <label className="text-sm font-medium text-ink-800">Quote configuration</label>
+              <p className="-mt-1 text-xs text-ink-500">
+                Define the variants and spec fields buyers fill when requesting a quote for this subcategory.
+              </p>
+              <RfqConfigEditor
+                variants={form.variants}
+                attributes={form.attributes}
+                onVariantsChange={(variants) => patch({ variants })}
+                onAttributesChange={(attributes) => patch({ attributes })}
+                disabled={saving}
+              />
+            </div>
+          )}
 
           {error && (
             <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
@@ -277,7 +410,7 @@ export function CategoryFormDialog({ open, onOpenChange, mode, editing, parents,
           <Button type="button" disabled={saving || uploadingImage} onClick={handleSave}>
             {saving
               ? <><Loader2 className="size-4 animate-spin" /> Saving…</>
-              : editing ? "Save changes" : isGroup ? "Create group" : "Create sub-category"}
+              : editing ? "Save changes" : `Create ${MODE_LABEL[mode].toLowerCase()}`}
           </Button>
         </DialogFooter>
       </DialogContent>
