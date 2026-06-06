@@ -11,12 +11,13 @@ export const metadata: Metadata = {
 }
 
 type Props = {
-  searchParams: Promise<{ id?: string }>
+  searchParams: Promise<{ id?: string; batch?: string; count?: string }>
 }
 
 export default async function QuoteThankYouPage({ searchParams }: Props) {
-  const { id } = await searchParams
-  const reference = id?.slice(-8).toUpperCase()
+  const { id, batch, count } = await searchParams
+  const reference = (batch ?? id)?.slice(-8).toUpperCase()
+  const supplierCount = count ? Number(count) : 0
 
   return (
     <main className="bg-linear-to-b from-brand-50/60 via-white to-white">
@@ -29,8 +30,9 @@ export default async function QuoteThankYouPage({ searchParams }: Props) {
             Quote request sent
           </h1>
           <p className="mt-2 text-sm text-ink-600 sm:text-base">
-            Thanks — we&apos;ve routed your request to verified suppliers. Most reply within 24 hours
-            via email or phone.
+            {supplierCount > 1
+              ? `Thanks — your request was sent to ${supplierCount} suppliers. Most reply within 24 hours via email or phone.`
+              : "Thanks — we've routed your request to verified suppliers. Most reply within 24 hours via email or phone."}
           </p>
 
           {reference && (
@@ -44,7 +46,7 @@ export default async function QuoteThankYouPage({ searchParams }: Props) {
             <Link href={ROUTES.MARKETPLACE}>
               <Button variant="default">Back to marketplace</Button>
             </Link>
-            <Link href={ROUTES.MARKETPLACE_QUOTE}>
+            <Link href={ROUTES.MARKETPLACE_REQUEST}>
               <Button variant="outline">Submit another request</Button>
             </Link>
           </div>

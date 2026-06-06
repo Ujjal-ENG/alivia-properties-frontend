@@ -1,6 +1,6 @@
 export type InquiryStatus = 'new' | 'read' | 'replied' | 'closed'
 
-export type InquiryType = 'property' | 'project' | 'general' | 'report'
+export type InquiryType = 'property' | 'project' | 'general' | 'report' | 'supplier' | 'investor'
 
 export type Inquiry = {
   id: string
