@@ -470,3 +470,39 @@
   background-size: 200% 100%;
   animation: shimmer 1.6s ease-in-out infinite;
 }
+
+/* ── Eye-catching CTA pills (Be a Supplier / Be an Investor) ───────────────── */
+/* A diagonal light band that sweeps across the pill periodically. */
+@keyframes cta-sheen {
+  0%   { transform: translateX(-160%) skewX(-18deg); }
+  100% { transform: translateX(440%) skewX(-18deg); }
+}
+/* A gentle vertical bob for the leading icon. */
+@keyframes cta-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-1.5px); }
+}
+/* A soft, breathing glow ring around the pill (emerald / gold variants). */
+@keyframes cta-glow-emerald {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 0 9px -3px rgba(20, 160, 120, 0); }
+  50%      { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2), 0 0 16px 0 rgba(20, 160, 120, 0.55); }
+}
+@keyframes cta-glow-gold {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 0 9px -3px rgba(229, 176, 79, 0); }
+  50%      { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2), 0 0 16px 0 rgba(229, 176, 79, 0.6); }
+}
+
+.cta-pill-supplier { animation: cta-glow-emerald 3s ease-in-out infinite; }
+.cta-pill-investor { animation: cta-glow-gold 3.4s ease-in-out infinite; }
+.cta-pill-sheen { animation: cta-sheen 4s ease-in-out infinite; }
+.cta-pill-sheen--delayed { animation-delay: 2s; }
+.cta-pill-icon { animation: cta-bob 2.6s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-pill-supplier,
+  .cta-pill-investor,
+  .cta-pill-sheen,
+  .cta-pill-icon {
+    animation: none;
+  }
+}
