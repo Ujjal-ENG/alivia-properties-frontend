@@ -3,6 +3,7 @@ import { z } from "zod"
 export const quoteSchema = z.object({
   supplierId: z.string().optional(),
   productId: z.string().optional(),
+  variantId: z.string().optional(),
   categorySlug: z.string().optional(),
 
   name: z
@@ -21,6 +22,11 @@ export const quoteSchema = z.object({
 
   company: z.string().max(160, "Company name is too long").optional().or(z.literal("")),
   city: z.string().max(120, "City name is too long").optional().or(z.literal("")),
+  deliveryLocation: z
+    .string("Delivery location is required")
+    .trim()
+    .min(3, "Enter delivery location")
+    .max(240, "Delivery location is too long"),
 
   quantity: z
     .union([z.number(), z.string()])
@@ -29,12 +35,6 @@ export const quoteSchema = z.object({
     .refine(v => v === undefined || (!Number.isNaN(v) && v >= 0), "Enter a non-negative quantity"),
 
   unit: z.string().max(32, "Unit is too long").optional().or(z.literal("")),
-
-  budget: z
-    .union([z.number(), z.string()])
-    .optional()
-    .transform(v => (v === "" || v === undefined || v === null ? undefined : Number(v)))
-    .refine(v => v === undefined || (!Number.isNaN(v) && v >= 0), "Enter a valid budget"),
 
   deliveryDate: z.string().optional().or(z.literal("")),
 

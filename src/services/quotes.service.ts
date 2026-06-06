@@ -1,6 +1,8 @@
 import { httpClient, type Paginated } from "./http-client"
 import type {
+  CreateQuoteBatchInput,
   CreateQuoteInput,
+  QuoteBatchResult,
   QuoteQueryParams,
   QuoteRequest,
 } from "@/types/quote.types"
@@ -11,6 +13,11 @@ export const quotesService = {
   /** Public — submit a quote request from the marketplace */
   create(input: CreateQuoteInput, token?: string): Promise<QuoteRequest> {
     return httpClient.post<QuoteRequest>(BASE, input, { token })
+  },
+
+  /** Public — submit one quote to multiple suppliers (the wizard). */
+  createBatch(input: CreateQuoteBatchInput, token?: string): Promise<QuoteBatchResult> {
+    return httpClient.post<QuoteBatchResult>(`${BASE}/batch`, input, { token })
   },
 
   /** Admin / Supplier — list quote requests with filtering */
@@ -27,7 +34,13 @@ export const quotesService = {
 
   update(
     id: string,
-    body: { status?: QuoteRequest["status"]; reply?: string },
+    body: {
+      status?: QuoteRequest["status"]
+      assignedTo?: string
+      reply?: string
+      note?: string
+      finalQuotedPrice?: number
+    },
     token?: string,
   ): Promise<QuoteRequest> {
     return httpClient.patch<QuoteRequest>(`${BASE}/${id}`, body, { token })
