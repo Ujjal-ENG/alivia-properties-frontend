@@ -16,11 +16,11 @@ const GROUP_ACCENTS = [
 
 type Props = {
   group: MarketplaceCategory
-  children: MarketplaceCategory[]
+  items: MarketplaceCategory[]
   index: number
 }
 
-export function CategoryGroupSection({ group, children, index }: Props) {
+export function CategoryGroupSection({ group, items: children, index }: Props) {
   const accent = GROUP_ACCENTS[index % GROUP_ACCENTS.length]!
 
   return (
