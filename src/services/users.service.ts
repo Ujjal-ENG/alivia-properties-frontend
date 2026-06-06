@@ -1,5 +1,5 @@
 import { auth } from "@/auth"
-import { httpClient, type Paginated } from "./http-client"
+import { ApiError, httpClient, type Paginated } from "./http-client"
 import { normalizeRole, type Seller, type Buyer, type User } from "@/types/user.types"
 
 async function sessionToken(): Promise<string | undefined> {
@@ -54,25 +54,35 @@ export const usersService = {
   async getUsersGrouped(token?: string): Promise<{
     data: { admins: User[]; sellers: Seller[]; buyers: Buyer[] }
   }> {
-    const [adminsRes, sellersRes, buyersRes] = await Promise.all([
-      httpClient.paginated<BackendUser>("/users", {
-        query: { role: "ADMIN", limit: 100 },
-        token,
-      }),
-      httpClient.paginated<BackendUser>("/users", {
-        query: { role: "SELLER", limit: 100 },
-        token,
-      }),
-      httpClient.paginated<BackendUser>("/users", {
-        query: { role: "BUYER", limit: 100 },
-        token,
-      }),
+    // Fetch each role independently. We tolerate a partial failure (one role
+    // query failing won't blank the others), but if EVERY query fails — almost
+    // always an auth problem — we rethrow so the page can show a real message
+    // instead of a silently empty table. limit is capped at 100 by the backend.
+    const fetchRole = (role: "ADMIN" | "SELLER" | "BUYER") =>
+      httpClient
+        .paginated<BackendUser>("/users", { query: { role, limit: 100 }, token })
+        .then((res) => res.data)
+
+    const results = await Promise.allSettled([
+      fetchRole("ADMIN"),
+      fetchRole("SELLER"),
+      fetchRole("BUYER"),
     ])
+
+    if (results.every((r) => r.status === "rejected")) {
+      throw (results.find((r) => r.status === "rejected") as PromiseRejectedResult).reason
+    }
+
+    const val = (i: number) =>
+      results[i].status === "fulfilled"
+        ? (results[i] as PromiseFulfilledResult<BackendUser[]>).value
+        : []
+
     return {
       data: {
-        admins: adminsRes.data.map(u => toUser(u)),
-        sellers: sellersRes.data.map(u => toUser<Seller>(u)),
-        buyers: buyersRes.data.map(u => toUser<Buyer>(u)),
+        admins: val(0).map((u) => toUser(u)),
+        sellers: val(1).map((u) => toUser<Seller>(u)),
+        buyers: val(2).map((u) => toUser<Buyer>(u)),
       },
     }
   },
@@ -102,21 +112,50 @@ export const usersService = {
   },
 }
 
-// Convenience helpers — pull token from session automatically so callers don't have to.
-export async function getUsers(): Promise<{
+function loadErrorMessage(err: unknown): string {
+  if (err instanceof ApiError) {
+    if (err.status === 401 || err.status === 403) {
+      return "Your admin session has expired. Please sign out and sign back in to load users."
+    }
+    return `Couldn't load users (HTTP ${err.status}). ${err.message}`
+  }
+  return "Couldn't load users. Make sure the API server is running."
+}
+
+export type GroupedUsersResult = {
   data: { admins: User[]; sellers: Seller[]; buyers: Buyer[] }
-}> {
-  return usersService.getUsersGrouped(await sessionToken())
+  error: string | null
 }
 
-export async function getSellers(): Promise<Seller[]> {
-  const grouped = await usersService.getUsersGrouped(await sessionToken())
-  return grouped.data.sellers
+const EMPTY_GROUPED = { admins: [], sellers: [], buyers: [] }
+
+// Convenience helpers — pull token from session automatically so callers don't
+// have to, and return an `error` instead of throwing/blanking, so pages can
+// distinguish "no users" from "couldn't load (e.g. session expired)".
+export async function getUsers(): Promise<GroupedUsersResult> {
+  const token = await sessionToken()
+  if (!token) {
+    return {
+      data: EMPTY_GROUPED,
+      error: "Your admin session has expired. Please sign out and sign back in to load users.",
+    }
+  }
+  try {
+    const grouped = await usersService.getUsersGrouped(token)
+    return { data: grouped.data, error: null }
+  } catch (err) {
+    return { data: EMPTY_GROUPED, error: loadErrorMessage(err) }
+  }
 }
 
-export async function getBuyers(): Promise<Buyer[]> {
-  const grouped = await usersService.getUsersGrouped(await sessionToken())
-  return grouped.data.buyers
+export async function getSellers(): Promise<{ sellers: Seller[]; error: string | null }> {
+  const { data, error } = await getUsers()
+  return { sellers: data.sellers, error }
+}
+
+export async function getBuyers(): Promise<{ buyers: Buyer[]; error: string | null }> {
+  const { data, error } = await getUsers()
+  return { buyers: data.buyers, error }
 }
 
 export async function getMe(): Promise<User> {

@@ -1,26 +1,28 @@
-import { auth } from "@/auth"
-import { httpClient } from "./http-client"
+import { auth } from "@/auth";
+import { httpClient } from "./http-client";
 
 export type NotificationItem = {
-  id: string
-  title: string
-  body: string
-  type?: string
-  link?: string
-  isRead: boolean
-  createdAt: string
-}
+  id: string;
+  title: string;
+  body: string;
+  type?: string;
+  link?: string;
+  isRead: boolean;
+  createdAt: string;
+};
 
 export type NotificationsResult = {
-  items: NotificationItem[]
-  unreadCount: number
-}
+  items: NotificationItem[];
+  unreadCount: number;
+};
 
-type BackendNotification = Omit<NotificationItem, "body"> & {
-  message: string
-}
+export type BackendNotification = Omit<NotificationItem, "body"> & {
+  message: string;
+};
 
-function toItem(item: BackendNotification): NotificationItem {
+export function toNotificationItem(
+  item: BackendNotification,
+): NotificationItem {
   return {
     id: item.id,
     title: item.title,
@@ -29,7 +31,7 @@ function toItem(item: BackendNotification): NotificationItem {
     link: item.link,
     isRead: item.isRead,
     createdAt: item.createdAt,
-  }
+  };
 }
 
 /**
@@ -45,26 +47,29 @@ export const notificationsService = {
     params: { page?: number; limit?: number; unread?: boolean } = {},
     token?: string,
   ): Promise<NotificationsResult> {
-    const res = await httpClient.paginated<BackendNotification>("/notifications", {
-      query: params as Record<string, string | number | boolean | undefined>,
-      token,
-      cache: "no-store",
-    })
+    const res = await httpClient.paginated<BackendNotification>(
+      "/notifications",
+      {
+        query: params as Record<string, string | number | boolean | undefined>,
+        token,
+        cache: "no-store",
+      },
+    );
     const unreadCount =
       typeof (res as { unread?: number }).unread === "number"
-        ? (res as { unread?: number }).unread ?? 0
-        : 0
-    return { items: res.data.map(toItem), unreadCount }
+        ? ((res as { unread?: number }).unread ?? 0)
+        : 0;
+    return { items: res.data.map(toNotificationItem), unreadCount };
   },
 
   markRead(id: string, token?: string): Promise<unknown> {
-    return httpClient.patch(`/notifications/${id}/read`, undefined, { token })
+    return httpClient.patch(`/notifications/${id}/read`, undefined, { token });
   },
 
   markAllRead(token?: string): Promise<unknown> {
-    return httpClient.post("/notifications/read-all", undefined, { token })
+    return httpClient.post("/notifications/read-all", undefined, { token });
   },
-}
+};
 
 /**
  * Server helper used by the full `/notifications` page. Pulls the token from
@@ -73,10 +78,12 @@ export const notificationsService = {
 export async function getNotifications(
   params: { limit?: number; unread?: boolean } = {},
 ): Promise<{ data: NotificationsResult }> {
-  const session = await auth()
+  const session = await auth();
   try {
-    return { data: await notificationsService.list(params, session?.accessToken) }
+    return {
+      data: await notificationsService.list(params, session?.accessToken),
+    };
   } catch {
-    return { data: { items: [], unreadCount: 0 } }
+    return { data: { items: [], unreadCount: 0 } };
   }
 }
