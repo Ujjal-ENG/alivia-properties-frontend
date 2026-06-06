@@ -1,5 +1,3 @@
-import Link from "next/link"
-import Image from "next/image"
 import {
   ArrowRight,
   ArrowUpRight,
@@ -20,28 +18,33 @@ import {
   Star,
   TrendingUp,
   Users,
-} from "lucide-react"
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
-import { Button } from "@/components/ui/button"
-import { ROUTES } from "@/config/routes.config"
-import { siteConfig } from "@/config/site.config"
-import { propertiesService } from "@/services/properties.service"
-import { projectsService } from "@/services/projects.service"
-import { blogService } from "@/services/blog.service"
-import { formatPrice, formatRent } from "@/utils/format-price"
-import { HomeHero, type HeroProjectCard } from "@/pages-sections/home/home-hero"
+import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/config/routes.config";
+import { siteConfig } from "@/config/site.config";
 import {
   FlagshipProjects,
   type FlagshipProject,
-} from "@/pages-sections/home/flagship-projects"
+} from "@/pages-sections/home/flagship-projects";
+import {
+  HomeHero,
+  type HeroProjectCard,
+} from "@/pages-sections/home/home-hero";
+import { blogService } from "@/services/blog.service";
+import { projectsService } from "@/services/projects.service";
+import { propertiesService } from "@/services/properties.service";
+import { formatPrice, formatRent } from "@/utils/format-price";
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-dynamic";
 
-type SoftRecord = Record<string, unknown>
+type SoftRecord = Record<string, unknown>;
 
 function pick<T>(obj: SoftRecord, key: string, fallback: T): T {
-  const v = obj[key]
-  return v === undefined || v === null ? fallback : (v as T)
+  const v = obj[key];
+  return v === undefined || v === null ? fallback : (v as T);
 }
 
 function projectCover(p: SoftRecord): string | null {
@@ -51,12 +54,12 @@ function projectCover(p: SoftRecord): string | null {
     (Array.isArray(p.galleryImages)
       ? ((p.galleryImages as string[])[0] ?? null)
       : null)
-  )
+  );
 }
 
 function projectPrice(p: SoftRecord): string | null {
-  const from = pick<number>(p, "priceFrom", 0)
-  return from > 0 ? formatPrice(from, true) : null
+  const from = pick<number>(p, "priceFrom", 0);
+  return from > 0 ? formatPrice(from, true) : null;
 }
 
 export default async function HomePage() {
@@ -64,18 +67,18 @@ export default async function HomePage() {
     projectsService.list({ limit: 6 }),
     propertiesService.list({ limit: 4 }),
     blogService.list({ limit: 3 }),
-  ])
+  ]);
 
   const projects: SoftRecord[] =
-    projectsRes.status === "fulfilled" ? projectsRes.value.data : []
+    projectsRes.status === "fulfilled" ? projectsRes.value.data : [];
   const properties: SoftRecord[] =
-    propertiesRes.status === "fulfilled" ? propertiesRes.value.data : []
-  const posts = blogRes.status === "fulfilled" ? blogRes.value.data : []
+    propertiesRes.status === "fulfilled" ? propertiesRes.value.data : [];
+  const posts = blogRes.status === "fulfilled" ? blogRes.value.data : [];
 
   const backendDown =
     projectsRes.status === "rejected" &&
     propertiesRes.status === "rejected" &&
-    blogRes.status === "rejected"
+    blogRes.status === "rejected";
 
   const heroProjects: HeroProjectCard[] = projects.slice(0, 2).map((p) => ({
     slug: pick<string>(p, "slug", ""),
@@ -84,10 +87,10 @@ export default async function HomePage() {
     status: pick<string>(p, "status", "ongoing"),
     price: projectPrice(p) ?? "Price on request",
     cover: projectCover(p),
-  }))
+  }));
 
   const flagship: FlagshipProject[] = projects.map((p) => {
-    const total = pick<number | null>(p, "totalUnits", null)
+    const total = pick<number | null>(p, "totalUnits", null);
     return {
       slug: pick<string>(p, "slug", ""),
       name: pick<string>(p, "name", "Alivia Project"),
@@ -96,8 +99,8 @@ export default async function HomePage() {
       price: projectPrice(p),
       units: total ? `${total} units` : null,
       cover: projectCover(p),
-    }
-  })
+    };
+  });
 
   return (
     <main className="bg-white">
@@ -106,9 +109,11 @@ export default async function HomePage() {
           <div className="container-page py-3 text-xs text-amber-900">
             <span className="font-medium">Heads up:</span> the API at{" "}
             <span className="font-mono">
-              {process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001/api/v1"}
+              {process.env.NEXT_PUBLIC_API_BASE_URL ??
+                "http://localhost:3001/api/v1"}
             </span>{" "}
-            isn&apos;t responding. Start the NestJS backend to populate this page.
+            isn&apos;t responding. Start the NestJS backend to populate this
+            page.
           </div>
         </div>
       )}
@@ -146,21 +151,27 @@ export default async function HomePage() {
       {/* 11 — Market insights */}
       <MarketInsights posts={posts} />
     </main>
-  )
+  );
 }
 
 /* ───────────────────────── 2. Verified numbers ───────────────────────── */
 
 function VerifiedNumbers() {
   const items = [
-    { value: `${siteConfig.stats.projectsCompleted}+`, label: "Projects completed" },
+    {
+      value: `${siteConfig.stats.projectsCompleted}+`,
+      label: "Projects completed",
+    },
     {
       value: `${siteConfig.stats.happyFamilies.toLocaleString("en-US")}+`,
       label: "Happy families",
     },
-    { value: `${siteConfig.stats.yearsExperience}+`, label: "Years of experience" },
+    {
+      value: `${siteConfig.stats.yearsExperience}+`,
+      label: "Years of experience",
+    },
     { value: `${siteConfig.stats.totalListings}+`, label: "Verified listings" },
-  ]
+  ];
   return (
     <section className="bg-brand-950 text-white">
       <div className="container-page py-14 md:py-16">
@@ -178,7 +189,9 @@ function VerifiedNumbers() {
               key={s.label}
               className="rounded-3xl border border-white/10 bg-white/[0.04] px-5 py-7 transition-colors hover:bg-white/[0.07]"
             >
-              <p className="font-heading text-4xl font-bold text-gold-400">{s.value}</p>
+              <p className="font-heading text-4xl font-bold text-gold-400">
+                {s.value}
+              </p>
               <p className="mt-2 text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-brand-200">
                 {s.label}
               </p>
@@ -187,7 +200,7 @@ function VerifiedNumbers() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 /* ───────────────────────── 3. Trust features ───────────────────────── */
@@ -216,7 +229,7 @@ function TrustSection() {
     },
     {
       icon: Users,
-      title: "Years of trust",
+      title: "Years of reliability",
       body: "Thousands of families served with a consultation-first approach.",
     },
     {
@@ -224,17 +237,18 @@ function TrustSection() {
       title: "End-to-end support",
       body: "From first search to handover — guidance at every step of the journey.",
     },
-  ]
+  ];
   return (
     <section className="bg-ink-50/60">
       <div className="container-page section-y-sm">
         <div className="mx-auto mb-10 max-w-2xl text-center">
           <p className="text-eyebrow mb-2">Why Alivia</p>
           <h2 className="font-heading text-3xl font-bold uppercase tracking-tight text-brand-950 sm:text-4xl">
-            Trust arrives before friction does.
+            Reliability arrives before friction does.
           </h2>
           <p className="mt-3 text-sm text-ink-600">
-            We removed hesitation early so the right next step always feels obvious.
+            We removed hesitation early so the right next step always feels
+            obvious.
           </p>
         </div>
 
@@ -250,7 +264,9 @@ function TrustSection() {
               <h3 className="mt-4 font-heading text-lg font-semibold text-ink-900">
                 {f.title}
               </h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{f.body}</p>
+              <p className="mt-1.5 text-sm leading-relaxed text-ink-600">
+                {f.body}
+              </p>
             </div>
           ))}
         </div>
@@ -270,7 +286,7 @@ function TrustSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 /* ───────────────────────── 5. Investment corridors ───────────────────────── */
@@ -297,7 +313,7 @@ function InvestmentCorridors() {
       tag: "Value picks",
       body: "Connected, fast-developing corridors with accessible entry points.",
     },
-  ]
+  ];
   return (
     <section className="bg-brand-50/50">
       <div className="container-page section-y-sm">
@@ -307,7 +323,8 @@ function InvestmentCorridors() {
             Dhaka&apos;s top investment corridors, curated.
           </h2>
           <p className="mt-3 text-sm text-ink-600">
-            Prestige, prices, and upside — where smart capital is going in the capital.
+            Prestige, prices, and upside — where smart capital is going in the
+            capital.
           </p>
         </div>
 
@@ -325,7 +342,9 @@ function InvestmentCorridors() {
                 <MapPin className="h-4 w-4 text-brand-600" />
                 {c.name}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-ink-600">{c.body}</p>
+              <p className="mt-2 text-sm leading-relaxed text-ink-600">
+                {c.body}
+              </p>
               <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-brand-700">
                 Explore listings <ArrowUpRight className="h-3.5 w-3.5" />
               </span>
@@ -334,7 +353,7 @@ function InvestmentCorridors() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 /* ───────────────────────── 6. Verified listings ───────────────────────── */
@@ -349,8 +368,8 @@ function VerifiedListings({ properties }: { properties: SoftRecord[] }) {
             Verified listings from trusted sellers.
           </h2>
           <p className="mt-3 max-w-2xl text-sm text-ink-600">
-            Apartments, plots, and commercial spaces — with real sellers, clear pricing,
-            and verified trust cues.
+            Apartments, plots, and commercial spaces — with real sellers, clear
+            pricing, and verified trust cues.
           </p>
         </div>
         <Link href={ROUTES.PROPERTIES}>
@@ -369,31 +388,37 @@ function VerifiedListings({ properties }: { properties: SoftRecord[] }) {
         ) : (
           <ul className="grid min-w-0 gap-5 sm:grid-cols-2">
             {properties.slice(0, 4).map((p) => {
-              const slug = pick<string>(p, "slug", "")
-              const title = pick<string>(p, "title", "Property")
+              const slug = pick<string>(p, "slug", "");
+              const title = pick<string>(p, "title", "Property");
               const cover =
                 pick<string | null>(p, "coverImage", null) ??
                 (Array.isArray(p.images)
                   ? ((p.images as Array<{ url?: string } | string>)
                       .map((i) => (typeof i === "string" ? i : i?.url))
                       .find(Boolean) ?? null)
-                  : null)
-              const price = pick<number>(p, "price", 0)
-              const purpose = pick<string>(p, "purpose", "sale")
-              const area = pick<string>(p, "area", "")
+                  : null);
+              const price = pick<number>(p, "price", 0);
+              const purpose = pick<string>(p, "purpose", "sale");
+              const area = pick<string>(p, "area", "");
               const district = pick<string>(
                 p,
                 "district",
                 pick<string>(p, "city", "Bangladesh"),
-              )
-              const bedrooms = pick<number | undefined>(p, "bedrooms", undefined)
+              );
+              const bedrooms = pick<number | undefined>(
+                p,
+                "bedrooms",
+                undefined,
+              );
               const verified =
                 pick<boolean>(p, "isVerified", false) ||
-                pick<string>(p, "status", "") === "verified"
+                pick<string>(p, "status", "") === "verified";
               return (
                 <li key={slug || title}>
                   <Link
-                    href={slug ? ROUTES.PROPERTY_DETAIL(slug) : ROUTES.PROPERTIES}
+                    href={
+                      slug ? ROUTES.PROPERTY_DETAIL(slug) : ROUTES.PROPERTIES
+                    }
                     className="group block overflow-hidden rounded-3xl border border-black/5 bg-white shadow-(--shadow-card) transition hover:-translate-y-1 hover:shadow-(--shadow-elevated)"
                   >
                     <div className="relative aspect-16/10 w-full overflow-hidden bg-ink-100">
@@ -425,7 +450,8 @@ function VerifiedListings({ properties }: { properties: SoftRecord[] }) {
                       </p>
                       <p className="mt-1 inline-flex items-center gap-1 text-xs text-ink-500">
                         <MapPin className="h-3 w-3" />
-                        {[area, district].filter(Boolean).join(", ") || "Bangladesh"}
+                        {[area, district].filter(Boolean).join(", ") ||
+                          "Bangladesh"}
                       </p>
                       <div className="mt-3 flex items-baseline justify-between border-t border-border/60 pt-3">
                         <span className="font-heading text-lg font-bold text-gold-600">
@@ -434,13 +460,15 @@ function VerifiedListings({ properties }: { properties: SoftRecord[] }) {
                             : formatPrice(price, true)}
                         </span>
                         {bedrooms !== undefined && (
-                          <span className="text-xs text-ink-600">{bedrooms} bed</span>
+                          <span className="text-xs text-ink-600">
+                            {bedrooms} bed
+                          </span>
                         )}
                       </div>
                     </div>
                   </Link>
                 </li>
-              )
+              );
             })}
           </ul>
         )}
@@ -458,8 +486,8 @@ function VerifiedListings({ properties }: { properties: SoftRecord[] }) {
             List with people who actually verify.
           </h3>
           <p className="mt-3 text-sm leading-relaxed text-brand-100">
-            Reach serious, qualified buyers and tenants. We verify your listing, then
-            put it in front of the right audience.
+            Reach serious, qualified buyers and tenants. We verify your listing,
+            then put it in front of the right audience.
           </p>
           <ul className="mt-5 space-y-2.5 text-sm text-brand-50">
             {[
@@ -481,7 +509,7 @@ function VerifiedListings({ properties }: { properties: SoftRecord[] }) {
         </aside>
       </div>
     </section>
-  )
+  );
 }
 
 /* ───────────────────────── 7. Process ───────────────────────── */
@@ -512,7 +540,7 @@ function ProcessSection() {
       title: "Move with guided support",
       body: "Paperwork, handover, and after-sales help — we stay until you settle in.",
     },
-  ]
+  ];
   return (
     <section className="container-page section-y-sm">
       <div className="mb-10 max-w-2xl">
@@ -521,7 +549,8 @@ function ProcessSection() {
           From first browse to final decision.
         </h2>
         <p className="mt-3 text-sm text-ink-600">
-          A calm, guided path — without pressure — from curiosity to keys in hand.
+          A calm, guided path — without pressure — from curiosity to keys in
+          hand.
         </p>
       </div>
 
@@ -540,12 +569,14 @@ function ProcessSection() {
             <h3 className="mt-4 font-heading text-lg font-semibold text-ink-900">
               {s.title}
             </h3>
-            <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{s.body}</p>
+            <p className="mt-1.5 text-sm leading-relaxed text-ink-600">
+              {s.body}
+            </p>
           </div>
         ))}
       </div>
     </section>
-  )
+  );
 }
 
 /* ───────────────────────── 8. Testimonials ───────────────────────── */
@@ -570,7 +601,7 @@ function Testimonials() {
       quote:
         "The verified listings and quick support saved me weeks. Everything was exactly as described — no surprises.",
     },
-  ]
+  ];
   return (
     <section className="bg-ink-50/60">
       <div className="container-page section-y-sm">
@@ -593,7 +624,10 @@ function Testimonials() {
               <Quote className="h-7 w-7 text-gold-400" />
               <div className="mt-3 flex gap-0.5">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-gold-400 text-gold-400" />
+                  <Star
+                    key={i}
+                    className="h-4 w-4 fill-gold-400 text-gold-400"
+                  />
                 ))}
               </div>
               <blockquote className="mt-3 flex-1 text-sm leading-relaxed text-ink-700">
@@ -619,13 +653,13 @@ function Testimonials() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 /* ───────────────────────── 9. Founder / about ───────────────────────── */
 
 function FounderSection() {
-  const { founder } = siteConfig
+  const { founder } = siteConfig;
   const pillars = [
     {
       icon: ShieldCheck,
@@ -642,7 +676,7 @@ function FounderSection() {
       title: "Clean paperwork",
       body: "Clear documents and honest pricing, every time.",
     },
-  ]
+  ];
   return (
     <section className="bg-brand-950 text-white">
       <div className="container-page section-y-sm">
@@ -701,8 +735,12 @@ function FounderSection() {
                   <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold-400/15 text-gold-300">
                     <p.icon className="h-5 w-5" />
                   </span>
-                  <h3 className="mt-3 text-sm font-semibold text-white">{p.title}</h3>
-                  <p className="mt-1 text-xs leading-relaxed text-brand-300">{p.body}</p>
+                  <h3 className="mt-3 text-sm font-semibold text-white">
+                    {p.title}
+                  </h3>
+                  <p className="mt-1 text-xs leading-relaxed text-brand-300">
+                    {p.body}
+                  </p>
                 </div>
               ))}
             </div>
@@ -716,7 +754,7 @@ function FounderSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 /* ───────────────────────── 10. Expert guidance CTA ───────────────────────── */
@@ -738,8 +776,8 @@ function ExpertCta() {
               Ready to talk? Expert guidance is free.
             </h2>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-brand-100">
-              Free consultations for budget alignment, project comparison, and guided
-              site visits — when your shortlist starts getting serious.
+              Free consultations for budget alignment, project comparison, and
+              guided site visits — when your shortlist starts getting serious.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href={ROUTES.CONSULTATION}>
@@ -766,9 +804,18 @@ function ExpertCta() {
 
           <ul className="grid gap-3 sm:grid-cols-1">
             {[
-              { t: "Budget alignment", d: "Match the right area to your real budget." },
-              { t: "Project comparison", d: "Weigh options with clear, honest data." },
-              { t: "Guided site visits", d: "See it in person with an advisor along." },
+              {
+                t: "Budget alignment",
+                d: "Match the right area to your real budget.",
+              },
+              {
+                t: "Project comparison",
+                d: "Weigh options with clear, honest data.",
+              },
+              {
+                t: "Guided site visits",
+                d: "See it in person with an advisor along.",
+              },
             ].map((i) => (
               <li
                 key={i.t}
@@ -785,22 +832,22 @@ function ExpertCta() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 /* ───────────────────────── 11. Market insights ───────────────────────── */
 
 type Blogish = {
-  id: string
-  slug: string
-  title: string
-  excerpt?: string
-  category?: string
-  coverImage?: string | null
-  readTime?: number
-  readMinutes?: number
-  author?: string | { name: string }
-}
+  id: string;
+  slug: string;
+  title: string;
+  excerpt?: string;
+  category?: string;
+  coverImage?: string | null;
+  readTime?: number;
+  readMinutes?: number;
+  author?: string | { name: string };
+};
 
 function MarketInsights({ posts }: { posts: Blogish[] }) {
   return (
@@ -812,7 +859,8 @@ function MarketInsights({ posts }: { posts: Blogish[] }) {
             Market insights for smarter property decisions.
           </h2>
           <p className="mt-3 max-w-2xl text-sm text-ink-600">
-            Expert articles for homebuyers, investors, and tenants across Bangladesh.
+            Expert articles for homebuyers, investors, and tenants across
+            Bangladesh.
           </p>
         </div>
         <Link href={ROUTES.BLOG}>
@@ -872,5 +920,5 @@ function MarketInsights({ posts }: { posts: Blogish[] }) {
         </ul>
       )}
     </section>
-  )
+  );
 }
