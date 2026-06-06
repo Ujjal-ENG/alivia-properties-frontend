@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import Image from "next/image"
 import Link from "next/link"
 import {
   FileText,
@@ -39,13 +38,16 @@ export default async function MarketplacePage() {
   const productTotal =
     productsRes.status === "fulfilled" ? productsRes.value.meta.total : 0
 
-  // Group categories
+  // Build the Department → Category view (subcategories live one level deeper,
+  // surfaced on the category page + the quote wizard).
+  const lvl = (c: MarketplaceCategory) => c.level ?? (c.parentSlug ? "SUBCATEGORY" : "DEPARTMENT")
+
   const groups = categories
-    .filter((c) => !c.parentSlug)
+    .filter((c) => lvl(c) === "DEPARTMENT")
     .sort((a, b) => a.order - b.order)
 
   const childrenByGroup = categories
-    .filter((c) => c.parentSlug)
+    .filter((c) => lvl(c) === "CATEGORY")
     .reduce<Record<string, MarketplaceCategory[]>>((acc, c) => {
       const key = c.parentSlug!
       ;(acc[key] ??= []).push(c)
@@ -54,7 +56,7 @@ export default async function MarketplacePage() {
 
   Object.values(childrenByGroup).forEach((arr) => arr.sort((a, b) => a.order - b.order))
 
-  const totalSubCategories = categories.filter((c) => c.parentSlug).length
+  const totalCategories = categories.filter((c) => lvl(c) === "CATEGORY").length
 
   const tabs = groups.map((g) => ({
     slug: g.slug,
@@ -88,7 +90,7 @@ export default async function MarketplacePage() {
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
-                <Link href={ROUTES.MARKETPLACE_QUOTE}>
+                <Link href={ROUTES.MARKETPLACE_REQUEST}>
                   <Button size="lg" className="gap-2 bg-gold-400 text-ink-900 hover:bg-gold-300">
                     <FileText className="size-4" />
                     Get a Free Quote
@@ -130,8 +132,8 @@ export default async function MarketplacePage() {
               {/* Stats grid */}
               <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/15 bg-white/10">
                 {[
-                  { label: "Groups", value: groups.length },
-                  { label: "Categories", value: totalSubCategories },
+                  { label: "Departments", value: groups.length },
+                  { label: "Categories", value: totalCategories },
                   { label: "Suppliers", value: supplierTotal },
                   { label: "Products", value: productTotal },
                 ].map(({ label, value }) => (
@@ -183,7 +185,7 @@ export default async function MarketplacePage() {
             <CategoryGroupSection
               key={group.slug}
               group={group}
-              children={childrenByGroup[group.slug] ?? []}
+              items={childrenByGroup[group.slug] ?? []}
               index={i}
             />
           ))

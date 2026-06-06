@@ -17,6 +17,8 @@ import { ROUTES } from "@/config/routes.config"
 import { marketplaceService } from "@/services/marketplace.service"
 import { ApiError } from "@/services/http-client"
 import type { ProductVariant } from "@/types/marketplace.types"
+import { formatPrice } from "@/utils/format-price"
+import { isServiceKind, providerLabel } from "@/utils/marketplace-kind"
 
 export const dynamic = "force-dynamic"
 
@@ -57,6 +59,8 @@ export default async function MarketplaceProductPage({ params }: PageProps) {
 
   const supplier = product.supplier
   const quoteHref = `${ROUTES.MARKETPLACE_QUOTE}?productId=${product.id}&productSlug=${product.slug}${supplier ? `&supplierSlug=${supplier.slug}` : ""}`
+  const serviceMode = isServiceKind(supplier?.kind)
+  const providerText = providerLabel(supplier?.kind)
 
   return (
     <main className="bg-white">
@@ -94,23 +98,31 @@ export default async function MarketplaceProductPage({ params }: PageProps) {
             {product.category?.name && (
               <p className="text-eyebrow mb-2">{product.category.name}</p>
             )}
+            <span className="inline-flex rounded-full bg-brand-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-700">
+              {serviceMode ? "Service Package" : "Catalogue Product"}
+            </span>
             <h1 className="font-heading text-3xl font-semibold text-ink-900 sm:text-4xl">
               {product.name}
             </h1>
             <p className="mt-3 text-sm text-ink-700 sm:text-base">{product.description}</p>
 
             <div className="mt-5 flex flex-wrap items-baseline gap-3">
-              <span className="font-heading text-2xl font-semibold text-brand-700">
-                Price on request
+              <span className="font-heading text-2xl font-semibold text-red-700">
+                {product.price > 0 ? formatPrice(product.price, true) : "Price on request"}
+                <span className="ml-1 text-sm font-medium text-red-500">/ {product.unit}</span>
               </span>
-              <span className="text-sm text-ink-500">quoted after quantity and delivery location</span>
+              <span className="text-sm text-ink-500">
+                {serviceMode
+                  ? "final rate confirmed after scope, area, and schedule"
+                  : "quoted after quantity and delivery location"}
+              </span>
               {product.inStock ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-[11px] font-semibold text-green-700">
-                  <CheckCircle2 className="size-3" /> In stock
+                  <CheckCircle2 className="size-3" /> {serviceMode ? "Available now" : "In stock"}
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-[11px] font-semibold text-amber-700">
-                  On order
+                  {serviceMode ? "Schedule needed" : "On order"}
                 </span>
               )}
             </div>
@@ -118,13 +130,13 @@ export default async function MarketplaceProductPage({ params }: PageProps) {
             <dl className="mt-5 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
               {product.brand && (
                 <div className="rounded-xl border border-border/60 bg-white px-3 py-2">
-                  <dt className="text-[10px] uppercase tracking-wider text-ink-500">Brand</dt>
+                  <dt className="text-[10px] uppercase tracking-wider text-ink-500">{serviceMode ? "Team" : "Brand"}</dt>
                   <dd className="mt-0.5 font-medium text-ink-900">{product.brand}</dd>
                 </div>
               )}
               {product.moq !== undefined && product.moq !== null && (
                 <div className="rounded-xl border border-border/60 bg-white px-3 py-2">
-                  <dt className="text-[10px] uppercase tracking-wider text-ink-500">MOQ</dt>
+                  <dt className="text-[10px] uppercase tracking-wider text-ink-500">{serviceMode ? "Minimum booking" : "MOQ"}</dt>
                   <dd className="mt-0.5 font-medium text-ink-900">
                     {product.moq} {product.unit}
                   </dd>
@@ -132,7 +144,7 @@ export default async function MarketplaceProductPage({ params }: PageProps) {
               )}
               {product.leadTimeDays !== undefined && product.leadTimeDays !== null && (
                 <div className="rounded-xl border border-border/60 bg-white px-3 py-2">
-                  <dt className="text-[10px] uppercase tracking-wider text-ink-500">Lead time</dt>
+                  <dt className="text-[10px] uppercase tracking-wider text-ink-500">{serviceMode ? "Visit lead" : "Lead time"}</dt>
                   <dd className="mt-0.5 font-medium text-ink-900">{product.leadTimeDays} days</dd>
                 </div>
               )}
@@ -150,7 +162,7 @@ export default async function MarketplaceProductPage({ params }: PageProps) {
             {product.variants && product.variants.length > 0 && (
               <div className="mt-6 rounded-2xl border border-border/70 bg-white p-4">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-700">
-                  Choose variant
+                  {serviceMode ? "Choose package" : "Choose variant"}
                 </p>
                 <div className="mt-3 grid gap-2">
                   {product.variants.map((variant) => (
@@ -164,7 +176,7 @@ export default async function MarketplaceProductPage({ params }: PageProps) {
                       </div>
                       <Link href={`${quoteHref}&variantId=${variant.id}`}>
                         <Button size="sm" className="w-full gap-1.5 rounded-full sm:w-auto">
-                          <FileText className="size-3.5" /> Quote variant
+                          <FileText className="size-3.5" /> {serviceMode ? "Quote package" : "Quote variant"}
                         </Button>
                       </Link>
                     </div>
@@ -176,13 +188,13 @@ export default async function MarketplaceProductPage({ params }: PageProps) {
             <div className="mt-6 flex flex-wrap gap-2">
               <Link href={quoteHref}>
                 <Button size="lg" className="gap-2">
-                  <FileText className="size-4" /> Get a Quote
+                  <FileText className="size-4" /> {serviceMode ? "Get Service Quote" : "Get Product Quote"}
                 </Button>
               </Link>
               {supplier && (
                 <Link href={ROUTES.MARKETPLACE_SUPPLIER(supplier.slug)}>
                   <Button size="lg" variant="outline" className="gap-2">
-                    Visit supplier <ArrowUpRight className="size-4" />
+                    Visit {providerText.toLowerCase()} <ArrowUpRight className="size-4" />
                   </Button>
                 </Link>
               )}
@@ -191,7 +203,7 @@ export default async function MarketplaceProductPage({ params }: PageProps) {
             {supplier && (
               <div className="mt-6 rounded-2xl border border-border/70 bg-brand-50/60 p-4">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-700">
-                  Sold by
+                  {serviceMode ? "Provided by" : "Sold by"}
                 </p>
                 <p className="mt-1 font-medium text-ink-900">{supplier.name}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
