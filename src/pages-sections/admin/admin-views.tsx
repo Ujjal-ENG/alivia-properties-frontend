@@ -1072,6 +1072,8 @@ const INQUIRY_TYPE_FILTERS: { value: InquiryType | "all"; label: string }[] = [
   { value: "property", label: "Property" },
   { value: "project", label: "Project" },
   { value: "general", label: "General" },
+  { value: "supplier", label: "Supplier" },
+  { value: "investor", label: "Investor" },
 ]
 
 export function AdminInquiriesTable({
@@ -1080,20 +1082,25 @@ export function AdminInquiriesTable({
   // client component can be rendered from server pages — functions can't cross
   // the RSC boundary. Detail URL is `${basePath}/${id}`.
   basePath = ROUTES.ADMIN_INQUIRIES,
+  // When set, the table is locked to one type (e.g. the Supplier/Investor request
+  // pages) — the type filter chips are hidden and only that type is shown.
+  lockedType,
 }: {
   inquiries: Inquiry[]
   basePath?: string
+  lockedType?: InquiryType
 }) {
   const [statusFilter, setStatusFilter] = useState<InquiryStatus | "all">("all")
   const [typeFilter, setTypeFilter] = useState<InquiryType | "all">("all")
 
   const filtered = useMemo(() => {
     return inquiries.filter((i) => {
+      if (lockedType && i.type !== lockedType) return false
       if (statusFilter !== "all" && i.status !== statusFilter) return false
-      if (typeFilter !== "all" && i.type !== typeFilter) return false
+      if (!lockedType && typeFilter !== "all" && i.type !== typeFilter) return false
       return true
     })
-  }, [inquiries, statusFilter, typeFilter])
+  }, [inquiries, statusFilter, typeFilter, lockedType])
 
   const columns: DataTableColumn<Inquiry>[] = [
     {
@@ -1111,9 +1118,19 @@ export function AdminInquiriesTable({
       key: "type",
       header: "Type",
       hideOnMobile: true,
-      render: (i) => (
-        <span className="text-xs font-medium capitalize text-ink-600">{i.type}</span>
-      ),
+      render: (i) => {
+        const isPartner = i.type === "supplier" || i.type === "investor"
+        return (
+          <span
+            className={cn(
+              "inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize",
+              isPartner ? "bg-gold-100 text-gold-800" : "bg-ink-100 text-ink-600",
+            )}
+          >
+            {i.type}
+          </span>
+        )
+      },
     },
     {
       key: "related",
@@ -1121,7 +1138,11 @@ export function AdminInquiriesTable({
       hideOnMobile: true,
       render: (i) => (
         <span className="truncate text-xs text-ink-700">
-          {i.propertyTitle ?? i.projectName ?? "General"}
+          {i.type === "supplier"
+            ? "Supplier application"
+            : i.type === "investor"
+              ? "Investor application"
+              : (i.propertyTitle ?? i.projectName ?? "General")}
         </span>
       ),
     },
@@ -1170,22 +1191,23 @@ export function AdminInquiriesTable({
             {f.label}
           </button>
         ))}
-        <span className="mx-2 text-border/60">|</span>
-        {INQUIRY_TYPE_FILTERS.map((f) => (
-          <button
-            key={f.value}
-            type="button"
-            onClick={() => setTypeFilter(f.value)}
-            className={cn(
-              "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-              typeFilter === f.value
-                ? "border-ink-700 bg-ink-700 text-white"
-                : "border-border/70 bg-white text-ink-700 hover:bg-ink-50",
-            )}
-          >
-            {f.label}
-          </button>
-        ))}
+        {!lockedType && <span className="mx-2 text-border/60">|</span>}
+        {!lockedType &&
+          INQUIRY_TYPE_FILTERS.map((f) => (
+            <button
+              key={f.value}
+              type="button"
+              onClick={() => setTypeFilter(f.value)}
+              className={cn(
+                "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
+                typeFilter === f.value
+                  ? "border-ink-700 bg-ink-700 text-white"
+                  : "border-border/70 bg-white text-ink-700 hover:bg-ink-50",
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
         <span className="ml-auto text-xs text-ink-500">
           {filtered.length} of {inquiries.length}
         </span>

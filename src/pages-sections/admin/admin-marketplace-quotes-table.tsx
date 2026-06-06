@@ -8,6 +8,7 @@ import { AlertCircle, CheckCircle2, Eye, Loader2, Mail, MessageSquareReply, Phon
 import { DataTable, type DataTableColumn } from "@/components/dashboard/data-table"
 import { QuoteStatusBadge } from "@/components/dashboard/quote-status-badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   Dialog,
   DialogContent,
@@ -22,12 +23,18 @@ import { cn } from "@/lib/utils"
 import { ApiError } from "@/services/http-client"
 import { quotesService } from "@/services/quotes.service"
 import type { QuoteRequest, QuoteStatus } from "@/types/quote.types"
+import type { User } from "@/types/user.types"
 import { formatDate } from "@/utils/format-date"
 
 const STATUS_FILTERS: { value: QuoteStatus | "all"; label: string }[] = [
   { value: "all", label: "All" },
-  { value: "PENDING", label: "Pending" },
-  { value: "RESPONDED", label: "Responded" },
+  { value: "NEW", label: "New" },
+  { value: "ASSIGNED", label: "Assigned" },
+  { value: "CONTACTED", label: "Contacted" },
+  { value: "NEGOTIATING", label: "Negotiating" },
+  { value: "QUOTE_SENT", label: "Quote sent" },
+  { value: "WON", label: "Won" },
+  { value: "LOST", label: "Lost" },
   { value: "CLOSED", label: "Closed" },
 ]
 
@@ -39,16 +46,21 @@ function formatMoney(value?: number | null) {
 export function AdminMarketplaceQuotesTable({
   quotes,
   detailBasePath = ROUTES.ADMIN_MARKETPLACE_QUOTES,
+  salesReps = [],
 }: {
   quotes: QuoteRequest[]
   detailBasePath?: string
+  salesReps?: User[]
 }) {
   const { data: session } = useSession()
   const [rows, setRows] = useState(quotes)
   const [statusFilter, setStatusFilter] = useState<QuoteStatus | "all">("all")
   const [selectedQuoteId, setSelectedQuoteId] = useState<string | null>(null)
-  const [draftStatus, setDraftStatus] = useState<QuoteStatus>("PENDING")
+  const [draftStatus, setDraftStatus] = useState<QuoteStatus>("NEW")
+  const [draftAssignedTo, setDraftAssignedTo] = useState("")
+  const [draftFinalPrice, setDraftFinalPrice] = useState("")
   const [draftReply, setDraftReply] = useState("")
+  const [draftNote, setDraftNote] = useState("")
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [saveSuccess, setSaveSuccess] = useState(false)
@@ -69,7 +81,10 @@ export function AdminMarketplaceQuotesTable({
   function openReview(quote: QuoteRequest) {
     setSelectedQuoteId(quote.id)
     setDraftStatus(quote.status)
+    setDraftAssignedTo(quote.assignedTo ?? "")
+    setDraftFinalPrice(quote.finalQuotedPrice == null ? "" : String(quote.finalQuotedPrice))
     setDraftReply(quote.reply ?? "")
+    setDraftNote("")
     setSaveError(null)
     setSaveSuccess(false)
   }
@@ -86,8 +101,8 @@ export function AdminMarketplaceQuotesTable({
     if (!selectedQuote) return
 
     const reply = draftReply.trim()
-    if (draftStatus === "RESPONDED" && reply.length < 2) {
-      setSaveError("Write a reply before marking this quote as responded.")
+    if (draftStatus === "QUOTE_SENT" && reply.length < 2) {
+      setSaveError("Write a reply before marking this quote as quote sent.")
       return
     }
 
@@ -100,7 +115,10 @@ export function AdminMarketplaceQuotesTable({
         selectedQuote.id,
         {
           status: draftStatus,
+          assignedTo: draftAssignedTo || undefined,
+          finalQuotedPrice: draftFinalPrice ? Number(draftFinalPrice) : undefined,
           reply: reply || undefined,
+          note: draftNote.trim() || undefined,
         },
         session?.accessToken,
       )
@@ -179,12 +197,12 @@ export function AdminMarketplaceQuotesTable({
         ),
     },
     {
-      key: "budget",
-      header: "Budget",
+      key: "quantity",
+      header: "Quantity",
       hideOnMobile: true,
       render: (quote) => (
         <div className="text-xs text-ink-700">
-          <p className="font-medium">{formatMoney(quote.budget)}</p>
+          <p className="font-medium">{formatMoney(quote.finalQuotedPrice)}</p>
           {quote.quantity ? (
             <p className="mt-0.5 text-ink-500">
               {quote.quantity} {quote.unit ?? "units"}
@@ -196,7 +214,14 @@ export function AdminMarketplaceQuotesTable({
     {
       key: "status",
       header: "Status",
-      render: (quote) => <QuoteStatusBadge status={quote.status} />,
+      render: (quote) => (
+        <div className="space-y-1">
+          <QuoteStatusBadge status={quote.status} />
+          <p className="text-[11px] text-ink-500">
+            {quote.assignedRep?.name ?? "Unassigned"}
+          </p>
+        </div>
+      ),
     },
     {
       key: "created",
@@ -302,8 +327,8 @@ export function AdminMarketplaceQuotesTable({
                       </dd>
                     </div>
                     <div>
-                      <dt className="font-semibold uppercase tracking-[0.14em] text-ink-500">Budget</dt>
-                      <dd className="mt-1 text-ink-800">{formatMoney(selectedQuote.budget)}</dd>
+                      <dt className="font-semibold uppercase tracking-[0.14em] text-ink-500">Final quote</dt>
+                      <dd className="mt-1 text-ink-800">{formatMoney(selectedQuote.finalQuotedPrice)}</dd>
                     </div>
                     <div>
                       <dt className="font-semibold uppercase tracking-[0.14em] text-ink-500">Submitted</dt>
@@ -332,10 +357,67 @@ export function AdminMarketplaceQuotesTable({
                     disabled={saving}
                     className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-600 focus:ring-3 focus:ring-brand-600/20 disabled:opacity-60"
                   >
-                    <option value="PENDING">Pending</option>
-                    <option value="RESPONDED">Responded</option>
+                    <option value="NEW">New</option>
+                    <option value="ASSIGNED">Assigned</option>
+                    <option value="CONTACTED">Contacted</option>
+                    <option value="NEGOTIATING">Negotiating</option>
+                    <option value="QUOTE_SENT">Quote sent</option>
+                    <option value="WON">Won</option>
+                    <option value="LOST">Lost</option>
                     <option value="CLOSED">Closed</option>
                   </select>
+                </section>
+
+                {salesReps.length > 0 ? (
+                  <section className="grid gap-3">
+                    <label htmlFor="quote-assignee" className="text-sm font-medium text-ink-800">
+                      Assigned rep
+                    </label>
+                    <select
+                      id="quote-assignee"
+                      value={draftAssignedTo}
+                      onChange={(event) => setDraftAssignedTo(event.target.value)}
+                      disabled={saving}
+                      className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-ink-900 outline-none transition-colors focus:border-brand-600 focus:ring-3 focus:ring-brand-600/20 disabled:opacity-60"
+                    >
+                      <option value="">Unassigned</option>
+                      {salesReps.map((rep) => (
+                        <option key={rep.id} value={rep.id}>
+                          {rep.name} ({rep.email})
+                        </option>
+                      ))}
+                    </select>
+                  </section>
+                ) : null}
+
+                {salesReps.length === 0 && selectedQuote.assignedTo == null && session?.user?.id ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={saving}
+                    onClick={() => {
+                      setDraftAssignedTo(session.user.id)
+                      setDraftStatus("ASSIGNED")
+                    }}
+                  >
+                    Claim to me
+                  </Button>
+                ) : null}
+
+                <section className="grid gap-3">
+                  <label htmlFor="quote-final-price" className="text-sm font-medium text-ink-800">
+                    Final quoted price
+                  </label>
+                  <Input
+                    id="quote-final-price"
+                    type="number"
+                    min={0}
+                    step="any"
+                    value={draftFinalPrice}
+                    onChange={(event) => setDraftFinalPrice(event.target.value)}
+                    disabled={saving}
+                    placeholder="BDT"
+                  />
                 </section>
 
                 <section className="grid gap-3">
@@ -356,6 +438,22 @@ export function AdminMarketplaceQuotesTable({
                     <span>{draftReply.trim().length > 0 ? "Visible in the buyer quote panel." : "No reply yet."}</span>
                     <span>{draftReply.length}/4000</span>
                   </div>
+                </section>
+
+                <section className="grid gap-3">
+                  <label htmlFor="quote-note" className="text-sm font-medium text-ink-800">
+                    Conversation note
+                  </label>
+                  <Textarea
+                    id="quote-note"
+                    rows={4}
+                    value={draftNote}
+                    onChange={(event) => setDraftNote(event.target.value)}
+                    disabled={saving}
+                    maxLength={4000}
+                    placeholder="Add call note, manual follow-up, or internal context."
+                    className="resize-y bg-white text-sm"
+                  />
                 </section>
 
                 {saveError ? (

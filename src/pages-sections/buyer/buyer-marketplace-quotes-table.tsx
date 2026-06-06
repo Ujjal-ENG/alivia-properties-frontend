@@ -14,8 +14,13 @@ import { formatDate } from "@/utils/format-date"
 
 const STATUS_FILTERS: { value: QuoteStatus | "all"; label: string }[] = [
   { value: "all", label: "All" },
-  { value: "PENDING", label: "Pending" },
-  { value: "RESPONDED", label: "Responded" },
+  { value: "NEW", label: "New" },
+  { value: "ASSIGNED", label: "Assigned" },
+  { value: "CONTACTED", label: "Contacted" },
+  { value: "NEGOTIATING", label: "Negotiating" },
+  { value: "QUOTE_SENT", label: "Quote sent" },
+  { value: "WON", label: "Won" },
+  { value: "LOST", label: "Lost" },
   { value: "CLOSED", label: "Closed" },
 ]
 
@@ -67,12 +72,12 @@ export function BuyerMarketplaceQuotesTable({ quotes }: { quotes: QuoteRequest[]
         ),
     },
     {
-      key: "budget",
-      header: "Budget",
+      key: "quantity",
+      header: "Quantity",
       hideOnMobile: true,
       render: (quote) => (
         <div className="text-xs text-ink-700">
-          <p className="font-medium">{formatMoney(quote.budget)}</p>
+          <p className="font-medium">{formatMoney(quote.finalQuotedPrice)}</p>
           {quote.quantity ? (
             <p className="mt-0.5 text-ink-500">
               {quote.quantity} {quote.unit ?? "units"}
