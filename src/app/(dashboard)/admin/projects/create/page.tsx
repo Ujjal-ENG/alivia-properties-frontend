@@ -1,0 +1,29 @@
+export const dynamic = "force-dynamic"
+
+import Link from "next/link"
+import { ChevronLeft } from "lucide-react"
+import { ProjectForm } from "@/components/forms/project-form"
+import { DashboardPageHeader } from "@/components/dashboard/dashboard-page-header"
+import { Button } from "@/components/ui/button"
+import { ROUTES } from "@/config/routes.config"
+
+export default function AdminCreateProjectPage() {
+  return (
+    <div className="space-y-6">
+      <DashboardPageHeader
+        eyebrow="Inventory"
+        title="Add Project"
+        description="Create a new Alivia development project for the showcase."
+        actions={(
+          <Link href={ROUTES.ADMIN_PROJECTS}>
+            <Button variant="outline" className="rounded-full">
+              <ChevronLeft className="h-4 w-4" />
+              Back to Projects
+            </Button>
+          </Link>
+        )}
+      />
+      <ProjectForm mode="create" />
+    </div>
+  )
+}
