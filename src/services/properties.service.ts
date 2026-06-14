@@ -32,10 +32,49 @@ function imageUrl(i: BackendImage): string {
   return typeof i === "string" ? i : i.url
 }
 
+// Derive the storage object key from a public URL (e.g.
+// "http://host:9000/bucket/2026/06/uuid.jpg" → "2026/06/uuid.jpg"). The key is
+// required by the backend ImageRef shape; the `url` is what the app renders.
+function keyFromUrl(url: string): string {
+  try {
+    const segments = new URL(url).pathname.replace(/^\/+/, "").split("/")
+    return segments.length > 1 ? segments.slice(1).join("/") : segments.join("/")
+  } catch {
+    return url
+  }
+}
+
+// The create/edit form holds enums in lowercase, images as plain URL strings,
+// and a few contact fields the Property model doesn't store. Map all of that to
+// the backend write contract: uppercase enums, images as ordered ImageRef
+// objects (index 0 = cover), videos as URL strings, contact fields dropped.
+function toWritePayload(payload: unknown): Record<string, unknown> {
+  const { contactName, contactPhone, whatsApp, images, type, purpose, videos, ...rest } =
+    (payload ?? {}) as Record<string, unknown>
+  void contactName
+  void contactPhone
+  void whatsApp
+
+  const urls = Array.isArray(images) ? (images as string[]) : []
+  return {
+    ...rest,
+    ...(typeof type === "string" ? { type: type.toUpperCase() } : {}),
+    ...(typeof purpose === "string" ? { purpose: purpose.toUpperCase() } : {}),
+    images: urls.map((url, i) => ({
+      key: keyFromUrl(url),
+      url,
+      isCover: i === 0,
+      order: i,
+    })),
+    videos: Array.isArray(videos) ? (videos as string[]) : [],
+  }
+}
+
 function toFrontendProperty(p: BackendProperty): Property {
   return {
     ...p,
     images: Array.isArray(p.images) ? p.images.map(imageUrl) : [],
+    videos: Array.isArray(p.videos) ? p.videos : [],
     status: (typeof p.status === "string" ? p.status.toLowerCase() : p.status) as PropertyStatus,
     purpose: (typeof p.purpose === "string" ? p.purpose.toLowerCase() : p.purpose) as PropertyPurpose,
     type: (typeof p.type === "string" ? p.type.toLowerCase() : p.type) as PropertyType,
@@ -69,12 +108,12 @@ export const propertiesService = {
   },
   create(payload: unknown, token?: string): Promise<Property> {
     return httpClient
-      .post<BackendProperty>(BASE, payload, { token })
+      .post<BackendProperty>(BASE, toWritePayload(payload), { token })
       .then(toFrontendProperty)
   },
   update(id: string, payload: unknown, token?: string): Promise<Property> {
     return httpClient
-      .patch<BackendProperty>(`${BASE}/${id}`, payload, { token })
+      .patch<BackendProperty>(`${BASE}/${id}`, toWritePayload(payload), { token })
       .then(toFrontendProperty)
   },
   remove(id: string, token?: string): Promise<void> {
