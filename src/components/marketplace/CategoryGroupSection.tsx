@@ -32,7 +32,7 @@ export function CategoryGroupSection({ group, items: children, index }: Props) {
       <div className="mb-5 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           {/* Colored accent bar */}
-          <div className={`h-8 w-1 rounded-full ${accent.bar}`} />
+          <div aria-hidden="true" className={`h-8 w-1 rounded-full ${accent.bar}`} />
           <div>
             <span className={`inline-block rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-widest ${accent.badge} mb-1`}>
               {group.name}
@@ -45,9 +45,9 @@ export function CategoryGroupSection({ group, items: children, index }: Props) {
         {children.length > 0 && (
           <Link
             href={ROUTES.MARKETPLACE_CATEGORY(group.slug)}
-            className="flex shrink-0 items-center gap-1 text-xs font-medium text-brand-700 hover:text-brand-800"
+            className="flex min-h-10 shrink-0 items-center gap-1 rounded-full px-2 text-xs font-medium text-brand-700 transition-colors duration-200 hover:text-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
           >
-            View all <ArrowRight className="size-3.5" />
+            View all <ArrowRight aria-hidden="true" className="size-3.5" />
           </Link>
         )}
       </div>
