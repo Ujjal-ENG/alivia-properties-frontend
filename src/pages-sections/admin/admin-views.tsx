@@ -32,6 +32,8 @@ import {
   Loader2,
   ShieldCheck,
   AlertCircle,
+  Pencil,
+  CheckCircle2,
 } from "lucide-react"
 import { formatDate } from "@/utils/format-date"
 import { formatPrice, formatRent } from "@/utils/format-price"
@@ -47,6 +49,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { ApiError } from "@/services/http-client"
 import { propertiesService } from "@/services/properties.service"
+import { projectsService } from "@/services/projects.service"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
@@ -939,13 +942,72 @@ const PROJECT_STATUS_FILTERS: { value: ProjectStatus | "all"; label: string }[] 
 ]
 
 export function AdminProjectsTable({ projects }: { projects: Project[] }) {
+  const { data: session } = useSession()
+  const token = session?.accessToken
+  const [rows, setRows] = useState<Project[]>(projects)
   const [filter, setFilter] = useState<ProjectStatus | "all">("all")
+  const [busyId, setBusyId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Project | null>(null)
 
   const filtered = useMemo(
-    () =>
-      filter === "all" ? projects : projects.filter((p) => p.status === filter),
-    [projects, filter],
+    () => (filter === "all" ? rows : rows.filter((p) => p.status === filter)),
+    [rows, filter],
   )
+
+  function applyUpdate(updated: Project) {
+    setRows((current) => current.map((p) => (p.id === updated.id ? { ...p, ...updated } : p)))
+  }
+
+  function reportError(err: unknown, fallback: string) {
+    setError(
+      err instanceof ApiError ? err.message : err instanceof Error ? err.message : fallback,
+    )
+  }
+
+  async function runAction(id: string, action: () => Promise<Project>, fallback: string) {
+    setBusyId(id)
+    setError(null)
+    try {
+      applyUpdate(await action())
+    } catch (err) {
+      reportError(err, fallback)
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  function markComplete(p: Project) {
+    return runAction(
+      p.id,
+      () => projectsService.setStatus(p.id, "completed", token),
+      "Could not mark this project complete.",
+    )
+  }
+
+  function toggleFeature(p: Project) {
+    return runAction(
+      p.id,
+      () => projectsService.setFeatured(p.id, !p.isFeatured, token),
+      "Could not update featured flag.",
+    )
+  }
+
+  async function confirmDelete() {
+    if (!deleteTarget) return
+    const target = deleteTarget
+    setBusyId(target.id)
+    setError(null)
+    try {
+      await projectsService.remove(target.id, token)
+      setRows((current) => current.filter((p) => p.id !== target.id))
+      setDeleteTarget(null)
+    } catch (err) {
+      reportError(err, "Could not delete this project.")
+    } finally {
+      setBusyId(null)
+    }
+  }
 
   const columns: DataTableColumn<Project>[] = [
     {
@@ -954,7 +1016,12 @@ export function AdminProjectsTable({ projects }: { projects: Project[] }) {
       primaryOnMobile: true,
       render: (p) => (
         <div className="min-w-0">
-          <p className="truncate font-semibold text-ink-900">{p.name}</p>
+          <Link
+            href={ROUTES.PROJECT_DETAIL(p.slug)}
+            className="block truncate font-semibold text-ink-900 hover:text-brand-700"
+          >
+            {p.name}
+          </Link>
           <p className="mt-0.5 truncate text-xs text-ink-500">{p.location}</p>
         </div>
       ),
@@ -1017,11 +1084,76 @@ export function AdminProjectsTable({ projects }: { projects: Project[] }) {
     {
       key: "actions",
       header: "Actions",
-      render: () => (
-        <Button size="sm" variant="outline" className="rounded-full">
-          Edit
-        </Button>
-      ),
+      render: (p) => {
+        const busy = busyId === p.id
+        const isFeatured = Boolean(p.isFeatured)
+        const isCompleted = p.status === "completed"
+        return (
+          <div className="flex items-center justify-end gap-1">
+            <Link href={ROUTES.PROJECT_DETAIL(p.slug)} title="View project">
+              <Button size="icon" variant="outline" className="size-8 rounded-full" aria-label="View project">
+                <Eye className="size-3.5" />
+              </Button>
+            </Link>
+
+            <Link href={ROUTES.ADMIN_PROJECT_EDIT(p.id)} title="Edit project">
+              <Button size="icon" variant="outline" className="size-8 rounded-full" aria-label="Edit project">
+                <Pencil className="size-3.5" />
+              </Button>
+            </Link>
+
+            {!isCompleted ? (
+              <Button
+                size="icon"
+                variant="outline"
+                disabled={busy}
+                onClick={() => markComplete(p)}
+                title="Mark complete"
+                aria-label="Mark project complete"
+                className="size-8 rounded-full border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+              >
+                {busy ? <Loader2 className="size-3.5 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
+              </Button>
+            ) : null}
+
+            <Button
+              size="icon"
+              variant="outline"
+              disabled={busy}
+              onClick={() => toggleFeature(p)}
+              title={isFeatured ? "Unfeature" : "Feature"}
+              aria-label={isFeatured ? "Unfeature project" : "Feature project"}
+              className={cn(
+                "size-8 rounded-full",
+                isFeatured
+                  ? "border-gold-300 bg-gold-50 text-gold-700"
+                  : "border-border/70 text-ink-600 hover:bg-gold-50",
+              )}
+            >
+              {busy ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Star className={cn("size-3.5", isFeatured && "fill-gold-400")} />
+              )}
+            </Button>
+
+            <Button
+              size="icon"
+              variant="outline"
+              disabled={busy}
+              onClick={() => {
+                setDeleteTarget(p)
+                setError(null)
+              }}
+              title="Delete"
+              aria-label="Delete project"
+              className="size-8 rounded-full border-red-200 text-red-600 hover:bg-red-50"
+            >
+              <Trash2 className="size-3.5" />
+            </Button>
+          </div>
+        )
+      },
     },
   ]
 
@@ -1044,15 +1176,68 @@ export function AdminProjectsTable({ projects }: { projects: Project[] }) {
           </button>
         ))}
         <span className="ml-auto text-xs text-ink-500">
-          {filtered.length} of {projects.length}
+          {filtered.length} of {rows.length}
         </span>
       </div>
+
+      {error ? (
+        <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+          <AlertCircle className="mt-0.5 size-4 shrink-0" />
+          <span>{error}</span>
+        </div>
+      ) : null}
+
       <DataTable
         columns={columns}
         data={filtered}
         rowKey={(p) => p.id}
         emptyMessage="No projects match this filter."
       />
+
+      {/* Delete confirmation dialog */}
+      <Dialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(open) => {
+          if (!open && busyId === null) setDeleteTarget(null)
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete project</DialogTitle>
+            <DialogDescription>
+              {deleteTarget
+                ? `"${deleteTarget.name}" and its uploaded media will be permanently removed. This cannot be undone.`
+                : null}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={busyId !== null}
+              onClick={() => setDeleteTarget(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={busyId !== null}
+              onClick={confirmDelete}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              {busyId !== null ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" /> Deleting
+                </>
+              ) : (
+                <>
+                  <Trash2 className="size-4" /> Delete project
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
