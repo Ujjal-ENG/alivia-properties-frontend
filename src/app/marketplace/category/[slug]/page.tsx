@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, FileText, Phone, Sparkles } from "lucide-react"
+import { ArrowLeft, CheckCircle2, Clock3, FileText, Phone, Sparkles, Truck } from "lucide-react"
 
 import { MarketplaceSupplierShowcaseCard } from "@/components/marketplace/MarketplaceSupplierShowcaseCard"
 import { Button } from "@/components/ui/button"
@@ -94,6 +94,11 @@ export default async function MarketplaceCategoryPage({ params }: PageProps) {
     : []
 
   const childLabel = level === "DEPARTMENT" ? "categories" : "options"
+  const confidenceItems = [
+    { icon: CheckCircle2, label: "Verified desk", text: "Requests route to checked suppliers only." },
+    { icon: Clock3, label: "24h target", text: "Useful price replies, not cold calls." },
+    { icon: Truck, label: "Area fit", text: "Matches consider delivery and visit coverage." },
+  ]
 
   return (
     <main className="bg-white">
@@ -101,9 +106,9 @@ export default async function MarketplaceCategoryPage({ params }: PageProps) {
         <div className="container-page py-3">
           <Link
             href={ROUTES.MARKETPLACE}
-            className="inline-flex items-center gap-1.5 text-xs text-ink-600 hover:text-ink-900"
+            className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs text-ink-600 transition-colors hover:text-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
           >
-            <ArrowLeft className="size-3" /> Back to marketplace
+            <ArrowLeft aria-hidden="true" className="size-3" /> Back to marketplace
           </Link>
         </div>
       </div>
@@ -111,11 +116,11 @@ export default async function MarketplaceCategoryPage({ params }: PageProps) {
       <section className="relative overflow-hidden border-b border-border/60 bg-linear-to-r from-brand-950 via-brand-900 to-brand-700 text-white">
         <div className="container-page relative py-10 sm:py-14">
           <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-brand-100">
-            {dept && <Link href={ROUTES.MARKETPLACE_CATEGORY(dept.slug)} className="hover:text-white">{dept.name}</Link>}
+            {dept && <Link href={ROUTES.MARKETPLACE_CATEGORY(dept.slug)} className="rounded px-1 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300">{dept.name}</Link>}
             {cat && (
               <>
                 <span className="text-brand-300">›</span>
-                <Link href={ROUTES.MARKETPLACE_CATEGORY(cat.slug)} className="hover:text-white">{cat.name}</Link>
+                <Link href={ROUTES.MARKETPLACE_CATEGORY(cat.slug)} className="rounded px-1 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300">{cat.name}</Link>
               </>
             )}
           </div>
@@ -127,7 +132,7 @@ export default async function MarketplaceCategoryPage({ params }: PageProps) {
           <div className="mt-6 flex flex-wrap gap-2">
             <Link href={quoteHref}>
               <Button size="lg" className="gap-2 bg-gold-400 text-ink-900 hover:bg-gold-300">
-                <FileText className="size-4" /> Request a Quote
+                <FileText aria-hidden="true" className="size-4" /> Request a Quote
               </Button>
             </Link>
             <a href="tel:+8801700000000">
@@ -136,9 +141,21 @@ export default async function MarketplaceCategoryPage({ params }: PageProps) {
                 variant="outline"
                 className="gap-2 border-white/30 bg-white/10 text-white hover:bg-white/20"
               >
-                <Phone className="size-4" /> Call desk
+                <Phone aria-hidden="true" className="size-4" /> Call desk
               </Button>
             </a>
+          </div>
+
+          <div className="mt-7 grid gap-3 sm:grid-cols-3">
+            {confidenceItems.map(({ icon: Icon, label, text }) => (
+              <div key={label} className="rounded-2xl border border-white/12 bg-white/10 p-4 backdrop-blur-sm">
+                <div className="flex items-center gap-2 text-sm font-semibold text-white">
+                  <Icon aria-hidden="true" className="size-4 text-gold-300" />
+                  {label}
+                </div>
+                <p className="mt-1 text-xs leading-relaxed text-brand-100">{text}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -184,7 +201,7 @@ export default async function MarketplaceCategoryPage({ params }: PageProps) {
                   </div>
                   <Link href={quoteHref}>
                     <Button size="sm" className="gap-1.5">
-                      <FileText className="size-3.5" /> Request a quote
+                      <FileText aria-hidden="true" className="size-3.5" /> Request a quote
                     </Button>
                   </Link>
                 </header>
@@ -218,7 +235,7 @@ export default async function MarketplaceCategoryPage({ params }: PageProps) {
               </p>
               <Link href={quoteHref} className="mt-3 block">
                 <Button size="sm" className="w-full gap-1.5">
-                  <FileText className="size-3.5" /> Request a quote
+                  <FileText aria-hidden="true" className="size-3.5" /> Request a quote
                 </Button>
               </Link>
             </div>
@@ -233,7 +250,7 @@ function EmptyOnboarding({ name, quoteHref }: { name: string; quoteHref: string 
   return (
     <div className="rounded-2xl border border-border/70 bg-white p-8 text-center shadow-(--shadow-card)">
       <span className="inline-flex size-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-700">
-        <Sparkles className="size-5" />
+        <Sparkles aria-hidden="true" className="size-5" />
       </span>
       <p className="mt-3 font-heading text-lg font-semibold text-ink-900">
         We&apos;re onboarding partners
@@ -245,12 +262,12 @@ function EmptyOnboarding({ name, quoteHref }: { name: string; quoteHref: string 
       <div className="mt-4 flex flex-wrap justify-center gap-2">
         <Link href={quoteHref}>
           <Button size="sm" className="gap-1.5">
-            <FileText className="size-3.5" /> Request a quote
+            <FileText aria-hidden="true" className="size-3.5" /> Request a quote
           </Button>
         </Link>
         <a href="tel:+8801700000000">
           <Button size="sm" variant="outline" className="gap-1.5">
-            <Phone className="size-3.5" /> Call marketplace desk
+            <Phone aria-hidden="true" className="size-3.5" /> Call marketplace desk
           </Button>
         </a>
       </div>
