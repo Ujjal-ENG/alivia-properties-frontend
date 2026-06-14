@@ -40,23 +40,28 @@ export function CategoryGroupTabs({ tabs }: { tabs: Tab[] }) {
     if (!rail) return
     const btn = rail.querySelector<HTMLButtonElement>(`[data-slug="${active}"]`)
     if (btn) {
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
       const railRect = rail.getBoundingClientRect()
       const btnRect = btn.getBoundingClientRect()
       const scrollLeft = rail.scrollLeft + (btnRect.left - railRect.left) - railRect.width / 2 + btnRect.width / 2
-      rail.scrollTo({ left: scrollLeft, behavior: "smooth" })
+      rail.scrollTo({ left: scrollLeft, behavior: reducedMotion ? "auto" : "smooth" })
     }
   }, [active])
 
   function scrollTo(slug: string) {
     const el = document.getElementById(`group-${slug}`)
     if (!el) return
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
     const top = el.getBoundingClientRect().top + window.scrollY - 100
-    window.scrollTo({ top, behavior: "smooth" })
+    window.scrollTo({ top, behavior: reducedMotion ? "auto" : "smooth" })
     setActive(slug)
   }
 
   return (
-    <div className="sticky top-0 z-30 border-b border-border/60 bg-white/95 shadow-sm backdrop-blur-sm">
+    <nav
+      aria-label="Marketplace departments"
+      className="sticky top-0 z-30 border-b border-border/60 bg-white/95 shadow-sm backdrop-blur-sm"
+    >
       <div className="container-page">
         <div
           ref={railRef}
@@ -68,9 +73,10 @@ export function CategoryGroupTabs({ tabs }: { tabs: Tab[] }) {
               key={tab.slug}
               data-slug={tab.slug}
               type="button"
+              aria-current={active === tab.slug ? "true" : undefined}
               onClick={() => scrollTo(tab.slug)}
               className={cn(
-                "flex shrink-0 items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium transition-all",
+                "flex min-h-10 shrink-0 touch-manipulation items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium transition-[background-color,color,box-shadow] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400",
                 active === tab.slug
                   ? "bg-brand-700 text-white shadow-sm"
                   : "text-ink-600 hover:bg-brand-50 hover:text-brand-700",
@@ -89,18 +95,18 @@ export function CategoryGroupTabs({ tabs }: { tabs: Tab[] }) {
           ))}
         </div>
         {/* Gold progress stripe under active tab */}
-        <div className="relative h-0.5 -mt-px">
+        <div className="relative -mt-px h-0.5">
           {tabs.map((tab) => (
             <div
               key={tab.slug}
               className={cn(
-                "absolute inset-0 origin-left transition-transform duration-300",
+                "absolute inset-0 origin-left transition-transform duration-300 motion-reduce:transition-none",
                 active === tab.slug ? "scale-x-100 bg-gold-400" : "scale-x-0",
               )}
             />
           ))}
         </div>
       </div>
-    </div>
+    </nav>
   )
 }
