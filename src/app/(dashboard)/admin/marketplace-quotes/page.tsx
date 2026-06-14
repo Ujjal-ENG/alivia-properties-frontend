@@ -16,8 +16,10 @@ export default async function AdminMarketplaceQuotesPage() {
       data: [],
       meta: { page: 1, limit: 100, total: 0, totalPages: 0 },
     }))
+  // Quotes are an admin-only workflow — a request can only be assigned to a
+  // member of the admin team.
   const salesReps = await usersService
-    .list({ role: "SELLER", limit: 100 }, session?.accessToken)
+    .list({ role: "ADMIN", limit: 100 }, session?.accessToken)
     .then((res) => res.data)
     .catch(() => [])
 
