@@ -37,9 +37,8 @@ export const sellerNav: DashboardNavItem[] = [
   { label: "Dashboard", href: ROUTES.SELLER_DASHBOARD, icon: "LayoutDashboard", section: "Overview" },
   { label: "My Properties", href: ROUTES.SELLER_PROPERTIES, icon: "Home", section: "Listings" },
   { label: "Add Property", href: ROUTES.SELLER_PROPERTY_CREATE, icon: "PlusCircle", section: "Listings" },
-  { label: "Inquiries", href: ROUTES.SELLER_INQUIRIES, icon: "MessageSquare", section: "Activity" },
   { label: "My Catalogue", href: ROUTES.SELLER_MARKETPLACE_CATALOGUE, icon: "PackageSearch", section: "Listings" },
-  { label: "Marketplace Quotes", href: ROUTES.SELLER_MARKETPLACE_QUOTES, icon: "ClipboardList", section: "Activity" },
+  { label: "Inquiries", href: ROUTES.SELLER_INQUIRIES, icon: "MessageSquare", section: "Activity" },
   { label: "Bookings", href: ROUTES.SELLER_BOOKINGS, icon: "CalendarCheck", section: "Activity" },
   { label: "Profile", href: ROUTES.SELLER_PROFILE, icon: "User", section: "Account" },
 ]
