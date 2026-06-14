@@ -3,6 +3,8 @@
 import { useState } from "react"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
+import { AdminFormNotice } from "@/components/common/admin-form-notice"
+import { ROUTES } from "@/config/routes.config"
 import { inquiriesService } from "@/services/inquiries.service"
 import { ApiError } from "@/services/http-client"
 
@@ -11,6 +13,12 @@ export function ContactForm() {
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+
+  // Admins receive these inquiries — they manage them from the dashboard
+  // rather than submitting the public form themselves.
+  if (session?.user?.role === "admin") {
+    return <AdminFormNotice manageHref={ROUTES.ADMIN_INQUIRIES} />
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
