@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 import { useSession } from "next-auth/react"
 import { ApiError } from "@/services/http-client"
 import {
@@ -19,6 +19,11 @@ export function useUploader(kind: UploadKind) {
   const token = session?.accessToken
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // URLs uploaded during this session — the only files safe to hard-delete on
+  // removal. Files that were already saved on the record are left alone here and
+  // reconciled server-side when the form is saved (so cancelling doesn't break
+  // a still-referenced image).
+  const sessionUrls = useRef<Set<string>>(new Set())
 
   const upload = useCallback(
     async (input: FileList | File[]): Promise<string[]> => {
@@ -45,7 +50,9 @@ export function useUploader(kind: UploadKind) {
           files.length === 1
             ? [await uploadsService.uploadFile(files[0], kind, token)]
             : await uploadsService.uploadFiles(files, kind, token)
-        return results.map((r) => r.publicUrl)
+        const urls = results.map((r) => r.publicUrl)
+        urls.forEach((url) => sessionUrls.current.add(url))
+        return urls
       } catch (err) {
         setError(
           err instanceof ApiError
@@ -60,5 +67,19 @@ export function useUploader(kind: UploadKind) {
     [kind, token],
   )
 
-  return { upload, uploading, error, setError }
+  /**
+   * Discard a file the user removed. If it was uploaded in this session, delete
+   * it from storage immediately (best-effort) so it doesn't orphan. Files that
+   * predate this session are ignored here and cleaned up server-side on save.
+   */
+  const discard = useCallback(
+    (url: string) => {
+      if (!sessionUrls.current.has(url)) return
+      sessionUrls.current.delete(url)
+      void uploadsService.deleteFiles([url], token).catch(() => {})
+    },
+    [token],
+  )
+
+  return { upload, uploading, error, setError, discard }
 }
