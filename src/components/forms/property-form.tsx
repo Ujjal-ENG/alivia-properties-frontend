@@ -12,7 +12,8 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { FileUploader } from "@/components/common/file-uploader"
-import { propertySchema } from "@/schemas/property.schema"
+import { PropertyImagesUploader } from "@/components/forms/property-images-uploader"
+import { propertySchema, propertyCreateSchema } from "@/schemas/property.schema"
 import { createProperty, updateProperty } from "@/services/properties.service"
 import { PROPERTY_TYPE_OPTIONS, SIZE_UNIT_OPTIONS } from "@/data/property-types"
 import { BD_DIVISIONS } from "@/data/locations.bd"
@@ -55,6 +56,7 @@ function getDefaultValues(initialProperty?: Property, contactDefaults?: Property
     totalFloors: initialProperty?.totalFloors ?? 1,
     facilities: initialProperty?.facilities ?? [],
     images: initialProperty?.images ?? [],
+    videos: initialProperty?.videos ?? [],
     videoUrl: initialProperty?.videoUrl ?? "",
     contactName: initialProperty?.sellerName ?? contactDefaults?.name ?? "",
     contactPhone: initialProperty?.sellerPhone ?? contactDefaults?.phone ?? "",
@@ -68,12 +70,15 @@ export function PropertyForm({ mode, initialProperty, contactDefaults }: Propert
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   const form = useForm<PropertyFormValues, undefined, PropertySubmitValues>({
-    resolver: zodResolver(propertySchema),
+    // Create requires at least 5 photos; edit stays lenient so older listings
+    // with fewer photos remain editable.
+    resolver: zodResolver(mode === "create" ? propertyCreateSchema : propertySchema),
     defaultValues: getDefaultValues(initialProperty, contactDefaults),
   })
 
   const selectedDivision = useWatch({ control: form.control, name: "division" }) ?? ""
   const imageValues = useWatch({ control: form.control, name: "images" }) ?? []
+  const videoValues = useWatch({ control: form.control, name: "videos" }) ?? []
   const selectedFacilities = useWatch({ control: form.control, name: "facilities" }) ?? []
 
   const districts = useMemo(
@@ -432,19 +437,39 @@ export function PropertyForm({ mode, initialProperty, contactDefaults }: Propert
               ))}
             </div>
 
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <div className="mt-6 space-y-2">
+              <PropertyImagesUploader
+                value={imageValues}
+                onChange={(urls) =>
+                  form.setValue("images", urls, { shouldValidate: true, shouldDirty: true })
+                }
+                minImages={5}
+                maxImages={12}
+              />
+              {form.formState.errors.images?.message && (
+                <p className="text-sm text-red-600">{form.formState.errors.images.message}</p>
+              )}
+              <p className="text-xs text-ink-500">
+                The first photo is the cover buyers see first. Drag-reorder isn&apos;t needed — use the
+                arrows or “Set cover” on any photo.
+              </p>
+            </div>
+
+            <div className="mt-6 grid gap-5 md:grid-cols-2">
               <div className="space-y-2">
                 <FileUploader
-                  kind="property-image"
+                  kind="property-video"
                   multiple
-                  label="Images"
-                  value={imageValues}
+                  maxFiles={3}
+                  label="Videos (optional)"
+                  hint="Up to 3 clips · max 60 MB each (mp4, webm, mov)"
+                  value={videoValues}
                   onChange={(urls) =>
-                    form.setValue("images", urls, { shouldValidate: true, shouldDirty: true })
+                    form.setValue("videos", urls, { shouldValidate: true, shouldDirty: true })
                   }
                 />
-                {form.formState.errors.images?.message && (
-                  <p className="text-sm text-red-600">{form.formState.errors.images.message}</p>
+                {form.formState.errors.videos?.message && (
+                  <p className="text-sm text-red-600">{form.formState.errors.videos.message}</p>
                 )}
               </div>
 
@@ -453,7 +478,7 @@ export function PropertyForm({ mode, initialProperty, contactDefaults }: Propert
                 name="videoUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Video URL</FormLabel>
+                    <FormLabel>External video link (optional)</FormLabel>
                     <FormControl>
                       <Input placeholder="https://youtube.com/watch?v=…" {...field} value={field.value ?? ""} />
                     </FormControl>
