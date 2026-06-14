@@ -33,6 +33,8 @@ const IMAGE_KINDS: ReadonlySet<UploadKind> = new Set([
   "blog-image",
 ])
 
+const VIDEO_KINDS: ReadonlySet<UploadKind> = new Set(["property-video"])
+
 function fileName(url: string): string {
   try {
     return decodeURIComponent(url.split("/").pop() ?? url)
@@ -53,13 +55,14 @@ export function FileUploader({
   className,
   disabled,
 }: FileUploaderProps) {
-  const { upload, uploading, error, setError } = useUploader(kind)
+  const { upload, uploading, error, setError, discard } = useUploader(kind)
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragOver, setDragOver] = useState(false)
 
   const rule = UPLOAD_RULES[kind]
   const limit = multiple ? maxFiles ?? 12 : 1
   const isImageKind = IMAGE_KINDS.has(kind)
+  const isVideoKind = VIDEO_KINDS.has(kind)
   const atCapacity = value.length >= limit
 
   async function ingest(list: FileList | File[] | null) {
@@ -85,6 +88,7 @@ export function FileUploader({
 
   function removeAt(index: number) {
     if (disabled) return
+    discard(value[index])
     onChange(value.filter((_, i) => i !== index))
   }
 
@@ -156,6 +160,32 @@ export function FileUploader({
                     onClick={() => removeAt(index)}
                     aria-label={`Remove file ${index + 1}`}
                     className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/55 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : isVideoKind ? (
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {value.map((url, index) => (
+              <div
+                key={url}
+                className="group relative aspect-video overflow-hidden rounded-[1rem] border border-border bg-black"
+              >
+                <video
+                  src={url}
+                  controls
+                  preload="metadata"
+                  className="h-full w-full object-cover"
+                />
+                {!disabled && (
+                  <button
+                    type="button"
+                    onClick={() => removeAt(index)}
+                    aria-label={`Remove video ${index + 1}`}
+                    className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/65 text-white opacity-80 outline-none transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-white"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
