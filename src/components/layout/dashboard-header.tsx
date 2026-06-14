@@ -1,8 +1,10 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import {
   ChevronRight,
+  Home,
   LogOut,
   Menu,
   Search,
@@ -113,6 +115,16 @@ export function DashboardHeader({
         >
           <Search className="h-4 w-4" />
         </button>
+
+        {/* Back to home */}
+        <Link
+          href={ROUTES.HOME}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border/80 bg-white text-ink-700 transition-colors hover:bg-brand-50"
+          title="Back to home"
+          aria-label="Back to home"
+        >
+          <Home className="h-4 w-4" />
+        </Link>
 
         {/* Notifications */}
         <NotificationsBell />
