@@ -41,6 +41,8 @@ export const ROUTES = {
   // Admin dashboard
   ADMIN_DASHBOARD: "/admin/dashboard",
   ADMIN_PROJECTS: "/admin/projects",
+  ADMIN_PROJECT_CREATE: "/admin/projects/create",
+  ADMIN_PROJECT_EDIT: (id: string) => `/admin/projects/${id}/edit`,
   ADMIN_PROPERTIES: "/admin/properties",
   ADMIN_PENDING: "/admin/pending-listings",
   ADMIN_USERS: "/admin/users",
@@ -69,8 +71,6 @@ export const ROUTES = {
   SELLER_PROPERTY_EDIT: (id: string) => `/seller/properties/${id}/edit`,
   SELLER_INQUIRIES: "/seller/inquiries",
   SELLER_INQUIRY_DETAIL: (id: string) => `/seller/inquiries/${id}`,
-  SELLER_MARKETPLACE_QUOTES: "/seller/marketplace-quotes",
-  SELLER_MARKETPLACE_QUOTE_DETAIL: (id: string) => `/seller/marketplace-quotes/${id}`,
   SELLER_MARKETPLACE_CATALOGUE: "/seller/marketplace-catalogue",
   SELLER_BOOKINGS: "/seller/bookings",
   SELLER_PROFILE: "/seller/profile",
