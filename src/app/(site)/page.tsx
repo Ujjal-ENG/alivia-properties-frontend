@@ -187,7 +187,7 @@ function VerifiedNumbers() {
           {items.map((s) => (
             <div
               key={s.label}
-              className="rounded-3xl border border-white/10 bg-white/[0.04] px-5 py-7 transition-colors hover:bg-white/[0.07]"
+              className="rounded-3xl border border-white/10 bg-white/4 px-5 py-7 transition-colors hover:bg-white/[0.07]"
             >
               <p className="font-heading text-4xl font-bold text-gold-400">
                 {s.value}
@@ -435,7 +435,7 @@ function VerifiedListings({ properties }: { properties: SoftRecord[] }) {
                           <Building2 className="h-10 w-10" />
                         </div>
                       )}
-                      <span className="absolute left-3 top-3 inline-flex rounded-full bg-white/90 px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-wider text-brand-700 capitalize backdrop-blur">
+                      <span className="absolute left-3 top-3 inline-flex rounded-full bg-white/90 px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-wider text-brand-700 backdrop-blur">
                         For {purpose}
                       </span>
                       {verified && (
@@ -682,7 +682,7 @@ function FounderSection() {
       <div className="container-page section-y-sm">
         <div className="grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center">
           {/* founder card */}
-          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-7">
+          <div className="rounded-3xl border border-white/10 bg-white/4 p-7">
             <div className="flex items-center gap-4">
               <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-brand-800">
                 {founder.avatar ? (
@@ -730,7 +730,7 @@ function FounderSection() {
               {pillars.map((p) => (
                 <div
                   key={p.title}
-                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+                  className="rounded-2xl border border-white/10 bg-white/3 p-4"
                 >
                   <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold-400/15 text-gold-300">
                     <p.icon className="h-5 w-5" />
@@ -819,7 +819,7 @@ function ExpertCta() {
             ].map((i) => (
               <li
                 key={i.t}
-                className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.06] p-4"
+                className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/6 p-4"
               >
                 <BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-gold-300" />
                 <div>
