@@ -1,7 +1,9 @@
 export type PropertyType =
   | "apartment"
   | "house"
+  | "townhouse"
   | "villa"
+  | "studio"
   | "plot"
   | "land"
   | "commercial"
@@ -54,6 +56,7 @@ export type Property = {
 
   facilities: string[]
   images: string[]
+  videos?: string[]
   videoUrl?: string
 
   mapPin?: string
