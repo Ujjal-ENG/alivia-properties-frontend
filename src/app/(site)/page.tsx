@@ -83,7 +83,7 @@ export default async function HomePage() {
   const heroProjects: HeroProjectCard[] = projects.slice(0, 2).map((p) => ({
     slug: pick<string>(p, "slug", ""),
     name: pick<string>(p, "name", "Alivia Project"),
-    location: pick<string>(p, "location", "Dhaka, Bangladesh"),
+    location: pick<string>(p, "location", "Jolshiri Abashon, Rupganj"),
     status: pick<string>(p, "status", "ongoing"),
     price: projectPrice(p) ?? "Price on request",
     cover: projectCover(p),
@@ -94,7 +94,7 @@ export default async function HomePage() {
     return {
       slug: pick<string>(p, "slug", ""),
       name: pick<string>(p, "name", "Alivia Project"),
-      location: pick<string>(p, "location", "Dhaka, Bangladesh"),
+      location: pick<string>(p, "location", "Jolshiri Abashon, Rupganj"),
       status: pick<string>(p, "status", "ongoing"),
       price: projectPrice(p),
       units: total ? `${total} units` : null,
@@ -294,37 +294,37 @@ function TrustSection() {
 function InvestmentCorridors() {
   const corridors = [
     {
-      name: "Bashundhara R/A",
-      tag: "Family living",
-      body: "Planned residential blocks, schools, and rising long-term value.",
+      name: "Smart utility network",
+      tag: "Integrated city",
+      body: "Underground electric, water, sewerage, firefighting, and ICT utility planning.",
     },
     {
-      name: "Gulshan & Banani",
-      tag: "Prime central",
-      body: "Premium addresses, corporate hubs, and strong rental demand.",
+      name: "48% open space",
+      tag: "Green planning",
+      body: "Only 52% land use for construction, keeping nearly half the township open.",
     },
     {
-      name: "Purbachal New Town",
-      tag: "High growth",
-      body: "Bangladesh's largest planned township with major upside ahead.",
+      name: "Lakes & recreation",
+      tag: "Waterfront life",
+      body: "Lakes, parks, lakeside walkways, cycle tracks, amusement park, and golf course.",
     },
     {
-      name: "Uttara & Mirpur",
-      tag: "Value picks",
-      body: "Connected, fast-developing corridors with accessible entry points.",
+      name: "Education & CBD",
+      tag: "Self-dependent",
+      body: "Planned education, medical, and central business district facilities for residents.",
     },
   ];
   return (
     <section className="bg-brand-50/50">
       <div className="container-page section-y-sm">
         <div className="mb-9 max-w-2xl">
-          <p className="text-eyebrow mb-2">Where to look</p>
+          <p className="text-eyebrow mb-2">Jolshiri at a glance</p>
           <h2 className="font-heading text-3xl font-bold uppercase tracking-tight text-brand-950 sm:text-4xl">
-            Dhaka&apos;s top investment corridors, curated.
+            A modern township planned around nature and city life.
           </h2>
           <p className="mt-3 text-sm text-ink-600">
-            Prestige, prices, and upside — where smart capital is going in the
-            capital.
+            Jolshiri Abashon is planned as a smart, connected township close to
+            the capital with open space, amenities, and everyday services.
           </p>
         </div>
 
@@ -332,7 +332,7 @@ function InvestmentCorridors() {
           {corridors.map((c) => (
             <Link
               key={c.name}
-              href={`${ROUTES.PROPERTIES}?search=${encodeURIComponent(c.name)}`}
+              href={`${ROUTES.PROPERTIES}?search=${encodeURIComponent("Jolshiri")}`}
               className="group rounded-3xl border border-black/5 bg-white p-6 shadow-(--shadow-card) transition hover:-translate-y-1 hover:shadow-(--shadow-elevated)"
             >
               <span className="inline-flex rounded-full bg-gold-50 px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-wider text-gold-700">
@@ -346,7 +346,7 @@ function InvestmentCorridors() {
                 {c.body}
               </p>
               <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-brand-700">
-                Explore listings <ArrowUpRight className="h-3.5 w-3.5" />
+                Explore Jolshiri <ArrowUpRight className="h-3.5 w-3.5" />
               </span>
             </Link>
           ))}
@@ -359,154 +359,248 @@ function InvestmentCorridors() {
 /* ───────────────────────── 6. Verified listings ───────────────────────── */
 
 function VerifiedListings({ properties }: { properties: SoftRecord[] }) {
-  return (
-    <section className="container-page section-y-sm">
-      <header className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-eyebrow mb-2">Marketplace</p>
-          <h2 className="font-heading text-3xl font-bold uppercase tracking-tight text-brand-950 sm:text-4xl">
-            Verified listings from trusted sellers.
-          </h2>
-          <p className="mt-3 max-w-2xl text-sm text-ink-600">
-            Apartments, plots, and commercial spaces — with real sellers, clear
-            pricing, and verified trust cues.
-          </p>
-        </div>
-        <Link href={ROUTES.PROPERTIES}>
-          <Button variant="outline" size="sm" className="gap-1.5 rounded-full">
-            Browse marketplace <ArrowRight className="h-3.5 w-3.5" />
-          </Button>
-        </Link>
-      </header>
+  const cards = properties.slice(0, 4).map((p) => {
+    const slug = pick<string>(p, "slug", "");
+    const title = pick<string>(p, "title", "Property");
+    const cover =
+      pick<string | null>(p, "coverImage", null) ??
+      (Array.isArray(p.images)
+        ? ((p.images as Array<{ url?: string } | string>)
+            .map((i) => (typeof i === "string" ? i : i?.url))
+            .find(Boolean) ?? null)
+        : null);
+    const price = pick<number>(p, "price", 0);
+    const purpose = pick<string>(p, "purpose", "sale");
+    const area = pick<string>(p, "area", "");
+    const district = pick<string>(
+      p,
+      "district",
+      pick<string>(p, "city", "Bangladesh"),
+    );
+    const bedrooms = pick<number | undefined>(p, "bedrooms", undefined);
+    const verified =
+      pick<boolean>(p, "isVerified", false) ||
+      pick<string>(p, "status", "") === "verified";
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-        {/* listings grid */}
-        {properties.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-border/70 bg-white p-10 text-center text-sm text-ink-600">
-            No properties listed yet.
+    return {
+      slug,
+      title,
+      cover,
+      price,
+      purpose,
+      area,
+      district,
+      bedrooms,
+      verified,
+      href: slug ? ROUTES.PROPERTY_DETAIL(slug) : ROUTES.PROPERTIES,
+      priceLabel:
+        purpose === "rent" ? formatRent(price) : formatPrice(price, true),
+      location: [area, district].filter(Boolean).join(", ") || "Bangladesh",
+    };
+  });
+
+  const featured = cards[0];
+  const supporting = cards.slice(1);
+
+  return (
+    <section className="bg-linear-to-b from-white via-ink-50/70 to-white">
+      <div className="container-page section-y-sm">
+        <header className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-eyebrow mb-2">Marketplace</p>
+            <h2 className="text-balance font-heading text-3xl font-bold uppercase tracking-tight text-brand-950 sm:text-4xl">
+              Verified listings from reliable sellers.
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm text-ink-600">
+              Apartments, plots, and commercial spaces — with real sellers,
+              clear pricing, and verification cues you can scan fast.
+            </p>
           </div>
-        ) : (
-          <ul className="grid min-w-0 gap-5 sm:grid-cols-2">
-            {properties.slice(0, 4).map((p) => {
-              const slug = pick<string>(p, "slug", "");
-              const title = pick<string>(p, "title", "Property");
-              const cover =
-                pick<string | null>(p, "coverImage", null) ??
-                (Array.isArray(p.images)
-                  ? ((p.images as Array<{ url?: string } | string>)
-                      .map((i) => (typeof i === "string" ? i : i?.url))
-                      .find(Boolean) ?? null)
-                  : null);
-              const price = pick<number>(p, "price", 0);
-              const purpose = pick<string>(p, "purpose", "sale");
-              const area = pick<string>(p, "area", "");
-              const district = pick<string>(
-                p,
-                "district",
-                pick<string>(p, "city", "Bangladesh"),
-              );
-              const bedrooms = pick<number | undefined>(
-                p,
-                "bedrooms",
-                undefined,
-              );
-              const verified =
-                pick<boolean>(p, "isVerified", false) ||
-                pick<string>(p, "status", "") === "verified";
-              return (
-                <li key={slug || title}>
+          <Link href={ROUTES.PROPERTIES}>
+            <Button variant="outline" size="sm" className="gap-1.5 rounded-full">
+              Browse marketplace <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+            </Button>
+          </Link>
+        </header>
+
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+          {cards.length === 0 ? (
+            <div className="rounded-3xl border border-dashed border-border/70 bg-white p-10 text-center text-sm text-ink-600 xl:col-span-2">
+              No properties listed yet.
+            </div>
+          ) : (
+            <ul className="grid min-w-0 gap-5 lg:grid-cols-2">
+              {featured && (
+                <li className="lg:row-span-3" key={featured.slug || featured.title}>
                   <Link
-                    href={
-                      slug ? ROUTES.PROPERTY_DETAIL(slug) : ROUTES.PROPERTIES
-                    }
-                    className="group block overflow-hidden rounded-3xl border border-black/5 bg-white shadow-(--shadow-card) transition hover:-translate-y-1 hover:shadow-(--shadow-elevated)"
+                    href={featured.href}
+                    className="group flex h-full min-h-[460px] flex-col overflow-hidden rounded-[2rem] border border-black/5 bg-white shadow-(--shadow-elevated) transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-(--shadow-pop) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
                   >
-                    <div className="relative aspect-16/10 w-full overflow-hidden bg-ink-100">
-                      {cover ? (
+                    <div className="relative min-h-72 flex-1 overflow-hidden bg-ink-100">
+                      {featured.cover ? (
                         <Image
-                          src={cover}
-                          alt={title}
+                          src={featured.cover}
+                          alt={featured.title}
                           fill
-                          sizes="(min-width: 1024px) 33vw, 50vw"
-                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          sizes="(min-width: 1280px) 42vw, (min-width: 1024px) 50vw, 100vw"
+                          className="object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                         />
                       ) : (
-                        <div className="flex h-full items-center justify-center text-brand-200">
-                          <Building2 className="h-10 w-10" />
+                        <div className="flex size-full items-center justify-center bg-linear-to-br from-brand-50 to-gold-50 text-brand-200">
+                          <Building2 aria-hidden="true" className="h-14 w-14" />
                         </div>
                       )}
-                      <span className="absolute left-3 top-3 inline-flex rounded-full bg-white/90 px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-wider text-brand-700 backdrop-blur">
-                        For {purpose}
-                      </span>
-                      {verified && (
-                        <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-brand-700/95 px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-wider text-white backdrop-blur">
-                          <BadgeCheck className="h-3 w-3" /> Verified
+                      <div aria-hidden="true" className="absolute inset-0 bg-linear-to-t from-brand-950/78 via-brand-950/8 to-transparent" />
+                      <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
+                        <span className="inline-flex rounded-full bg-white/92 px-3 py-1 text-[0.62rem] font-bold uppercase tracking-wider text-brand-700 backdrop-blur">
+                          For {featured.purpose}
                         </span>
-                      )}
-                    </div>
-                    <div className="p-5">
-                      <p className="truncate font-heading text-base font-semibold text-ink-900 group-hover:text-brand-700">
-                        {title}
-                      </p>
-                      <p className="mt-1 inline-flex items-center gap-1 text-xs text-ink-500">
-                        <MapPin className="h-3 w-3" />
-                        {[area, district].filter(Boolean).join(", ") ||
-                          "Bangladesh"}
-                      </p>
-                      <div className="mt-3 flex items-baseline justify-between border-t border-border/60 pt-3">
-                        <span className="font-heading text-lg font-bold text-gold-600">
-                          {purpose === "rent"
-                            ? formatRent(price)
-                            : formatPrice(price, true)}
-                        </span>
-                        {bedrooms !== undefined && (
-                          <span className="text-xs text-ink-600">
-                            {bedrooms} bed
+                        {featured.verified && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-brand-700/95 px-3 py-1 text-[0.62rem] font-bold uppercase tracking-wider text-white backdrop-blur">
+                            <BadgeCheck aria-hidden="true" className="h-3 w-3" /> Verified
                           </span>
                         )}
+                      </div>
+                      <div className="absolute inset-x-0 bottom-0 p-5 text-white">
+                        <p className="font-heading text-2xl font-semibold">
+                          {featured.title}
+                        </p>
+                        <p className="mt-1 inline-flex items-center gap-1.5 text-sm text-white/82">
+                          <MapPin aria-hidden="true" className="h-4 w-4" />
+                          {featured.location}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid gap-px bg-border/70 sm:grid-cols-3">
+                      <div className="bg-white px-5 py-4 sm:col-span-2">
+                        <p className="text-[0.62rem] font-bold uppercase tracking-[0.16em] text-ink-500">
+                          Asking price
+                        </p>
+                        <p className="mt-1 font-heading text-2xl font-bold text-gold-600">
+                          {featured.priceLabel}
+                        </p>
+                      </div>
+                      <div className="bg-white px-5 py-4">
+                        <p className="text-[0.62rem] font-bold uppercase tracking-[0.16em] text-ink-500">
+                          Details
+                        </p>
+                        <p className="mt-1 text-sm font-semibold text-ink-900">
+                          {featured.bedrooms !== undefined
+                            ? `${featured.bedrooms} bed`
+                            : "View details"}
+                        </p>
                       </div>
                     </div>
                   </Link>
                 </li>
-              );
-            })}
-          </ul>
-        )}
+              )}
 
-        {/* dark side CTA */}
-        <aside className="relative overflow-hidden rounded-3xl bg-linear-to-br from-brand-800 to-brand-950 p-7 text-white shadow-(--shadow-elevated)">
-          <Sparkles
-            aria-hidden
-            className="absolute -right-6 -top-6 h-28 w-28 text-gold-400/15"
-          />
-          <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-gold-300">
-            Selling or renting?
-          </p>
-          <h3 className="mt-2 font-heading text-2xl font-semibold">
-            List with people who actually verify.
-          </h3>
-          <p className="mt-3 text-sm leading-relaxed text-brand-100">
-            Reach serious, qualified buyers and tenants. We verify your listing,
-            then put it in front of the right audience.
-          </p>
-          <ul className="mt-5 space-y-2.5 text-sm text-brand-50">
-            {[
-              "Free listing verification",
-              "Qualified buyer matching",
-              "Dedicated seller dashboard",
-            ].map((t) => (
-              <li key={t} className="flex items-center gap-2">
-                <BadgeCheck className="h-4 w-4 shrink-0 text-gold-300" />
-                {t}
-              </li>
-            ))}
-          </ul>
-          <Link href={ROUTES.REGISTER} className="mt-6 block">
-            <Button className="w-full gap-2 rounded-full bg-gold-400 text-brand-950 hover:bg-gold-300">
-              List your property <ArrowUpRight className="h-4 w-4" />
-            </Button>
-          </Link>
-        </aside>
+              {supporting.map((card) => (
+                <li key={card.slug || card.title}>
+                  <Link
+                    href={card.href}
+                    className="group grid overflow-hidden rounded-3xl border border-black/5 bg-white shadow-(--shadow-card) transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-(--shadow-elevated) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:grid-cols-[160px_1fr]"
+                  >
+                    <div className="relative aspect-16/10 overflow-hidden bg-ink-100 sm:aspect-auto sm:min-h-44">
+                      {card.cover ? (
+                        <Image
+                          src={card.cover}
+                          alt={card.title}
+                          fill
+                          sizes="(min-width: 1024px) 180px, 100vw"
+                          className="object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                        />
+                      ) : (
+                        <div className="flex size-full items-center justify-center text-brand-200">
+                          <Building2 aria-hidden="true" className="h-10 w-10" />
+                        </div>
+                      )}
+                      <span className="absolute left-3 top-3 inline-flex rounded-full bg-white/92 px-2.5 py-1 text-[0.58rem] font-bold uppercase tracking-wider text-brand-700 backdrop-blur">
+                        For {card.purpose}
+                      </span>
+                    </div>
+                    <div className="flex min-w-0 flex-col p-5">
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="line-clamp-2 font-heading text-base font-semibold text-ink-900 group-hover:text-brand-700">
+                          {card.title}
+                        </p>
+                        {card.verified && (
+                          <span className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-full bg-brand-50 px-2 py-1 text-[0.58rem] font-bold uppercase tracking-wider text-brand-700">
+                            <BadgeCheck aria-hidden="true" className="h-3 w-3" />
+                            Verified
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-2 inline-flex items-center gap-1 text-xs text-ink-500">
+                        <MapPin aria-hidden="true" className="h-3 w-3" />
+                        {card.location}
+                      </p>
+                      <div className="mt-auto flex items-end justify-between gap-3 border-t border-border/60 pt-4">
+                        <span className="font-heading text-lg font-bold text-gold-600">
+                          {card.priceLabel}
+                        </span>
+                        <span className="inline-flex size-8 items-center justify-center rounded-full bg-brand-50 text-brand-700 transition-colors duration-200 group-hover:bg-brand-700 group-hover:text-white">
+                          <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <aside className="relative overflow-hidden rounded-[2rem] bg-linear-to-br from-brand-800 to-brand-950 p-6 text-white shadow-(--shadow-elevated) xl:sticky xl:top-24 xl:self-start">
+            <Sparkles
+              aria-hidden="true"
+              className="absolute -right-6 -top-6 h-28 w-28 text-gold-400/15"
+            />
+            <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-gold-300">
+              Selling or renting?
+            </p>
+            <h3 className="mt-2 font-heading text-2xl font-semibold">
+              List with people who actually verify.
+            </h3>
+            <p className="mt-3 text-sm leading-relaxed text-brand-100">
+              Reach serious, qualified buyers and tenants. We verify your
+              listing, then put it in front of the right audience.
+            </p>
+
+            <div className="mt-5 grid grid-cols-2 gap-2">
+              {[
+                { value: "Free", label: "verification" },
+                { value: "24h", label: "review target" },
+              ].map((item) => (
+                <div key={item.label} className="rounded-2xl border border-white/10 bg-white/8 p-4">
+                  <p className="font-heading text-2xl font-bold text-gold-300">
+                    {item.value}
+                  </p>
+                  <p className="mt-1 text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-brand-200">
+                    {item.label}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <ul className="mt-5 space-y-2.5 text-sm text-brand-50">
+              {[
+                "Free listing verification",
+                "Qualified buyer matching",
+                "Dedicated seller dashboard",
+              ].map((t) => (
+                <li key={t} className="flex items-center gap-2">
+                  <BadgeCheck aria-hidden="true" className="h-4 w-4 shrink-0 text-gold-300" />
+                  {t}
+                </li>
+              ))}
+            </ul>
+            <Link href={ROUTES.REGISTER} className="mt-6 block">
+              <Button className="w-full gap-2 rounded-full bg-gold-400 text-brand-950 hover:bg-gold-300">
+                List your property <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
+              </Button>
+            </Link>
+          </aside>
+        </div>
       </div>
     </section>
   );
@@ -585,19 +679,19 @@ function Testimonials() {
   const reviews = [
     {
       name: "Farhan Hossain",
-      role: "Homeowner, Bashundhara R/A",
+      role: "Homeowner, Jolshiri Abashon",
       quote:
         "Alivia made apartment search feel smaller and clearer. We moved from confused to confident within a few days.",
     },
     {
       name: "Nusrat Jahan",
-      role: "Investor, Gulshan",
+      role: "Investor, Rupganj",
       quote:
         "Proper paperwork, honest price advice, and zero pressure. Exactly the kind of partner you want for a big decision.",
     },
     {
       name: "Tanvir Ahmed",
-      role: "Tenant, Uttara",
+      role: "Tenant, Narayanganj",
       quote:
         "The verified listings and quick support saved me weeks. Everything was exactly as described — no surprises.",
     },
