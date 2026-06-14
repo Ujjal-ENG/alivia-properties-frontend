@@ -13,6 +13,10 @@ import {
 import { Button } from "@/components/ui/button"
 import { CategoryGroupSection } from "@/components/marketplace/CategoryGroupSection"
 import { CategoryGroupTabs } from "@/components/marketplace/CategoryGroupTabs"
+import {
+  MarketplaceSearchDeck,
+  type MarketplaceSearchItem,
+} from "@/components/marketplace/MarketplaceSearchDeck"
 import { ROUTES } from "@/config/routes.config"
 import { marketplaceService, type MarketplaceCategory } from "@/services/marketplace.service"
 
@@ -40,7 +44,8 @@ export default async function MarketplacePage() {
 
   // Build the Department → Category view (subcategories live one level deeper,
   // surfaced on the category page + the quote wizard).
-  const lvl = (c: MarketplaceCategory) => c.level ?? (c.parentSlug ? "SUBCATEGORY" : "DEPARTMENT")
+  const lvl = (c: MarketplaceCategory): "DEPARTMENT" | "CATEGORY" | "SUBCATEGORY" =>
+    c.level ?? (c.parentSlug ? "SUBCATEGORY" : "DEPARTMENT")
 
   const groups = categories
     .filter((c) => lvl(c) === "DEPARTMENT")
@@ -57,6 +62,16 @@ export default async function MarketplacePage() {
   Object.values(childrenByGroup).forEach((arr) => arr.sort((a, b) => a.order - b.order))
 
   const totalCategories = categories.filter((c) => lvl(c) === "CATEGORY").length
+  const parentNameBySlug = new Map(categories.map((c) => [c.slug, c.name]))
+  const searchItems: MarketplaceSearchItem[] = categories
+    .filter((c) => lvl(c) !== "DEPARTMENT")
+    .map((c) => ({
+      slug: c.slug,
+      name: c.name,
+      description: c.description,
+      level: lvl(c),
+      parentName: c.parentSlug ? parentNameBySlug.get(c.parentSlug) : null,
+    }))
 
   const tabs = groups.map((g) => ({
     slug: g.slug,
@@ -69,9 +84,7 @@ export default async function MarketplacePage() {
       {/* ── Hero ─────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-brand-900 text-white">
         {/* Background texture */}
-        <div className="absolute inset-0 opacity-10"
-          style={{ backgroundImage: "radial-gradient(circle at 20% 50%, oklch(0.64 0.12 170) 0%, transparent 60%), radial-gradient(circle at 80% 20%, oklch(0.78 0.14 80) 0%, transparent 50%)" }}
-        />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_42%,color-mix(in_oklch,var(--color-brand-400)_28%,transparent)_0%,transparent_58%),radial-gradient(circle_at_82%_18%,color-mix(in_oklch,var(--color-gold-300)_24%,transparent)_0%,transparent_48%)]" />
 
         <div className="container-page relative py-12 lg:py-16">
           <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr]">
@@ -92,7 +105,7 @@ export default async function MarketplacePage() {
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link href={ROUTES.MARKETPLACE_REQUEST}>
                   <Button size="lg" className="gap-2 bg-gold-400 text-ink-900 hover:bg-gold-300">
-                    <FileText className="size-4" />
+                    <FileText aria-hidden="true" className="size-4" />
                     Get a Free Quote
                   </Button>
                 </Link>
@@ -102,11 +115,13 @@ export default async function MarketplacePage() {
                     variant="outline"
                     className="gap-2 border-white/30 bg-white/10 text-white hover:bg-white/20"
                   >
-                    <Phone className="size-4" />
+                    <Phone aria-hidden="true" className="size-4" />
                     Call Marketplace Desk
                   </Button>
                 </a>
               </div>
+
+              {searchItems.length > 0 && <MarketplaceSearchDeck items={searchItems} />}
 
               {/* Trust pills */}
               <div className="mt-6 flex flex-wrap gap-2 text-xs text-brand-100">
@@ -120,7 +135,7 @@ export default async function MarketplacePage() {
                     key={label}
                     className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1"
                   >
-                    <Icon className="size-3.5" />
+                    <Icon aria-hidden="true" className="size-3.5" />
                     {label}
                   </span>
                 ))}
@@ -151,7 +166,7 @@ export default async function MarketplacePage() {
               {/* Quick CTA card */}
               <div className="mt-4 rounded-2xl bg-white p-4 text-ink-900">
                 <div className="flex items-center gap-2">
-                  <Star className="size-4 fill-gold-400 text-gold-400" />
+                  <Star aria-hidden="true" className="size-4 fill-gold-400 text-gold-400" />
                   <p className="text-xs font-semibold text-ink-800">Need it fast?</p>
                 </div>
                 <p className="mt-1 text-sm text-ink-700">
@@ -159,7 +174,7 @@ export default async function MarketplacePage() {
                 </p>
                 <Link href={ROUTES.MARKETPLACE_QUOTE} className="mt-3 block">
                   <Button size="sm" className="w-full gap-1.5">
-                    <FileText className="size-3.5" />
+                    <FileText aria-hidden="true" className="size-3.5" />
                     Request a Quote
                   </Button>
                 </Link>
@@ -212,7 +227,7 @@ export default async function MarketplacePage() {
                   size="lg"
                   className="gap-2 bg-gold-400 text-ink-900 hover:bg-gold-300"
                 >
-                  <Sparkles className="size-4" />
+                  <Sparkles aria-hidden="true" className="size-4" />
                   Get Listed Free
                 </Button>
               </Link>
@@ -222,7 +237,7 @@ export default async function MarketplacePage() {
                   variant="outline"
                   className="gap-2 border-white/30 bg-white/10 text-white hover:bg-white/20"
                 >
-                  <Phone className="size-4" />
+                  <Phone aria-hidden="true" className="size-4" />
                   Talk to us
                 </Button>
               </a>
@@ -271,7 +286,7 @@ export default async function MarketplacePage() {
           <div className="mt-6 flex justify-center">
             <Link href={ROUTES.MARKETPLACE_QUOTE}>
               <Button size="lg" className="gap-2">
-                <FileText className="size-4" />
+                <FileText aria-hidden="true" className="size-4" />
                 Get a Quote Now
               </Button>
             </Link>
