@@ -22,6 +22,41 @@ function imgUrl(i: BackendImage): string {
   return typeof i === "string" ? i : i.url
 }
 
+// Derive the storage object key from a public URL (the backend ImageRef needs a
+// `key`; the `url` is what the app renders).
+function keyFromUrl(url: string): string {
+  try {
+    const segments = new URL(url).pathname.replace(/^\/+/, "").split("/")
+    return segments.length > 1 ? segments.slice(1).join("/") : segments.join("/")
+  } catch {
+    return url
+  }
+}
+
+// Map the admin form values to the backend write contract: uppercase status,
+// gallery URLs → ordered ImageRef objects, blank optionals dropped.
+function toWritePayload(payload: unknown): Record<string, unknown> {
+  const { galleryImages, status, coverImageUrl, handoverDate, ...rest } =
+    (payload ?? {}) as Record<string, unknown>
+  const urls = Array.isArray(galleryImages) ? (galleryImages as string[]) : []
+  return {
+    ...rest,
+    ...(typeof status === "string" ? { status: status.toUpperCase() } : {}),
+    ...(typeof coverImageUrl === "string"
+      ? { coverImageUrl: coverImageUrl || undefined }
+      : {}),
+    ...(typeof handoverDate === "string"
+      ? { handoverDate: handoverDate || undefined }
+      : {}),
+    galleryImages: urls.map((url, i) => ({
+      key: keyFromUrl(url),
+      url,
+      isCover: i === 0,
+      order: i,
+    })),
+  }
+}
+
 function toFrontendProject(p: BackendProject): Project {
   const gallery = Array.isArray(p.galleryImages)
     ? p.galleryImages.map(imgUrl)
@@ -52,10 +87,41 @@ export const projectsService = {
     const p = await httpClient.get<BackendProject>(`${BASE}/${slug}`)
     return toFrontendProject(p)
   },
+  async byId(id: string, token?: string): Promise<Project> {
+    const p = await httpClient.get<BackendProject>(`${BASE}/id/${id}`, { token })
+    return toFrontendProject(p)
+  },
+  create(payload: unknown, token?: string): Promise<Project> {
+    return httpClient
+      .post<BackendProject>(BASE, toWritePayload(payload), { token })
+      .then(toFrontendProject)
+  },
+  update(id: string, payload: unknown, token?: string): Promise<Project> {
+    return httpClient
+      .patch<BackendProject>(`${BASE}/${id}`, toWritePayload(payload), { token })
+      .then(toFrontendProject)
+  },
+  remove(id: string, token?: string): Promise<{ success: boolean }> {
+    return httpClient.delete<{ success: boolean }>(`${BASE}/${id}`, { token })
+  },
+  setStatus(id: string, status: ProjectStatus, token?: string): Promise<Project> {
+    return httpClient
+      .patch<BackendProject>(`${BASE}/${id}/status`, { status: status.toUpperCase() }, { token })
+      .then(toFrontendProject)
+  },
+  setFeatured(id: string, isFeatured: boolean, token?: string): Promise<Project> {
+    return httpClient
+      .patch<BackendProject>(`${BASE}/${id}/feature`, { isFeatured }, { token })
+      .then(toFrontendProject)
+  },
 }
 
 export const getProjects = projectsService.list
 export const getProjectBySlug = projectsService.bySlug
+export const getProjectById = projectsService.byId
+export const createProject = projectsService.create
+export const updateProject = projectsService.update
+export const deleteProject = projectsService.remove
 
 export async function getProject(
   slug: string,
