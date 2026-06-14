@@ -13,11 +13,12 @@ export const siteConfig = {
   ogImage: "/og-image.jpg",
 
   contact: {
-    phone: "+880 1700-000000",
-    phoneRaw: "+8801700000000",
-    email: "info@aliviaproperties.com",
-    whatsApp: "+8801700000000",
-    address: "House 12, Road 7, Bashundhara R/A, Dhaka 1229, Bangladesh",
+    phone: "+880 1769-017621",
+    phoneRaw: "+8801769017621",
+    email: "jolshiriabashon@gmail.com",
+    whatsApp: "+8801769017621",
+    address:
+      "Zia Colony, near Armed Forces Medical College / MES MP Check Post, Dhaka Cantonment, Dhaka 1206, Bangladesh",
     officeHours: "Saturday – Thursday: 9:00 AM – 6:00 PM",
     mapEmbedUrl: "",
   },
