@@ -4,6 +4,7 @@ import { httpClient } from "./http-client"
 export type UploadKind =
   | "property-image"
   | "property-video"
+  | "project-image"
   | "document"
   | "avatar"
   | "category-image"
@@ -37,6 +38,7 @@ export const UPLOAD_RULES: Record<
 > = {
   "property-image": { mimes: IMAGE, maxBytes: 10 * MB, accept: "image/*" },
   "property-video": { mimes: VIDEO, maxBytes: 60 * MB, accept: "video/*" },
+  "project-image": { mimes: IMAGE, maxBytes: 10 * MB, accept: "image/*" },
   document: { mimes: DOC, maxBytes: 15 * MB, accept: ".pdf,.doc,.docx,image/*" },
   avatar: { mimes: IMAGE, maxBytes: 5 * MB, accept: "image/*" },
   "category-image": { mimes: IMAGE, maxBytes: 8 * MB, accept: "image/*" },
@@ -76,5 +78,16 @@ export const uploadsService = {
     files.forEach((f) => form.append("files", f))
     form.append("kind", kind)
     return httpClient.post<UploadResult[]>("/uploads/files", form, { token })
+  },
+
+  /**
+   * Remove stored object(s) from MinIO by public URL. Used to discard files a
+   * user uploaded then removed before saving, so they don't orphan in storage.
+   */
+  deleteFiles(urls: string[], token?: string): Promise<{ removed: number }> {
+    return httpClient.delete<{ removed: number }>("/uploads", {
+      token,
+      body: JSON.stringify({ urls }),
+    })
   },
 }
