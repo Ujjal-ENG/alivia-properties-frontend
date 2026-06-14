@@ -6,10 +6,13 @@ import {
   ArrowLeft,
   ArrowUpRight,
   CheckCircle2,
+  Clock3,
   FileText,
   Mail,
   Phone,
+  ShieldCheck,
   Star,
+  Truck,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -68,9 +71,9 @@ export default async function MarketplaceProductPage({ params }: PageProps) {
         <div className="container-page py-3">
           <Link
             href={ROUTES.MARKETPLACE}
-            className="inline-flex items-center gap-1.5 text-xs text-ink-600 hover:text-ink-900"
+            className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs text-ink-600 transition-colors hover:text-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
           >
-            <ArrowLeft className="size-3" /> Back to marketplace
+            <ArrowLeft aria-hidden="true" className="size-3" /> Back to marketplace
           </Link>
         </div>
       </div>
@@ -118,7 +121,7 @@ export default async function MarketplaceProductPage({ params }: PageProps) {
               </span>
               {product.inStock ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-[11px] font-semibold text-green-700">
-                  <CheckCircle2 className="size-3" /> {serviceMode ? "Available now" : "In stock"}
+                  <CheckCircle2 aria-hidden="true" className="size-3" /> {serviceMode ? "Available now" : "In stock"}
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-[11px] font-semibold text-amber-700">
@@ -152,7 +155,7 @@ export default async function MarketplaceProductPage({ params }: PageProps) {
                 <div className="rounded-xl border border-border/60 bg-white px-3 py-2">
                   <dt className="text-[10px] uppercase tracking-wider text-ink-500">Rating</dt>
                   <dd className="mt-0.5 inline-flex items-center gap-1 font-medium text-ink-900">
-                    <Star className="size-3.5 fill-gold-400 text-gold-400" />
+                    <Star aria-hidden="true" className="size-3.5 fill-gold-400 text-gold-400" />
                     {product.rating.toFixed(1)} ({product.reviewCount})
                   </dd>
                 </div>
@@ -176,7 +179,7 @@ export default async function MarketplaceProductPage({ params }: PageProps) {
                       </div>
                       <Link href={`${quoteHref}&variantId=${variant.id}`}>
                         <Button size="sm" className="w-full gap-1.5 rounded-full sm:w-auto">
-                          <FileText className="size-3.5" /> {serviceMode ? "Quote package" : "Quote variant"}
+                          <FileText aria-hidden="true" className="size-3.5" /> {serviceMode ? "Quote package" : "Quote variant"}
                         </Button>
                       </Link>
                     </div>
@@ -188,16 +191,32 @@ export default async function MarketplaceProductPage({ params }: PageProps) {
             <div className="mt-6 flex flex-wrap gap-2">
               <Link href={quoteHref}>
                 <Button size="lg" className="gap-2">
-                  <FileText className="size-4" /> {serviceMode ? "Get Service Quote" : "Get Product Quote"}
+                  <FileText aria-hidden="true" className="size-4" /> {serviceMode ? "Get Service Quote" : "Get Product Quote"}
                 </Button>
               </Link>
               {supplier && (
                 <Link href={ROUTES.MARKETPLACE_SUPPLIER(supplier.slug)}>
                   <Button size="lg" variant="outline" className="gap-2">
-                    Visit {providerText.toLowerCase()} <ArrowUpRight className="size-4" />
+                    Visit {providerText.toLowerCase()} <ArrowUpRight aria-hidden="true" className="size-4" />
                   </Button>
                 </Link>
               )}
+            </div>
+
+            <div className="mt-6 grid gap-3 rounded-2xl border border-border/70 bg-ink-50/80 p-3 sm:grid-cols-3">
+              {[
+                { icon: ShieldCheck, label: "Checked seller", value: supplier?.name ?? "Alivia desk" },
+                { icon: Clock3, label: serviceMode ? "Visit lead" : "Lead time", value: product.leadTimeDays ? `${product.leadTimeDays} days` : "Confirm fast" },
+                { icon: Truck, label: "Quote includes", value: serviceMode ? "Scope & schedule" : "Quantity & delivery" },
+              ].map(({ icon: Icon, label, value }) => (
+                <div key={label} className="rounded-xl bg-white px-3 py-3">
+                  <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-brand-700">
+                    <Icon aria-hidden="true" className="size-3.5" />
+                    {label}
+                  </div>
+                  <p className="mt-1 text-sm font-medium text-ink-900">{value}</p>
+                </div>
+              ))}
             </div>
 
             {supplier && (
@@ -209,13 +228,13 @@ export default async function MarketplaceProductPage({ params }: PageProps) {
                 <div className="mt-3 flex flex-wrap gap-2">
                   <a href={`tel:${supplier.phone ?? ""}`}>
                     <Button size="sm" variant="outline" className="gap-1.5">
-                      <Phone className="size-3.5" /> Call
+                      <Phone aria-hidden="true" className="size-3.5" /> Call
                     </Button>
                   </a>
                   {supplier.email && (
                     <a href={`mailto:${supplier.email}`}>
                       <Button size="sm" variant="outline" className="gap-1.5">
-                        <Mail className="size-3.5" /> Email
+                        <Mail aria-hidden="true" className="size-3.5" /> Email
                       </Button>
                     </a>
                   )}
