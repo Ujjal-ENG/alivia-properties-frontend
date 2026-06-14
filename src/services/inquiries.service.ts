@@ -113,7 +113,14 @@ export async function getInquiries(
   const token = session?.accessToken
   try {
     return await inquiriesService.list(params, token)
-  } catch {
+  } catch (err) {
+    // Don't let a failed fetch masquerade as "no inquiries" — surface the reason
+    // in the server log so an auth/network error is diagnosable instead of
+    // silently rendering an empty list.
+    console.error(
+      `[getInquiries] failed to load inquiries (type=${params.type ?? "all"}, token=${token ? "present" : "missing"}):`,
+      err instanceof Error ? err.message : err,
+    )
     return {
       data: [],
       meta: { page: 1, limit: params.limit ?? 10, total: 0, totalPages: 0 },
