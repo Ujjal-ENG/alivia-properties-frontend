@@ -1257,6 +1257,7 @@ const INQUIRY_TYPE_FILTERS: { value: InquiryType | "all"; label: string }[] = [
   { value: "property", label: "Property" },
   { value: "project", label: "Project" },
   { value: "general", label: "General" },
+  { value: "report", label: "Report" },
   { value: "supplier", label: "Supplier" },
   { value: "investor", label: "Investor" },
 ]
@@ -1797,10 +1798,13 @@ export function AdminReportsTable({ reports }: { reports: Report[] }) {
     {
       key: "actions",
       header: "Actions",
-      render: () => (
-        <Button size="sm" variant="outline" className="rounded-full">
-          Review
-        </Button>
+      render: (r) => (
+        <Link href={`${ROUTES.ADMIN_INQUIRIES}/${r.id}`}>
+          <Button size="sm" variant="outline" className="rounded-full">
+            <Eye className="size-3.5" />
+            Review
+          </Button>
+        </Link>
       ),
     },
   ]
