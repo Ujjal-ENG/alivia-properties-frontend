@@ -22,6 +22,8 @@ export const reportSchema = z.object({
 
   email: z.email("Enter a valid email address"),
 
+  phone: z.string().trim().max(40, "Phone number is too long").optional(),
+
   message: z
     .string("Please describe the issue")
     .trim()
