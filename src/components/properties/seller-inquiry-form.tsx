@@ -1,6 +1,14 @@
 "use client";
 
-import { CheckCircle2, Loader2, Send } from "lucide-react";
+import {
+  CheckCircle2,
+  Loader2,
+  Mail,
+  Phone,
+  Send,
+  ShieldCheck,
+  User,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 
@@ -16,6 +24,13 @@ type SellerInquiryFormProps = {
   sellerName: string;
 };
 
+const QUICK_PROMPTS = [
+  "I'd like to schedule a visit.",
+  "Is the price negotiable?",
+  "Can you share more photos?",
+  "Is this still available?",
+];
+
 export function SellerInquiryForm({
   propertyId,
   propertyTitle,
@@ -25,6 +40,7 @@ export function SellerInquiryForm({
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState("");
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -39,7 +55,7 @@ export function SellerInquiryForm({
     const name = String(formData.get("name") ?? "").trim();
     const email = String(formData.get("email") ?? "").trim();
     const phone = String(formData.get("phone") ?? "").trim();
-    const message = String(formData.get("message") ?? "").trim();
+    const messageValue = String(formData.get("message") ?? "").trim();
 
     try {
       await inquiriesService.create(
@@ -49,11 +65,12 @@ export function SellerInquiryForm({
           name,
           email,
           phone,
-          message,
+          message: messageValue,
         },
         session?.accessToken,
       );
       form.reset();
+      setMessage("");
       setSubmitted(true);
     } catch (err) {
       setError(
@@ -68,47 +85,144 @@ export function SellerInquiryForm({
     }
   }
 
+  function applyPrompt(prompt: string) {
+    setMessage((prev) =>
+      prev.includes(prompt) ? prev : prev ? `${prev} ${prompt}` : prompt,
+    );
+  }
+
   if (submitted) {
     return (
-      <div className="rounded-[1rem] border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
-        <p className="flex items-center gap-2 font-semibold">
-          <CheckCircle2 className="size-4" />
-          Inquiry sent
+      <div className="rounded-[1.25rem] border border-emerald-200 bg-emerald-50/80 p-5 text-center">
+        <div className="mx-auto flex size-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+          <CheckCircle2 className="size-6" />
+        </div>
+        <p className="mt-3 text-sm font-semibold text-emerald-900">
+          Inquiry sent to {sellerName}
         </p>
-        <p className="mt-2 text-emerald-700">
-          {sellerName} has received your message about {propertyTitle}.
+        <p className="mt-1 text-xs leading-relaxed text-emerald-700">
+          They&apos;ve received your message about {propertyTitle} and will get
+          back to you soon.
         </p>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setSubmitted(false)}
+          className="mt-4 h-9 rounded-full border-emerald-300 bg-white/70 text-emerald-800 hover:bg-white"
+        >
+          Send another inquiry
+        </Button>
       </div>
     );
   }
 
   return (
-    <form onSubmit={submit} className="space-y-3">
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-        <Input
-          name="name"
-          required
-          defaultValue={session?.user?.name ?? ""}
-          placeholder="Your name"
-        />
-        <Input name="phone" required type="tel" placeholder="Phone number" />
+    <form onSubmit={submit} className="space-y-4">
+      <div className="space-y-2">
+        <p className="text-xs font-medium text-ink-500">Quick start</p>
+        <div className="flex flex-wrap gap-1.5">
+          {QUICK_PROMPTS.map((prompt) => (
+            <button
+              key={prompt}
+              type="button"
+              onClick={() => applyPrompt(prompt)}
+              className="rounded-full border border-brand-200 bg-brand-50/70 px-2.5 py-1 text-xs font-medium text-brand-800 transition-colors hover:border-brand-300 hover:bg-brand-100"
+            >
+              {prompt}
+            </button>
+          ))}
+        </div>
       </div>
-      <Input
-        name="email"
-        required
-        type="email"
-        defaultValue={session?.user?.email ?? ""}
-        placeholder="Email address"
-      />
-      <Textarea
-        name="message"
-        required
-        rows={4}
-        placeholder="Share your budget, visit timing, or any question about this listing..."
-      />
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+        <div className="space-y-1.5">
+          <label
+            htmlFor="inq-name"
+            className="text-xs font-medium text-ink-600"
+          >
+            Your name
+          </label>
+          <div className="relative">
+            <User className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-400" />
+            <Input
+              id="inq-name"
+              name="name"
+              required
+              autoComplete="name"
+              defaultValue={session?.user?.name ?? ""}
+              placeholder="e.g. Rahim Ahmed"
+              className="h-11 pl-9"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <label
+            htmlFor="inq-phone"
+            className="text-xs font-medium text-ink-600"
+          >
+            Phone number
+          </label>
+          <div className="relative">
+            <Phone className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-400" />
+            <Input
+              id="inq-phone"
+              name="phone"
+              required
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              placeholder="01XXXXXXXXX"
+              className="h-11 pl-9"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <label htmlFor="inq-email" className="text-xs font-medium text-ink-600">
+          Email address
+        </label>
+        <div className="relative">
+          <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-400" />
+          <Input
+            id="inq-email"
+            name="email"
+            required
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            defaultValue={session?.user?.email ?? ""}
+            placeholder="you@example.com"
+            className="h-11 pl-9"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <label
+          htmlFor="inq-message"
+          className="text-xs font-medium text-ink-600"
+        >
+          Message
+        </label>
+        <Textarea
+          id="inq-message"
+          name="message"
+          required
+          rows={4}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Share your budget, visit timing, or any question about this listing..."
+          className="resize-none"
+        />
+      </div>
 
       {error ? (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p
+          role="alert"
+          className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+        >
           {error}
         </p>
       ) : null}
@@ -116,15 +230,25 @@ export function SellerInquiryForm({
       <Button
         type="submit"
         disabled={submitting}
-        className="w-full rounded-full bg-brand-700 text-white hover:bg-brand-800"
+        className="h-11 w-full rounded-full bg-brand-700 text-white shadow-sm transition-colors hover:bg-brand-800"
       >
         {submitting ? (
-          <Loader2 className="size-4 animate-spin" />
+          <>
+            <Loader2 className="size-4 animate-spin" />
+            Sending...
+          </>
         ) : (
-          <Send className="size-4" />
+          <>
+            <Send className="size-4" />
+            Send inquiry
+          </>
         )}
-        Send inquiry
       </Button>
+
+      <p className="flex items-center justify-center gap-1.5 text-[0.7rem] text-ink-400">
+        <ShieldCheck className="size-3.5 text-brand-500" />
+        Your details are shared only with {sellerName}.
+      </p>
     </form>
   );
 }
