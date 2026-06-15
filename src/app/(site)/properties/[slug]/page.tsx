@@ -15,6 +15,10 @@ import {
   CalendarDays,
   ShieldCheck,
   ArrowRight,
+  Eye,
+  Tag,
+  Clock,
+  Navigation,
 } from "lucide-react";
 import { getProperty, getProperties } from "@/services/properties.service";
 import { getDocuments } from "@/services/documents.service";
@@ -102,6 +106,11 @@ export default async function PropertyDetailPage({
     year: "numeric",
   }).format(new Date(p.createdAt));
 
+  const locationQuery = encodeURIComponent(
+    [p.address, p.area, p.district, p.division].filter(Boolean).join(", "),
+  );
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${locationQuery}`;
+
   const schema = {
     "@context": "https://schema.org",
     "@type": "RealEstateListing",
@@ -184,31 +193,33 @@ export default async function PropertyDetailPage({
                     Listed {publishedDate}
                   </span>
                 </div>
-                {p.priceNegotiable && (
-                  <p className="mt-2 text-sm text-ink-500">
-                    Price is negotiable
-                  </p>
-                )}
               </div>
             </div>
 
-            <div className="grid gap-2 sm:grid-cols-3">
-              <div className="surface-card bg-brand-aurora p-4 sm:col-span-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-700">
-                  Listing note
-                </p>
-                <p className="mt-3 text-sm leading-relaxed text-ink-700">
-                  Verified cues, compact specs, and seller actions stay visible
-                  before user scrolls into long description.
-                </p>
+            <div className="grid grid-cols-3 gap-2.5">
+              <div className="surface-card flex flex-col gap-1.5 p-4">
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-500">
+                  <Eye className="size-3.5 text-brand-600" /> Views
+                </span>
+                <span className="text-xl font-semibold text-ink-900">
+                  {p.viewCount.toLocaleString("en-US")}
+                </span>
               </div>
-              <div className="surface-card p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-500">
-                  Views
-                </p>
-                <p className="mt-3 text-2xl font-semibold text-ink-900">
-                  {p.viewCount}
-                </p>
+              <div className="surface-card flex flex-col gap-1.5 p-4">
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-500">
+                  <Tag className="size-3.5 text-brand-600" /> Pricing
+                </span>
+                <span className="text-sm font-semibold text-ink-900">
+                  {p.priceNegotiable ? "Negotiable" : "Fixed price"}
+                </span>
+              </div>
+              <div className="surface-card flex flex-col gap-1.5 p-4">
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-500">
+                  <Building2 className="size-3.5 text-brand-600" /> Type
+                </span>
+                <span className="text-sm font-semibold capitalize text-ink-900">
+                  {p.type}
+                </span>
               </div>
             </div>
           </div>
@@ -270,7 +281,10 @@ export default async function PropertyDetailPage({
           <div className="space-y-8">
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               {specCards.map(({ icon: Icon, label, value }) => (
-                <div key={label} className="surface-card p-4 text-center">
+                <div
+                  key={label}
+                  className="surface-card p-4 text-center transition-shadow hover:shadow-(--shadow-elevated)"
+                >
                   <Icon className="mx-auto h-4 w-4 text-brand-600" />
                   <p className="mt-2 text-xs uppercase tracking-[0.16em] text-ink-500">
                     {label}
@@ -329,15 +343,33 @@ export default async function PropertyDetailPage({
             )}
 
             <div className="surface-card p-6">
-              <h2 className="text-h3">Location</h2>
-              <div className="mt-5 h-56 rounded-[1.5rem] border border-border bg-brand-aurora flex items-center justify-center">
-                <div className="text-center">
-                  <MapPin className="mx-auto h-5 w-5 text-brand-600" />
-                  <p className="mt-3 text-sm font-medium text-ink-800">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="text-h3">Location</h2>
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-brand-200 bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700 transition-colors hover:bg-brand-100"
+                >
+                  <Navigation className="size-3.5" /> Get directions
+                </a>
+              </div>
+              <div className="relative mt-5 h-56 overflow-hidden rounded-[1.5rem] border border-border bg-brand-aurora">
+                <div className="absolute inset-0 bg-grid-fade opacity-60" />
+                <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+                  <span className="flex size-11 items-center justify-center rounded-full bg-brand-600 text-white shadow-md">
+                    <MapPin className="size-5" />
+                  </span>
+                  <p className="mt-3 text-sm font-semibold text-ink-900">
                     {p.area}, {p.district}
                   </p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.16em] text-ink-500">
-                    Map placeholder
+                  {p.address && (
+                    <p className="mt-1 max-w-xs text-xs leading-relaxed text-ink-600">
+                      {p.address}
+                    </p>
+                  )}
+                  <p className="mt-0.5 text-xs text-ink-400">
+                    {p.division} Division
                   </p>
                 </div>
               </div>
@@ -384,6 +416,18 @@ export default async function PropertyDetailPage({
                   ? "Monthly rent estimate."
                   : "Purchase-ready starting point."}
               </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <span className="inline-flex items-center gap-1 rounded-full bg-white/70 px-2.5 py-1 text-xs font-medium text-brand-800">
+                  <Tag className="size-3" />
+                  {p.priceNegotiable ? "Negotiable" : "Fixed price"}
+                </span>
+                {p.isVerified && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/70 px-2.5 py-1 text-xs font-medium text-brand-800">
+                    <ShieldCheck className="size-3" />
+                    Verified listing
+                  </span>
+                )}
+              </div>
             </div>
 
             <div className="surface-card p-5">
@@ -391,26 +435,39 @@ export default async function PropertyDetailPage({
                 Contact Seller
               </h3>
               <div className="mt-4 flex items-center gap-3">
-                {p.sellerAvatar && (
+                {p.sellerAvatar ? (
                   <Image
                     src={p.sellerAvatar}
                     alt={p.sellerName}
                     width={44}
                     height={44}
-                    className="rounded-full"
+                    className="size-11 rounded-full object-cover"
                   />
+                ) : (
+                  <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-semibold text-brand-700">
+                    {p.sellerName.charAt(0).toUpperCase()}
+                  </span>
                 )}
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-ink-900">
                     {p.sellerName}
                   </p>
-                  <p className="text-xs text-ink-500">
-                    {p.sellerVerified
-                      ? "Verified Seller"
-                      : "Independent Seller"}
+                  <p className="inline-flex items-center gap-1 text-xs text-ink-500">
+                    {p.sellerVerified ? (
+                      <>
+                        <ShieldCheck className="size-3 text-brand-600" />
+                        Verified Seller
+                      </>
+                    ) : (
+                      "Independent Seller"
+                    )}
                   </p>
                 </div>
               </div>
+              <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-ink-50 px-3 py-1 text-xs text-ink-500">
+                <Clock className="size-3.5 text-brand-500" />
+                Typically replies within a few hours
+              </p>
 
               <div className="mt-5 space-y-2">
                 <a
