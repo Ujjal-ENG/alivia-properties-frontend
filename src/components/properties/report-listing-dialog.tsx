@@ -3,42 +3,74 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { AlertTriangle } from "lucide-react"
+import { AlertTriangle, CheckCircle2 } from "lucide-react"
+import { useSession } from "next-auth/react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { reportSchema, REPORT_REASONS, type ReportInput } from "@/schemas/report.schema"
+import { ApiError } from "@/services/http-client"
+import { inquiriesService } from "@/services/inquiries.service"
 
 interface ReportListingDialogProps {
   propertyId: string
 }
 
+const DEFAULTS: ReportInput = {
+  propertyId: "",
+  reason: "Incorrect information",
+  message: "",
+  name: "",
+  email: "",
+  phone: "",
+}
+
 export function ReportListingDialog({ propertyId }: ReportListingDialogProps) {
+  const { data: session } = useSession()
   const [open, setOpen] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const form = useForm<ReportInput>({
     resolver: zodResolver(reportSchema),
-    defaultValues: {
-      propertyId,
-      reason: "Incorrect information",
-      message: "",
-      name: "",
-      email: "",
-    },
+    defaultValues: { ...DEFAULTS, propertyId },
   })
 
   async function onSubmit(values: ReportInput) {
-    await new Promise((resolve) => setTimeout(resolve, 400))
-    console.log("Dummy report submitted", values)
-    setSubmitted(true)
-    setTimeout(() => {
-      setOpen(false)
-      setSubmitted(false)
-      form.reset({ propertyId, reason: "Incorrect information", message: "", name: "", email: "" })
-    }, 1000)
+    setError(null)
+    try {
+      await inquiriesService.create(
+        {
+          type: "REPORT",
+          propertyId: values.propertyId,
+          name: values.name,
+          email: values.email,
+          // Report-specific reporter phone is optional; the inquiry contract
+          // expects a string, so fall back to an empty value.
+          phone: values.phone?.trim() ?? "",
+          // The inquiry model has no `reason` column, so fold the selected reason
+          // into the message. The admin reports view parses this prefix back out.
+          message: `Reason: ${values.reason}\n\n${values.message.trim()}`,
+        },
+        session?.accessToken,
+      )
+      setSubmitted(true)
+      setTimeout(() => {
+        setOpen(false)
+        setSubmitted(false)
+        form.reset({ ...DEFAULTS, propertyId })
+      }, 1800)
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : err instanceof Error
+            ? err.message
+            : "Could not submit this report right now. Please try again.",
+      )
+    }
   }
 
   return (
@@ -57,12 +89,23 @@ export function ReportListingDialog({ propertyId }: ReportListingDialogProps) {
         </DialogHeader>
 
         {submitted ? (
-          <div className="rounded-[1rem] bg-brand-50 px-4 py-6 text-sm text-brand-800">
-            Report submitted. Team will review listing shortly.
+          <div className="rounded-[1rem] border border-emerald-200 bg-emerald-50 px-4 py-6 text-center text-sm text-emerald-800">
+            <CheckCircle2 className="mx-auto size-7 text-emerald-600" />
+            <p className="mt-2 font-semibold">Report submitted</p>
+            <p className="mt-1 text-emerald-700">
+              Thanks for flagging this. The Alivia team will review the listing
+              shortly.
+            </p>
           </div>
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <p className="text-sm text-ink-500">
+                Tell us what&apos;s wrong with this listing. Reports go straight
+                to our moderation team — the seller is not notified of who
+                reported it.
+              </p>
+
               <FormField
                 control={form.control}
                 name="reason"
@@ -88,7 +131,7 @@ export function ReportListingDialog({ propertyId }: ReportListingDialogProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Name</FormLabel>
-                      <FormControl><Input placeholder="Your name" {...field} /></FormControl>
+                      <FormControl><Input autoComplete="name" placeholder="Your name" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -99,7 +142,7 @@ export function ReportListingDialog({ propertyId }: ReportListingDialogProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Email</FormLabel>
-                      <FormControl><Input type="email" placeholder="you@example.com" {...field} /></FormControl>
+                      <FormControl><Input type="email" autoComplete="email" placeholder="you@example.com" {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -108,15 +151,45 @@ export function ReportListingDialog({ propertyId }: ReportListingDialogProps) {
 
               <FormField
                 control={form.control}
-                name="message"
+                name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Details</FormLabel>
-                    <FormControl><Textarea rows={5} placeholder="Describe problem clearly…" {...field} /></FormControl>
+                    <FormLabel>Phone (optional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        placeholder="01XXXXXXXXX"
+                        {...field}
+                        value={field.value ?? ""}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="message"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Details</FormLabel>
+                    <FormControl><Textarea rows={5} placeholder="Describe the problem clearly…" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {error ? (
+                <p
+                  role="alert"
+                  className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                >
+                  {error}
+                </p>
+              ) : null}
 
               <Button type="submit" className="w-full rounded-full bg-ink-900 text-white hover:bg-ink-800" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting ? "Submitting…" : "Submit Report"}
