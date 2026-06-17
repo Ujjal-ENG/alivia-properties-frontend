@@ -27,6 +27,8 @@ export const propertySchema = z.object({
   // Up to 3 uploaded video files (optional).
   videos: z.array(z.string()).max(3, "You can add up to 3 videos").optional().default([]),
   videoUrl: z.string().optional().default(""),
+  // 0-or-1 equirectangular 360° image URL for the in-app virtual tour (optional).
+  panorama: z.array(z.string()).max(1, "Add a single 360° panorama").optional().default([]),
   contactName: z.string().min(2, "Contact name is required"),
   contactPhone: z.string().min(7, "Contact phone is required"),
   whatsApp: z.string().optional().default(""),
