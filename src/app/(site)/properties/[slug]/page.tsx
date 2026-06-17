@@ -303,13 +303,18 @@ export default async function PropertyDetailPage({
               </p>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <VirtualTour
-                posterImage={p.images[0]}
-                title="Virtual 360° Tour"
-              />
-              {floorLevels.length > 0 && <FloorPlan levels={floorLevels} />}
-            </div>
+            {/* A 360° room tour and floor plan only make sense for built spaces,
+                not bare plots/land. */}
+            {p.type !== "plot" && p.type !== "land" && (
+              <>
+                <VirtualTour
+                  posterImage={p.images[0]}
+                  panoramaUrl={p.panoramaUrl}
+                  title="Virtual 360° Tour"
+                />
+                {floorLevels.length > 0 && <FloorPlan levels={floorLevels} />}
+              </>
+            )}
 
             <VideoReel reels={reels} />
 
