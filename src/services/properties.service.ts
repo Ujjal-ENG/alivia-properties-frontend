@@ -25,6 +25,7 @@ function toBackendQuery(params: PropertyQueryParams): Record<string, string | nu
 type BackendImage = { url: string } | string
 type BackendProperty = Omit<Property, "images"> & {
   images: BackendImage[]
+  panorama?: { url: string } | null
   seller?: { id: string; name: string; phone?: string; avatar?: string; isVerified?: boolean; whatsApp?: string }
 }
 
@@ -49,13 +50,16 @@ function keyFromUrl(url: string): string {
 // the backend write contract: uppercase enums, images as ordered ImageRef
 // objects (index 0 = cover), videos as URL strings, contact fields dropped.
 function toWritePayload(payload: unknown): Record<string, unknown> {
-  const { contactName, contactPhone, whatsApp, images, type, purpose, videos, ...rest } =
+  const { contactName, contactPhone, whatsApp, images, type, purpose, videos, panorama, ...rest } =
     (payload ?? {}) as Record<string, unknown>
   void contactName
   void contactPhone
   void whatsApp
 
   const urls = Array.isArray(images) ? (images as string[]) : []
+  // The form holds the panorama as a 0-or-1 entry URL array; the backend expects
+  // a single ImageRef object (or null to clear it).
+  const panoramaUrl = Array.isArray(panorama) ? (panorama as string[])[0] : undefined
   return {
     ...rest,
     ...(typeof type === "string" ? { type: type.toUpperCase() } : {}),
@@ -67,6 +71,7 @@ function toWritePayload(payload: unknown): Record<string, unknown> {
       order: i,
     })),
     videos: Array.isArray(videos) ? (videos as string[]) : [],
+    panorama: panoramaUrl ? { key: keyFromUrl(panoramaUrl), url: panoramaUrl } : null,
   }
 }
 
@@ -75,6 +80,7 @@ function toFrontendProperty(p: BackendProperty): Property {
     ...p,
     images: Array.isArray(p.images) ? p.images.map(imageUrl) : [],
     videos: Array.isArray(p.videos) ? p.videos : [],
+    panoramaUrl: p.panorama?.url ?? undefined,
     status: (typeof p.status === "string" ? p.status.toLowerCase() : p.status) as PropertyStatus,
     purpose: (typeof p.purpose === "string" ? p.purpose.toLowerCase() : p.purpose) as PropertyPurpose,
     type: (typeof p.type === "string" ? p.type.toLowerCase() : p.type) as PropertyType,
