@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { FileUploader } from "@/components/common/file-uploader"
 import { PropertyImagesUploader } from "@/components/forms/property-images-uploader"
+import { PanoramaBuilder } from "@/components/forms/panorama-builder"
 import { propertySchema, propertyCreateSchema } from "@/schemas/property.schema"
 import { createProperty, updateProperty } from "@/services/properties.service"
 import { PROPERTY_TYPE_OPTIONS, SIZE_UNIT_OPTIONS } from "@/data/property-types"
@@ -58,6 +59,7 @@ function getDefaultValues(initialProperty?: Property, contactDefaults?: Property
     images: initialProperty?.images ?? [],
     videos: initialProperty?.videos ?? [],
     videoUrl: initialProperty?.videoUrl ?? "",
+    panorama: initialProperty?.panoramaUrl ? [initialProperty.panoramaUrl] : [],
     contactName: initialProperty?.sellerName ?? contactDefaults?.name ?? "",
     contactPhone: initialProperty?.sellerPhone ?? contactDefaults?.phone ?? "",
     whatsApp: initialProperty?.sellerWhatsApp ?? contactDefaults?.whatsApp ?? "",
@@ -79,6 +81,7 @@ export function PropertyForm({ mode, initialProperty, contactDefaults }: Propert
   const selectedDivision = useWatch({ control: form.control, name: "division" }) ?? ""
   const imageValues = useWatch({ control: form.control, name: "images" }) ?? []
   const videoValues = useWatch({ control: form.control, name: "videos" }) ?? []
+  const panoramaValues = useWatch({ control: form.control, name: "panorama" }) ?? []
   const selectedFacilities = useWatch({ control: form.control, name: "facilities" }) ?? []
 
   const districts = useMemo(
@@ -486,6 +489,42 @@ export function PropertyForm({ mode, initialProperty, contactDefaults }: Propert
                   </FormItem>
                 )}
               />
+            </div>
+
+            <div className="mt-6 space-y-2">
+              <FileUploader
+                kind="property-image"
+                label="360° Panorama (optional)"
+                hint="One equirectangular (2:1) photo powers the interactive virtual tour · max 10 MB"
+                value={panoramaValues}
+                onChange={(urls) =>
+                  form.setValue("panorama", urls.slice(0, 1), {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                  })
+                }
+              />
+              {form.formState.errors.panorama?.message && (
+                <p className="text-sm text-red-600">
+                  {form.formState.errors.panorama.message}
+                </p>
+              )}
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-500">
+                <span>
+                  Upload a 360° equirectangular shot (a 2:1 image, e.g.
+                  4096×2048) — or
+                </span>
+                <PanoramaBuilder
+                  galleryUrls={imageValues}
+                  onBuilt={(url) =>
+                    form.setValue("panorama", [url], {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    })
+                  }
+                />
+                <span>from your listing photos. Leave empty for the sample tour.</span>
+              </div>
             </div>
 
           </div>
