@@ -58,6 +58,8 @@ export type Property = {
   images: string[]
   videos?: string[]
   videoUrl?: string
+  /** Equirectangular 360° image URL for the in-app virtual tour. */
+  panoramaUrl?: string
 
   mapPin?: string
   isVerified?: boolean
