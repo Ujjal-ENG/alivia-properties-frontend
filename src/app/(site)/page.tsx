@@ -5,6 +5,7 @@ import {
   Building2,
   CalendarDays,
   Compass,
+  FileText,
   FileCheck2,
   Handshake,
   Headset,
@@ -121,40 +122,125 @@ export default async function HomePage() {
       {/* 1 — Hero */}
       <HomeHero projects={heroProjects} />
 
-      {/* 2 — Verified numbers band */}
+      {/* 2 — Choose your path */}
+      <MarketplacePathfinder />
+
+      {/* 3 — Verified numbers band */}
       <VerifiedNumbers />
 
-      {/* 3 — Trust features */}
+      {/* 4 — Trust features */}
       <TrustSection />
 
-      {/* 4 — Flagship projects */}
+      {/* 5 — Flagship projects */}
       <FlagshipProjects projects={flagship} />
 
-      {/* 5 — Investment corridors */}
+      {/* 6 — Investment corridors */}
       <InvestmentCorridors />
 
-      {/* 6 — Verified listings */}
+      {/* 7 — Verified listings */}
       <VerifiedListings properties={properties} />
 
-      {/* 7 — Process */}
+      {/* 8 — Process */}
       <ProcessSection />
 
-      {/* 8 — Testimonials */}
+      {/* 9 — Testimonials */}
       <Testimonials />
 
-      {/* 9 — Founder / about */}
+      {/* 10 — Founder / about */}
       <FounderSection />
 
-      {/* 10 — Expert guidance CTA */}
+      {/* 11 — Expert guidance CTA */}
       <ExpertCta />
 
-      {/* 11 — Market insights */}
+      {/* 12 — Market insights */}
       <MarketInsights posts={posts} />
     </main>
   );
 }
 
-/* ───────────────────────── 2. Verified numbers ───────────────────────── */
+/* ───────────────────────── 2. Choose your path ───────────────────────── */
+
+function MarketplacePathfinder() {
+  const paths = [
+    {
+      icon: Compass,
+      title: "I need materials or contractors",
+      body: "Browse suppliers by construction category, compare products, and send one RFQ.",
+      href: ROUTES.MARKETPLACE,
+      cta: "Open Marketplace",
+      accent: "bg-brand-700 text-white",
+    },
+    {
+      icon: FileText,
+      title: "I want prices from suppliers",
+      body: "Tell us the item, quantity, location, and timeline. Alivia routes it to relevant businesses.",
+      href: ROUTES.MARKETPLACE_REQUEST,
+      cta: "Request Quote",
+      accent: "bg-gold-400 text-brand-950",
+    },
+    {
+      icon: Search,
+      title: "I am looking for property",
+      body: "Search homes, plots, rentals, and commercial spaces with verified listing details.",
+      href: ROUTES.PROPERTIES,
+      cta: "Browse Properties",
+      accent: "bg-brand-50 text-brand-800",
+    },
+    {
+      icon: Headset,
+      title: "I need someone to guide me",
+      body: "Book a consultation for property, supplier, investment, or project questions.",
+      href: ROUTES.CONSULTATION,
+      cta: "Talk to Advisor",
+      accent: "bg-ink-900 text-white",
+    },
+  ];
+
+  return (
+    <section className="border-y border-border/60 bg-white">
+      <div className="container-page py-10 sm:py-12">
+        <div className="grid gap-7 lg:grid-cols-[0.62fr_1.38fr] lg:items-start">
+          <div>
+            <p className="text-eyebrow mb-2">What can you do here?</p>
+            <h2 className="text-balance font-heading text-2xl font-bold uppercase tracking-tight text-brand-950 sm:text-3xl">
+              Pick the path that matches today&apos;s job.
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-ink-600">
+              Alivia is a marketplace front door first: suppliers, RFQs,
+              properties, and expert help are separated into clear choices.
+            </p>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            {paths.map(({ icon: Icon, title, body, href, cta, accent }) => (
+              <Link
+                key={title}
+                href={href}
+                className="group min-w-0 rounded-3xl border border-black/5 bg-ink-50/70 p-4 transition-[background-color,border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:bg-white hover:shadow-(--shadow-card) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+              >
+                <span className={`inline-flex size-10 items-center justify-center rounded-2xl ${accent}`}>
+                  <Icon aria-hidden="true" className="size-4" />
+                </span>
+                <h3 className="mt-4 font-sans text-base font-bold text-ink-900">
+                  {title}
+                </h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-ink-600">
+                  {body}
+                </p>
+                <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 group-hover:text-brand-900">
+                  {cta}
+                  <ArrowRight aria-hidden="true" className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none motion-reduce:transform-none" />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ───────────────────────── 3. Verified numbers ───────────────────────── */
 
 function VerifiedNumbers() {
   const items = [
@@ -418,7 +504,7 @@ function VerifiedListings({ properties }: { properties: SoftRecord[] }) {
           </div>
           <Link href={ROUTES.PROPERTIES}>
             <Button variant="outline" size="sm" className="gap-1.5 rounded-full">
-              Browse marketplace <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+              Browse properties <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
             </Button>
           </Link>
         </header>
