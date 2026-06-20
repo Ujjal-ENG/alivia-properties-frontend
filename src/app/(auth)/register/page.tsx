@@ -14,7 +14,10 @@ export default function RegisterPage() {
 
       <div className="mt-4 text-center text-sm text-muted-foreground">
         Already have an account?{" "}
-        <Link href={ROUTES.LOGIN} className="text-brand-700 font-medium hover:underline">
+        <Link
+          href={ROUTES.LOGIN}
+          className="inline-flex min-h-11 min-w-12 items-center font-medium text-brand-700 hover:underline"
+        >
           Sign in
         </Link>
       </div>
