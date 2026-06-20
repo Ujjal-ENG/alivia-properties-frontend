@@ -1,6 +1,8 @@
 "use client"
 
-import { SlidersHorizontal, RotateCcw, MapPin, BadgeCheck } from "lucide-react"
+import { useState } from "react"
+import { SlidersHorizontal, RotateCcw, MapPin, BadgeCheck, ChevronDown } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { usePropertyFilters } from "@/hooks/use-property-filters"
 import { PROPERTY_TYPE_OPTIONS } from "@/data/property-types"
 import { BD_DIVISIONS } from "@/data/locations.bd"
@@ -32,23 +34,48 @@ export function FilterSidebar() {
     filters.verified,
   ].filter(Boolean).length
 
+  const [open, setOpen] = useState(false)
+
   return (
-    <aside className="surface-panel sticky top-24 space-y-5 p-5">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="flex items-center gap-2 text-sm font-bold">
-            <SlidersHorizontal className="h-4 w-4 text-brand-600" />
-            Filters
-          </h3>
-          <p className="mt-1 text-xs uppercase tracking-[0.16em] text-ink-500">
-            {activeCount} active
-          </p>
-        </div>
-        <button type="button" onClick={resetFilters} className="flex cursor-pointer items-center gap-1 text-xs text-brand-700 hover:underline">
+    <aside className="surface-panel space-y-5 p-5 lg:sticky lg:top-24">
+      <div className="flex items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          aria-controls="filter-body"
+          className="flex flex-1 items-center justify-between gap-2 text-left lg:pointer-events-none"
+        >
+          <div>
+            <h3 className="flex items-center gap-2 text-sm font-bold">
+              <SlidersHorizontal className="h-4 w-4 text-brand-600" />
+              Filters
+              {activeCount > 0 && (
+                <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-brand-700 px-1.5 py-0.5 text-[0.6rem] font-bold text-white lg:hidden">
+                  {activeCount}
+                </span>
+              )}
+            </h3>
+            <p className="mt-1 text-xs uppercase tracking-[0.16em] text-ink-500">
+              {activeCount} active
+            </p>
+          </div>
+          <ChevronDown
+            className={cn(
+              "h-5 w-5 shrink-0 text-ink-500 transition-transform duration-200 lg:hidden",
+              open && "rotate-180",
+            )}
+          />
+        </button>
+        <button type="button" onClick={resetFilters} className="flex shrink-0 cursor-pointer items-center gap-1 text-xs text-brand-700 hover:underline">
           <RotateCcw className="h-3 w-3" /> Reset
         </button>
       </div>
 
+      <div
+        id="filter-body"
+        className={cn("space-y-5 lg:block", open ? "block" : "hidden")}
+      >
       <div className="rounded-[1.25rem] border border-brand-100 bg-brand-50/70 p-4">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-700">Quick guidance</p>
         <p className="mt-2 text-sm leading-relaxed text-ink-600">
@@ -216,6 +243,7 @@ export function FilterSidebar() {
         <BadgeCheck className="h-4 w-4 text-brand-600" />
         <span className="text-sm font-medium">Verified listings only</span>
       </label>
+      </div>
     </aside>
   )
 }
