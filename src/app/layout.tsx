@@ -35,6 +35,12 @@ export default async function RootLayout({
         suppressHydrationWarning
         className="min-h-full flex flex-col bg-background text-foreground"
       >
+        <a
+          href="#main-content"
+          className="sr-only z-[1000] rounded-full bg-brand-700 px-4 py-2 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:outline-none focus:ring-2 focus:ring-gold-300"
+        >
+          Skip to main content
+        </a>
         <SessionProvider session={session}>{children}</SessionProvider>
       </body>
     </html>
