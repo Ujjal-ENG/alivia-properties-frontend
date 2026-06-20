@@ -277,8 +277,8 @@ export default async function PropertyDetailPage({
           </div>
         </div>
 
-        <div className="mt-10 grid gap-10 lg:grid-cols-[1.3fr_0.7fr]">
-          <div className="space-y-8">
+        <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[1.3fr_0.7fr]">
+          <div className="min-w-0 space-y-8">
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               {specCards.map(({ icon: Icon, label, value }) => (
                 <div
@@ -321,7 +321,7 @@ export default async function PropertyDetailPage({
             {documents.length > 0 && <DocumentVault documents={documents} />}
 
             {p.purpose === "sale" && (
-              <div className="grid gap-4">
+              <div className="grid gap-4 *:min-w-0">
                 <RoiCalculator propertyPrice={p.price} />
                 <EmiBankCompare propertyPrice={p.price} />
               </div>
@@ -408,7 +408,7 @@ export default async function PropertyDetailPage({
             )}
           </div>
 
-          <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+          <div className="min-w-0 space-y-4 lg:sticky lg:top-24 lg:self-start">
             <div className="surface-card bg-brand-aurora p-5">
               <p className="text-xs uppercase tracking-[0.18em] text-brand-700">
                 Price snapshot
