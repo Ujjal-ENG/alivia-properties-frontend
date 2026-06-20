@@ -341,6 +341,17 @@
     touch-action: manipulation;
     -webkit-tap-highlight-color: rgb(15 23 42 / 0.08);
   }
+
+  @media (max-width: 767px) {
+    :where(button, [role="button"]) {
+      min-height: 44px !important;
+      min-width: 44px !important;
+    }
+
+    :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+      min-height: 44px !important;
+    }
+  }
 }
 
 /* ============================================================
@@ -410,6 +421,79 @@
   .surface-card-strong {
     @apply rounded-[1.75rem] border border-white/10 bg-ink-900 text-white;
     box-shadow: var(--shadow-pop);
+  }
+
+  @media (max-width: 767px) {
+    .surface-panel,
+    .surface-card {
+      border-color: color-mix(in oklch, white 72%, var(--color-brand-100)) !important;
+      background:
+        linear-gradient(135deg, color-mix(in oklch, white 78%, transparent), color-mix(in oklch, var(--color-brand-50) 58%, transparent)),
+        color-mix(in oklch, white 72%, transparent) !important;
+      box-shadow:
+        inset 0 1px 0 color-mix(in oklch, white 82%, transparent),
+        0 18px 55px color-mix(in oklch, var(--color-brand-900) 12%, transparent);
+      -webkit-backdrop-filter: blur(24px) saturate(1.45);
+      backdrop-filter: blur(24px) saturate(1.45);
+    }
+
+    .mobile-liquid-glass {
+      border-color: color-mix(in oklch, white 70%, var(--color-brand-100)) !important;
+      background:
+        linear-gradient(145deg, color-mix(in oklch, white 80%, transparent), color-mix(in oklch, var(--color-brand-50) 56%, transparent)),
+        color-mix(in oklch, white 70%, transparent) !important;
+      box-shadow:
+        inset 0 1px 0 color-mix(in oklch, white 85%, transparent),
+        0 18px 58px color-mix(in oklch, var(--color-brand-900) 14%, transparent);
+      -webkit-backdrop-filter: blur(26px) saturate(1.55);
+      backdrop-filter: blur(26px) saturate(1.55);
+    }
+
+    .mobile-liquid-glass-dark {
+      border-color: color-mix(in oklch, white 22%, transparent) !important;
+      background:
+        linear-gradient(145deg, color-mix(in oklch, var(--color-brand-950) 68%, transparent), color-mix(in oklch, var(--color-brand-700) 34%, transparent)),
+        color-mix(in oklch, var(--color-brand-950) 72%, transparent) !important;
+      box-shadow:
+        inset 0 1px 0 color-mix(in oklch, white 18%, transparent),
+        0 22px 70px color-mix(in oklch, black 28%, transparent);
+      -webkit-backdrop-filter: blur(28px) saturate(1.6);
+      backdrop-filter: blur(28px) saturate(1.6);
+    }
+
+    .mobile-liquid-glass-nav {
+      border-color: color-mix(in oklch, white 74%, var(--color-ink-200)) !important;
+      background:
+        linear-gradient(145deg, color-mix(in oklch, white 82%, transparent), color-mix(in oklch, var(--color-brand-50) 48%, transparent)),
+        color-mix(in oklch, white 76%, transparent) !important;
+      box-shadow:
+        inset 0 1px 0 color-mix(in oklch, white 90%, transparent),
+        0 14px 38px color-mix(in oklch, var(--color-ink-900) 13%, transparent);
+      -webkit-backdrop-filter: blur(24px) saturate(1.6);
+      backdrop-filter: blur(24px) saturate(1.6);
+    }
+
+    .mobile-liquid-glass-control {
+      border-color: color-mix(in oklch, white 78%, var(--color-ink-200)) !important;
+      background: color-mix(in oklch, white 70%, transparent) !important;
+      box-shadow:
+        inset 0 1px 0 color-mix(in oklch, white 88%, transparent),
+        0 10px 24px color-mix(in oklch, var(--color-ink-900) 12%, transparent);
+      -webkit-backdrop-filter: blur(20px) saturate(1.5);
+      backdrop-filter: blur(20px) saturate(1.5);
+    }
+  }
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .mobile-liquid-glass,
+    .mobile-liquid-glass-nav,
+    .mobile-liquid-glass-control {
+      background: color-mix(in oklch, white 94%, var(--color-brand-50)) !important;
+    }
+
+    .mobile-liquid-glass-dark {
+      background: var(--color-brand-950) !important;
+    }
   }
 
   .eyebrow-pill {
