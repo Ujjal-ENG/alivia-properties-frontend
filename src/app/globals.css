@@ -437,7 +437,15 @@
       backdrop-filter: blur(24px) saturate(1.45);
     }
 
-    .mobile-liquid-glass {
+    /* Explicit class + every overlay/card surface (base-ui emits data-slot)
+       becomes Apple-style liquid glass on phones — no per-component edits. */
+    .mobile-liquid-glass,
+    [data-slot="dialog-content"],
+    [data-slot="sheet-content"],
+    [data-slot="popover-content"],
+    [data-slot="dropdown-menu-content"],
+    [data-slot="menu-content"],
+    [data-slot="card"] {
       border-color: color-mix(in oklch, white 70%, var(--color-brand-100)) !important;
       background:
         linear-gradient(145deg, color-mix(in oklch, white 80%, transparent), color-mix(in oklch, var(--color-brand-50) 56%, transparent)),
@@ -447,6 +455,34 @@
         0 18px 58px color-mix(in oklch, var(--color-brand-900) 14%, transparent);
       -webkit-backdrop-filter: blur(26px) saturate(1.55);
       backdrop-filter: blur(26px) saturate(1.55);
+    }
+
+    /* Dark theme: same overlays/cards use the dark glass tint so contrast
+       stays correct (light glass over dark text would fail WCAG). */
+    .dark [data-slot="dialog-content"],
+    .dark [data-slot="sheet-content"],
+    .dark [data-slot="popover-content"],
+    .dark [data-slot="dropdown-menu-content"],
+    .dark [data-slot="menu-content"],
+    .dark [data-slot="card"] {
+      border-color: color-mix(in oklch, white 22%, transparent) !important;
+      background:
+        linear-gradient(145deg, color-mix(in oklch, var(--color-brand-950) 68%, transparent), color-mix(in oklch, var(--color-brand-700) 34%, transparent)),
+        color-mix(in oklch, var(--color-brand-950) 72%, transparent) !important;
+      box-shadow:
+        inset 0 1px 0 color-mix(in oklch, white 18%, transparent),
+        0 22px 70px color-mix(in oklch, black 28%, transparent);
+      -webkit-backdrop-filter: blur(28px) saturate(1.6);
+      backdrop-filter: blur(28px) saturate(1.6);
+    }
+
+    /* Modal/sheet scrim: deepen to ~45% so glass foreground stays legible
+       over busy backgrounds (Apple HIG dismissal scrim, 40-60%). */
+    [data-slot="dialog-overlay"],
+    [data-slot="sheet-overlay"] {
+      background-color: color-mix(in oklch, var(--color-brand-950) 45%, transparent) !important;
+      -webkit-backdrop-filter: blur(3px) saturate(1.1);
+      backdrop-filter: blur(3px) saturate(1.1);
     }
 
     .mobile-liquid-glass-dark {
@@ -485,14 +521,28 @@
   }
 
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .mobile-liquid-glass,
-    .mobile-liquid-glass-nav,
-    .mobile-liquid-glass-control {
-      background: color-mix(in oklch, white 94%, var(--color-brand-50)) !important;
-    }
+    @media (max-width: 767px) {
+      .mobile-liquid-glass,
+      .mobile-liquid-glass-nav,
+      .mobile-liquid-glass-control,
+      [data-slot="dialog-content"],
+      [data-slot="sheet-content"],
+      [data-slot="popover-content"],
+      [data-slot="dropdown-menu-content"],
+      [data-slot="menu-content"],
+      [data-slot="card"] {
+        background: color-mix(in oklch, white 94%, var(--color-brand-50)) !important;
+      }
 
-    .mobile-liquid-glass-dark {
-      background: var(--color-brand-950) !important;
+      .mobile-liquid-glass-dark,
+      .dark [data-slot="dialog-content"],
+      .dark [data-slot="sheet-content"],
+      .dark [data-slot="popover-content"],
+      .dark [data-slot="dropdown-menu-content"],
+      .dark [data-slot="menu-content"],
+      .dark [data-slot="card"] {
+        background: var(--color-brand-950) !important;
+      }
     }
   }
 
