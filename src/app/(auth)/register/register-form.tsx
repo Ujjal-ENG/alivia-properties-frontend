@@ -137,11 +137,11 @@ export function RegisterForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Account Type</FormLabel>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 {ROLES.map((role) => (
                   <label
                     key={role}
-                    className={`flex cursor-pointer items-center gap-2 rounded-xl border p-3 transition-colors ${
+                    className={`flex min-h-16 cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors ${
                       field.value === role
                         ? "border-brand-500 bg-brand-50 text-brand-700"
                         : "border-border hover:border-brand-300"
@@ -152,8 +152,14 @@ export function RegisterForm() {
                       value={role}
                       checked={field.value === role}
                       onChange={() => field.onChange(role)}
-                      className="accent-brand-600"
+                      className="peer sr-only"
                     />
+                    <span
+                      aria-hidden="true"
+                      className="flex size-5 shrink-0 items-center justify-center rounded-full border border-ink-300 bg-white transition-colors peer-checked:border-brand-700 peer-checked:[&_span]:opacity-100 peer-focus-visible:ring-2 peer-focus-visible:ring-brand-300"
+                    >
+                      <span className="size-2.5 rounded-full bg-brand-700 opacity-0 transition-opacity" />
+                    </span>
                     <div>
                       <p className="text-sm font-semibold capitalize">{role}</p>
                       <p className="text-xs text-muted-foreground">
@@ -168,7 +174,7 @@ export function RegisterForm() {
           )}
         />
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <FormField
             control={form.control}
             name="password"
