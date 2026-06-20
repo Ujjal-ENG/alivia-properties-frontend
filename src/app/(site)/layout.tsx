@@ -6,7 +6,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
   return (
     <>
       <SiteHeader />
-      <main className="flex-1">{children}</main>
+      <div id="main-content" className="flex-1">{children}</div>
       <SiteFooter />
       <LiveChatWidget />
     </>
