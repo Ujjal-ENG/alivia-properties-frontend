@@ -41,7 +41,7 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
               <Link
                 key={tab.value}
                 href={tab.value ? `/projects?status=${tab.value}` : "/projects"}
-                className={`px-5 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                className={`inline-flex min-h-11 items-center rounded-full px-5 text-sm font-medium transition-colors ${
                   isActive
                     ? "bg-brand-600 text-white"
                     : "bg-white border border-border text-foreground hover:border-brand-300 hover:text-brand-700"
