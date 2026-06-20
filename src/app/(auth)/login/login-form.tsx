@@ -198,7 +198,7 @@ export function LoginForm() {
                   <FormLabel>Password</FormLabel>
                   <Link
                     href={ROUTES.FORGOT_PASSWORD}
-                    className="text-xs text-brand-700 hover:underline"
+                    className="inline-flex min-h-11 items-center text-xs text-brand-700 hover:underline"
                   >
                     Forgot password?
                   </Link>
@@ -215,7 +215,7 @@ export function LoginForm() {
                     <button
                       type="button"
                       onClick={() => setShowPass(!showPass)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                      className="absolute right-1 top-1/2 flex -translate-y-1/2 cursor-pointer items-center justify-center text-muted-foreground hover:text-foreground"
                       aria-label={showPass ? "Hide password" : "Show password"}
                     >
                       {showPass ? (
