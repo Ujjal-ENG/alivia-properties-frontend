@@ -441,7 +441,7 @@ function TileButton({
     <button
       type="button"
       onClick={onClick}
-      className="group flex h-full flex-col rounded-2xl border border-border/70 bg-white p-4 text-left shadow-(--shadow-card) transition-all hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-(--shadow-elevated)"
+      className="mobile-liquid-glass group flex h-full flex-col rounded-2xl border border-border/70 bg-white p-4 text-left shadow-(--shadow-card) transition-all hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-(--shadow-elevated)"
     >
       <span className="flex size-11 items-center justify-center overflow-hidden rounded-xl bg-brand-50 text-brand-700">
         {iconUrl ? (
@@ -462,7 +462,7 @@ function SubcategoryCard({ node, onClick }: { node: MarketplaceCategory; onClick
     <button
       type="button"
       onClick={onClick}
-      className="group overflow-hidden rounded-2xl border border-border/70 bg-white text-left shadow-(--shadow-card) transition-all hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-(--shadow-elevated)"
+      className="mobile-liquid-glass group overflow-hidden rounded-2xl border border-border/70 bg-white text-left shadow-(--shadow-card) transition-all hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-(--shadow-elevated)"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-brand-50">
         {node.image?.url ? (
@@ -616,7 +616,7 @@ function SupplierSelectCard({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-2xl border bg-white shadow-(--shadow-card) transition-all hover:shadow-(--shadow-elevated)",
+        "mobile-liquid-glass group relative overflow-hidden rounded-2xl border bg-white shadow-(--shadow-card) transition-all hover:shadow-(--shadow-elevated)",
         checked ? "border-brand-500 ring-2 ring-brand-300" : "border-border/70 hover:border-brand-200",
       )}
     >
