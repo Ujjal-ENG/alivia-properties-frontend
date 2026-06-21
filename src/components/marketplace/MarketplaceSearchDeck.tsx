@@ -22,8 +22,52 @@ const levelLabel = {
   SUBCATEGORY: "Quote-ready",
 } as const
 
-export function MarketplaceSearchDeck({ items }: { items: MarketplaceSearchItem[] }) {
-  const [query, setQuery] = useState("")
+const preferredSuggestionSlugs = [
+  "cement",
+  "steel",
+  "tile",
+  "paint",
+  "doors",
+  "sanitary",
+  "lift",
+  "electrician",
+  "plumber",
+  "painter",
+]
+
+function cleanMeta(item: MarketplaceSearchItem) {
+  const parent = item.parentName?.trim()
+
+  if (parent && parent.toLowerCase() !== item.name.toLowerCase()) {
+    return parent
+  }
+
+  return levelLabel[item.level ?? "CATEGORY"]
+}
+
+function getPreferredSuggestions(items: MarketplaceSearchItem[]) {
+  const curated = preferredSuggestionSlugs
+    .map((slug) => items.find((item) => item.slug === slug))
+    .filter((item): item is MarketplaceSearchItem => Boolean(item))
+
+  if (curated.length >= 6) return curated
+
+  const seen = new Set(curated.map((item) => item.slug))
+  const fallback = items.filter(
+    (item) => item.level === "CATEGORY" && !seen.has(item.slug),
+  )
+
+  return [...curated, ...fallback]
+}
+
+export function MarketplaceSearchDeck({
+  items,
+  initialQuery = "",
+}: {
+  items: MarketplaceSearchItem[]
+  initialQuery?: string
+}) {
+  const [query, setQuery] = useState(initialQuery)
 
   const visibleItems = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -35,17 +79,15 @@ export function MarketplaceSearchDeck({ items }: { items: MarketplaceSearchItem[
             .toLowerCase()
             .includes(q),
         )
-      : items.filter((item) => item.level === "SUBCATEGORY")
+      : getPreferredSuggestions(items)
 
     return pool.slice(0, 6)
   }, [items, query])
 
-  const quickLinks = items
-    .filter((item) => item.level === "CATEGORY" || item.level === "SUBCATEGORY")
-    .slice(0, 5)
+  const quickLinks = getPreferredSuggestions(items).slice(0, 5)
 
   return (
-    <div className="mt-7 max-w-2xl rounded-[1.75rem] border border-white/15 bg-white/12 p-3 shadow-lg backdrop-blur-md">
+    <div className="mobile-liquid-glass-dark mt-7 max-w-2xl rounded-[1.75rem] border border-white/15 bg-white/12 p-3 shadow-lg backdrop-blur-md">
       <label
         htmlFor="marketplace-category-search"
         className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.18em] text-gold-200"
@@ -83,7 +125,7 @@ export function MarketplaceSearchDeck({ items }: { items: MarketplaceSearchItem[
             <Link
               key={item.slug}
               href={ROUTES.MARKETPLACE_CATEGORY(item.slug)}
-              className="group min-w-0 rounded-2xl border border-white/12 bg-brand-950/40 px-3 py-2.5 text-left transition-[background-color,border-color] duration-200 hover:border-gold-300/60 hover:bg-brand-900/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300"
+              className="mobile-liquid-glass-dark group min-w-0 rounded-2xl border border-white/12 bg-brand-950/40 px-3 py-2.5 text-left transition-[background-color,border-color] duration-200 hover:border-gold-300/60 hover:bg-brand-900/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300"
             >
               <span className="flex min-w-0 items-start justify-between gap-3">
                 <span className="min-w-0">
@@ -91,7 +133,7 @@ export function MarketplaceSearchDeck({ items }: { items: MarketplaceSearchItem[
                     {item.name}
                   </span>
                   <span className="mt-0.5 block truncate text-xs text-brand-100/80">
-                    {item.parentName ?? levelLabel[item.level ?? "CATEGORY"]}
+                    {cleanMeta(item)}
                   </span>
                 </span>
                 <ArrowUpRight
@@ -103,7 +145,8 @@ export function MarketplaceSearchDeck({ items }: { items: MarketplaceSearchItem[
           ))
         ) : (
           <div className="rounded-2xl border border-white/12 bg-brand-950/40 px-3 py-3 text-sm text-brand-100 sm:col-span-2">
-            No category match. Start a guided RFQ and Alivia desk will route it.
+            No category match yet. Try cement, tiles, paint, lift, or start a
+            guided RFQ and Alivia desk will route it.
           </div>
         )}
       </div>
@@ -115,7 +158,7 @@ export function MarketplaceSearchDeck({ items }: { items: MarketplaceSearchItem[
               key={item.slug}
               href={ROUTES.MARKETPLACE_CATEGORY(item.slug)}
               className={cn(
-                "rounded-full border border-white/14 bg-white/10 px-3 py-1.5 text-xs font-medium text-brand-50 transition-[background-color,color,border-color] duration-200",
+                "inline-flex min-h-11 items-center rounded-full border border-white/14 bg-white/10 px-3 text-xs font-medium text-brand-50 transition-[background-color,color,border-color] duration-200",
                 "hover:border-gold-300/60 hover:bg-gold-300 hover:text-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300",
               )}
             >
