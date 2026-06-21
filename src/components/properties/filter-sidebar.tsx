@@ -123,14 +123,20 @@ export function FilterSidebar() {
         <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">Property type</label>
         <div className="space-y-1.5">
           {PROPERTY_TYPE_OPTIONS.map((opt) => (
-            <label key={opt.value} className="flex cursor-pointer items-center gap-2.5 rounded-xl px-1 py-1 group">
+            <label key={opt.value} className="group flex min-h-11 cursor-pointer items-center gap-2.5 rounded-xl px-3">
               <input
                 type="checkbox"
                 name={`type-${opt.value}`}
                 checked={filters.type === opt.value}
                 onChange={(e) => setFilter("type", e.target.checked ? opt.value as PropertyType : undefined)}
-                className="h-3.5 w-3.5 accent-brand-600"
+                className="peer sr-only"
               />
+              <span
+                aria-hidden="true"
+                className="flex size-5 shrink-0 items-center justify-center rounded-md border border-ink-300 bg-white transition-colors peer-checked:border-brand-700 peer-checked:bg-brand-700 peer-checked:[&_span]:opacity-100 peer-focus-visible:ring-2 peer-focus-visible:ring-brand-300"
+              >
+                <span className="size-2 rounded-sm bg-white opacity-0 transition-opacity" />
+              </span>
               <span className="text-sm transition-colors group-hover:text-brand-700">{opt.label}</span>
             </label>
           ))}
@@ -199,8 +205,14 @@ export function FilterSidebar() {
           name="verified"
           checked={!!filters.verified}
           onChange={(e) => setFilter("verified", e.target.checked || undefined)}
-          className="h-4 w-4 accent-brand-600"
+          className="peer sr-only"
         />
+        <span
+          aria-hidden="true"
+          className="flex size-5 shrink-0 items-center justify-center rounded-md border border-ink-300 bg-white transition-colors peer-checked:border-brand-700 peer-checked:bg-brand-700 peer-checked:[&_span]:opacity-100 peer-focus-visible:ring-2 peer-focus-visible:ring-brand-300"
+        >
+          <span className="size-2 rounded-sm bg-white opacity-0 transition-opacity" />
+        </span>
         <BadgeCheck className="h-4 w-4 text-brand-600" />
         <span className="text-sm font-medium">Verified listings only</span>
       </label>
