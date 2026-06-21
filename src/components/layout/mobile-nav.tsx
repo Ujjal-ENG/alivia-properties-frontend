@@ -44,7 +44,7 @@ function NavLinks({ items, onClose }: { items: NavItem[]; onClose: () => void })
                 : "text-ink-700 hover:bg-brand-50/70",
             )}
           >
-            {item.label === "About Us" ? "About" : item.label}
+            {item.label}
           </Link>
           {item.children && (
             <ul className="ml-4 mt-1 space-y-1">
@@ -75,7 +75,7 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
       <SheetContent
         side="left"
-        className="flex w-[88vw] max-w-sm flex-col overscroll-contain border-r-white/80 bg-white/95 p-0 backdrop-blur-xl"
+        className="mobile-liquid-glass flex w-[88vw] max-w-sm flex-col overscroll-contain border-r-white/80 bg-white/95 p-0 backdrop-blur-xl"
       >
         <SheetHeader className="shrink-0 border-b border-border/70 px-5 py-5">
           <div className="flex items-center justify-between">
@@ -90,7 +90,7 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
             </div>
             <button
               onClick={onClose}
-              className="rounded-full p-1.5 transition-colors hover:bg-brand-50"
+              className="flex size-11 items-center justify-center rounded-full transition-colors hover:bg-brand-50"
               aria-label="Close menu"
             >
               <X className="h-5 w-5" />
@@ -99,13 +99,13 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
         </SheetHeader>
 
         <div className="flex-1 space-y-6 overflow-y-auto overscroll-contain px-5 py-5">
-          <div className="rounded-[1.5rem] border border-brand-100 bg-brand-aurora p-4">
+          <div className="mobile-liquid-glass rounded-[1.5rem] border border-brand-100 bg-brand-aurora p-4">
             <p className="text-xs uppercase tracking-[0.18em] text-brand-700">
               Trusted since 2011
             </p>
             <p className="mt-2 text-sm leading-relaxed text-ink-700">
-              Explore premium projects, verified listings, and consultation flow in one
-              cleaner property journey.
+              Find building suppliers, request quotes, browse verified properties,
+              or talk to an advisor from one clear starting point.
             </p>
           </div>
 
@@ -119,7 +119,7 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
             <a
               href={`tel:${siteConfig.contact.phoneRaw}`}
               onClick={onClose}
-              className="flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-ink-700 transition-colors hover:bg-brand-50"
+              className="flex min-h-11 items-center gap-3 rounded-2xl px-3 text-sm font-medium text-ink-700 transition-colors hover:bg-brand-50"
             >
               <Phone className="h-4 w-4 text-brand-600" />
               {siteConfig.contact.phone}
@@ -129,7 +129,7 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
               target="_blank"
               rel="noopener noreferrer"
               onClick={onClose}
-              className="flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-ink-700 transition-colors hover:bg-brand-50"
+              className="flex min-h-11 items-center gap-3 rounded-2xl px-3 text-sm font-medium text-ink-700 transition-colors hover:bg-brand-50"
             >
               <MessageCircle className="h-4 w-4 text-emerald-600" />
               Chat on WhatsApp
@@ -138,7 +138,7 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
         </div>
 
         {/* Sticky action footer */}
-        <div className="shrink-0 space-y-2 border-t border-border/70 bg-white/95 px-5 py-4">
+        <div className="mobile-liquid-glass-nav shrink-0 space-y-2 border-t border-border/70 bg-white/95 px-5 py-4">
           {role ? (
             <Link href={getDashboardRoute(role)} onClick={onClose}>
               <Button className="w-full gap-1.5 rounded-full bg-brand-700 text-white hover:bg-brand-800">
@@ -153,6 +153,11 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
                   Consult Expert
                 </Button>
               </Link>
+              <Link href={ROUTES.MARKETPLACE} onClick={onClose}>
+                <Button className="w-full rounded-full bg-brand-700 text-white hover:bg-brand-800">
+                  Browse Marketplace
+                </Button>
+              </Link>
               <div className="grid grid-cols-2 gap-2">
                 <Link href={authNav.login.href} onClick={onClose}>
                   <Button variant="outline" className="w-full rounded-full">
@@ -160,7 +165,7 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
                   </Button>
                 </Link>
                 <Link href={authNav.register.href} onClick={onClose}>
-                  <Button className="w-full rounded-full bg-brand-700 text-white hover:bg-brand-800">
+                  <Button variant="outline" className="w-full rounded-full">
                     List Property
                   </Button>
                 </Link>
