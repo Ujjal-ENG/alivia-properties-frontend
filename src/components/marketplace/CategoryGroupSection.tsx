@@ -45,7 +45,7 @@ export function CategoryGroupSection({ group, items: children, index }: Props) {
         {children.length > 0 && (
           <Link
             href={ROUTES.MARKETPLACE_CATEGORY(group.slug)}
-            className="flex min-h-10 shrink-0 items-center gap-1 rounded-full px-2 text-xs font-medium text-brand-700 transition-colors duration-200 hover:text-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+            className="flex min-h-11 shrink-0 items-center gap-1 rounded-full px-3 text-xs font-medium text-brand-700 transition-colors duration-200 hover:text-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
           >
             View all <ArrowRight aria-hidden="true" className="size-3.5" />
           </Link>
