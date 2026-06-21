@@ -206,7 +206,7 @@ export function SiteFooter() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="group flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 transition-all hover:border-brand-500/60 hover:bg-brand-700"
+                  className="group flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 transition-all hover:border-brand-500/60 hover:bg-brand-700"
                 >
                   <Icon className="h-4 w-4 text-ink-400 transition-colors group-hover:text-white" />
                 </a>
@@ -218,7 +218,7 @@ export function SiteFooter() {
               href={`https://wa.me/${siteConfig.contact.whatsApp}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-10 items-center gap-2 rounded-full border border-emerald-700/50 bg-emerald-900/30 px-4 text-sm font-semibold text-emerald-400 transition-colors hover:bg-emerald-800/40"
+              className="inline-flex h-11 items-center gap-2 rounded-full border border-emerald-700/50 bg-emerald-900/30 px-4 text-sm font-semibold text-emerald-400 transition-colors hover:bg-emerald-800/40"
             >
               <MessageCircle className="h-4 w-4" />
               Chat on WhatsApp
@@ -235,7 +235,7 @@ export function SiteFooter() {
                 <li key={href}>
                   <Link
                     href={href}
-                    className="group inline-flex items-center gap-2 text-sm text-ink-400 transition-colors hover:text-white"
+                    className="group inline-flex min-h-11 min-w-11 items-center gap-2 text-sm text-ink-400 transition-colors hover:text-white"
                   >
                     <span className="inline-block h-px w-0 shrink-0 bg-brand-500 transition-all duration-200 group-hover:w-3" />
                     {label}
@@ -255,7 +255,7 @@ export function SiteFooter() {
                 <li key={href}>
                   <Link
                     href={href}
-                    className="group inline-flex items-center gap-2 text-sm text-ink-400 transition-colors hover:text-white"
+                    className="group inline-flex min-h-11 min-w-11 items-center gap-2 text-sm text-ink-400 transition-colors hover:text-white"
                   >
                     <span className="inline-block h-px w-0 shrink-0 bg-brand-500 transition-all duration-200 group-hover:w-3" />
                     {label}
@@ -274,7 +274,7 @@ export function SiteFooter() {
               <li>
                 <a
                   href={`tel:${siteConfig.contact.phoneRaw}`}
-                  className="group flex items-start gap-3 text-sm text-ink-400 transition-colors hover:text-white"
+                  className="group flex min-h-11 items-start gap-3 text-sm text-ink-400 transition-colors hover:text-white"
                 >
                   <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/5 text-brand-400 transition-colors group-hover:bg-brand-900/60">
                     <Phone className="h-3.5 w-3.5" />
@@ -285,7 +285,7 @@ export function SiteFooter() {
               <li>
                 <a
                   href={`mailto:${siteConfig.contact.email}`}
-                  className="group flex items-start gap-3 text-sm text-ink-400 transition-colors hover:text-white"
+                  className="group flex min-h-11 items-start gap-3 text-sm text-ink-400 transition-colors hover:text-white"
                 >
                   <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/5 text-brand-400 transition-colors group-hover:bg-brand-900/60">
                     <Mail className="h-3.5 w-3.5" />
@@ -320,13 +320,13 @@ export function SiteFooter() {
               . All rights reserved.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
-              <Link href="/privacy" className="transition-colors hover:text-ink-300">
+              <Link href="/privacy" className="inline-flex min-h-11 min-w-11 items-center transition-colors hover:text-ink-300">
                 Privacy Policy
               </Link>
-              <Link href="/terms" className="transition-colors hover:text-ink-300">
+              <Link href="/terms" className="inline-flex min-h-11 min-w-11 items-center transition-colors hover:text-ink-300">
                 Terms of Use
               </Link>
-              <Link href={ROUTES.CONTACT} className="transition-colors hover:text-ink-300">
+              <Link href={ROUTES.CONTACT} className="inline-flex min-h-11 min-w-11 items-center transition-colors hover:text-ink-300">
                 Support
               </Link>
             </div>
