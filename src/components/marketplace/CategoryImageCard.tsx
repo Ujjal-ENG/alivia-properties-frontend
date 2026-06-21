@@ -15,7 +15,7 @@ export function CategoryImageCard({ cat }: { cat: MarketplaceCategory }) {
     <Link
       href={ROUTES.MARKETPLACE_CATEGORY(cat.slug)}
       aria-label={`Browse ${cat.name}`}
-      className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-white shadow-sm transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-1 hover:border-brand-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+      className="mobile-liquid-glass group relative flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-white shadow-sm transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-1 hover:border-brand-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
     >
       {/* Image */}
       <div className="relative aspect-4/3 w-full overflow-hidden bg-ink-100">
