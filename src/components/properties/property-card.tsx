@@ -71,15 +71,18 @@ export function PropertyCard({ property, layout = "grid" }: PropertyCardProps) {
         </Link>
 
         <div className="absolute right-4 top-4 z-10 flex flex-col gap-2">
-          <SaveButton propertyId={property.id} className="h-9 w-9 bg-white/92 text-ink-600 shadow-sm hover:bg-white" />
-          <CompareButton property={property} className="h-9 w-9 bg-white/92 text-ink-600 shadow-sm hover:bg-white" />
+          <SaveButton propertyId={property.id} className="h-11 w-11 bg-white/92 text-ink-600 shadow-sm hover:bg-white" />
+          <CompareButton property={property} className="h-11 w-11 bg-white/92 text-ink-600 shadow-sm hover:bg-white" />
         </div>
       </div>
 
       <div className={`p-5 ${layout === "list" ? "flex flex-col justify-between gap-5 md:p-6" : "space-y-4"}`}>
         <div className={layout === "list" ? "space-y-5" : "space-y-4"}>
           <div className="space-y-2">
-            <Link href={ROUTES.PROPERTY_DETAIL(property.slug)}>
+            <Link
+              href={ROUTES.PROPERTY_DETAIL(property.slug)}
+              className="inline-flex min-h-11 items-center"
+            >
               <h3 className={`text-lg font-semibold leading-snug text-ink-900 transition-colors hover:text-brand-800 ${layout === "list" ? "line-clamp-2 md:text-xl" : "line-clamp-2"}`}>
                 {property.title}
               </h3>
@@ -150,7 +153,10 @@ export function PropertyCard({ property, layout = "grid" }: PropertyCardProps) {
               </span>
             </div>
           ) : (
-            <Link href={ROUTES.PROPERTY_DETAIL(property.slug)}>
+            <Link
+              href={ROUTES.PROPERTY_DETAIL(property.slug)}
+              className="inline-flex min-h-11 items-center"
+            >
               <span className="inline-flex rounded-full bg-ink-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-ink-800">
                 View Details
               </span>
