@@ -42,7 +42,7 @@ function isNavItemActive(pathname: string, href: string) {
 function DropdownNav({ item }: { item: NavItem }) {
   const pathname = usePathname();
   const isActive = isNavItemActive(pathname, item.href);
-  const label = item.label === "About Us" ? "About" : item.label;
+  const label = item.label;
 
   return (
     <div className="group/nav relative">
@@ -200,7 +200,7 @@ export function SiteHeader() {
               </Link>
               <Link
                 href={ROUTES.MARKETPLACE}
-                className="group/mp relative inline-flex items-center gap-1.5 overflow-hidden rounded-full bg-linear-to-r from-gold-500 to-gold-400 px-3 py-1 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-brand-950 shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_4px_14px_rgba(229,176,79,0.45)] transition-all duration-200 hover:-translate-y-px hover:from-gold-400 hover:to-gold-300 hover:shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_6px_20px_rgba(229,176,79,0.6)]"
+                className="group/mp relative inline-flex min-h-11 items-center gap-1.5 overflow-hidden rounded-full bg-linear-to-r from-gold-500 to-gold-400 px-3 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-brand-950 shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_4px_14px_rgba(229,176,79,0.45)] transition-all duration-200 hover:-translate-y-px hover:from-gold-400 hover:to-gold-300 hover:shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_6px_20px_rgba(229,176,79,0.6)]"
               >
                 <span className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 ease-out group-hover/mp:translate-x-full" />
                 <ShoppingBag className="h-3 w-3" />
@@ -211,7 +211,7 @@ export function SiteHeader() {
               <a
                 href={`tel:${siteConfig.contact.phoneRaw}`}
                 aria-label={`Call ${siteConfig.contact.phone}`}
-                className="flex items-center gap-1.5 text-[0.75rem] text-brand-300 transition-colors hover:text-white"
+                className="flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-full text-[0.75rem] text-brand-300 transition-colors hover:bg-white/10 hover:text-white sm:min-w-0 sm:px-2"
               >
                 <Phone className="h-3 w-3" />
                 <span className="hidden sm:inline">{siteConfig.contact.phone}</span>
@@ -220,7 +220,7 @@ export function SiteHeader() {
                 href={`https://wa.me/${siteConfig.contact.whatsApp}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden items-center gap-1.5 text-[0.75rem] text-brand-300 transition-colors hover:text-white sm:flex"
+                className="hidden min-h-11 items-center gap-1.5 rounded-full px-2 text-[0.75rem] text-brand-300 transition-colors hover:bg-white/10 hover:text-white sm:flex"
               >
                 <MessageCircle className="h-3 w-3" />
                 WhatsApp
@@ -239,14 +239,14 @@ export function SiteHeader() {
           <div className="mx-auto w-full max-w-400 px-4 py-2.5 sm:px-6 lg:px-8">
             <div
               className={cn(
-                "flex items-center justify-between gap-3 rounded-2xl border border-black/6 bg-white px-4 py-2.5 transition-shadow duration-300 md:px-5",
+                "mobile-liquid-glass-nav flex items-center justify-between gap-3 rounded-2xl border border-black/6 bg-white px-4 py-2.5 transition-shadow duration-300 md:px-5",
                 scrolled ? "shadow-md" : "shadow-sm",
               )}
             >
               {/* Logo */}
               <Link
                 href="/"
-                className="flex shrink-0 cursor-pointer items-center gap-3"
+                className="flex min-h-11 min-w-11 shrink-0 cursor-pointer items-center gap-3"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] bg-linear-to-br from-brand-600 to-brand-900 shadow-sm">
                   <Building2 className="h-5 w-5 text-white" />
@@ -263,7 +263,7 @@ export function SiteHeader() {
               </Link>
 
               {/* Desktop nav */}
-              <div className="hidden min-w-0 flex-1 justify-center min-[1500px]:flex">
+              <div className="hidden min-w-0 flex-1 justify-center xl:flex">
                 <nav
                   aria-label="Main navigation"
                   className="inline-flex items-center gap-0.5 rounded-[1.15rem] border border-ink-100/90 bg-ink-50/90 p-1"
@@ -275,7 +275,7 @@ export function SiteHeader() {
               </div>
 
               {/* Desktop CTAs */}
-              <div className="hidden shrink-0 items-center gap-1.5 min-[1500px]:flex">
+              <div className="hidden shrink-0 items-center gap-1.5 xl:flex">
                 <Link href={ROUTES.CONSULTATION}>
                   <Button
                     variant="ghost"
@@ -288,11 +288,22 @@ export function SiteHeader() {
 
                 <div className="mx-0.5 h-5 w-px bg-ink-200" />
 
+                <Link href={ROUTES.MARKETPLACE}>
+                  <Button
+                    size="sm"
+                    className="cursor-pointer gap-1.5 rounded-full bg-brand-700 px-5 text-[0.82rem] text-white hover:bg-brand-800"
+                  >
+                    <ShoppingBag className="h-3.5 w-3.5" />
+                    Browse Marketplace
+                  </Button>
+                </Link>
+
                 {session?.user?.role ? (
                   <Link href={getDashboardRoute(session.user.role as UserRole)}>
                     <Button
                       size="sm"
-                      className="cursor-pointer gap-1.5 rounded-full bg-brand-700 px-5 text-[0.82rem] text-white hover:bg-brand-800"
+                      variant="outline"
+                      className="cursor-pointer gap-1.5 rounded-full px-4 text-[0.82rem]"
                     >
                       <LayoutDashboard className="h-3.5 w-3.5" />
                       Dashboard
@@ -309,34 +320,25 @@ export function SiteHeader() {
                         Login
                       </Button>
                     </Link>
-                    <Link href={authNav.register.href}>
-                      <Button
-                        size="sm"
-                        className="cursor-pointer gap-1.5 rounded-full bg-brand-700 px-5 text-[0.82rem] text-white hover:bg-brand-800"
-                      >
-                        List Property
-                        <ArrowUpRight className="h-3.5 w-3.5" />
-                      </Button>
-                    </Link>
                   </>
                 )}
               </div>
 
               {/* Mobile right side */}
-              <div className="flex items-center gap-2 min-[1500px]:hidden">
+              <div className="flex items-center gap-2 xl:hidden">
                 {!session && (
-                  <Link href={authNav.register.href} className="hidden sm:block">
+                  <Link href={ROUTES.MARKETPLACE} className="hidden sm:block">
                     <Button
                       size="sm"
                       className="cursor-pointer gap-1.5 rounded-full bg-brand-700 px-4 text-[0.82rem] text-white hover:bg-brand-800"
                     >
-                      List Property
+                      Marketplace
                       <ArrowUpRight className="h-3.5 w-3.5" />
                     </Button>
                   </Link>
                 )}
                 <button
-                  className="cursor-pointer rounded-xl border border-ink-200 p-2.5 transition-colors hover:bg-ink-50"
+                  className="mobile-liquid-glass-control flex size-11 cursor-pointer items-center justify-center rounded-xl border border-ink-200 transition-colors hover:bg-ink-50"
                   onClick={() => setMobileOpen(true)}
                   aria-label="Open navigation menu"
                 >
