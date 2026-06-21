@@ -11,6 +11,7 @@ import {
   Search,
   ShieldCheck,
   Sparkles,
+  Store,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -30,12 +31,13 @@ export type HeroProjectCard = {
   cover: string | null;
 };
 
-type Tab = "properties" | "projects" | "consultation";
+type Tab = "marketplace" | "properties" | "projects" | "consultation";
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: "properties", label: "Browse Properties" },
-  { id: "projects", label: "Explore Projects" },
-  { id: "consultation", label: "Book Consultation" },
+  { id: "marketplace", label: "Find Suppliers" },
+  { id: "properties", label: "Buy or Rent" },
+  { id: "projects", label: "Alivia Projects" },
+  { id: "consultation", label: "Get Advice" },
 ];
 
 const STATS = [
@@ -50,28 +52,35 @@ const STATS = [
 
 const JOURNEYS = [
   {
-    title: "Buy verified homes",
-    body: "Apartments, plots, and commercial spaces with seller checks.",
+    title: "Source materials & services",
+    body: "Search suppliers, products, contractors, and request one guided quote.",
+    href: ROUTES.MARKETPLACE,
+    icon: Store,
+  },
+  {
+    title: "Find verified properties",
+    body: "Homes, plots, rentals, and commercial listings with clearer next steps.",
     href: ROUTES.PROPERTIES,
     icon: Search,
   },
   {
-    title: "Explore Alivia projects",
-    body: "Developer launches, handover status, and project details.",
-    href: ROUTES.PROJECTS,
-    icon: Building2,
-  },
-  {
-    title: "Source build suppliers",
-    body: "Materials, services, and RFQs for construction needs.",
-    href: ROUTES.MARKETPLACE,
+    title: "Talk before you decide",
+    body: "Get help choosing areas, budgets, suppliers, or project options.",
+    href: ROUTES.CONSULTATION,
     icon: Compass,
   },
 ];
 
+function getPlaceholder(tab: Tab) {
+  if (tab === "marketplace") return "Search cement, tiles, paint, contractor…";
+  if (tab === "consultation") return "Tell us what you need help with…";
+  if (tab === "projects") return "Search Jolshiri, handover status, project…";
+  return "Search by area, district, or keyword…";
+}
+
 export function HomeHero({ projects }: { projects: HeroProjectCard[] }) {
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>("properties");
+  const [tab, setTab] = useState<Tab>("marketplace");
   const [query, setQuery] = useState("");
   const featured = projects[0] ?? null;
   const secondProject = projects[1] ?? null;
@@ -83,7 +92,12 @@ export function HomeHero({ projects }: { projects: HeroProjectCard[] }) {
       router.push(ROUTES.CONSULTATION);
       return;
     }
-    const base = tab === "projects" ? ROUTES.PROJECTS : ROUTES.PROPERTIES;
+    const base =
+      tab === "marketplace"
+        ? ROUTES.MARKETPLACE
+        : tab === "projects"
+          ? ROUTES.PROJECTS
+          : ROUTES.PROPERTIES;
     router.push(q ? `${base}?search=${encodeURIComponent(q)}` : base);
   }
 
@@ -100,19 +114,19 @@ export function HomeHero({ projects }: { projects: HeroProjectCard[] }) {
           <div className="min-w-0">
             <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/80 px-3.5 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-brand-700 shadow-sm backdrop-blur">
               <ShieldCheck aria-hidden="true" className="h-3.5 w-3.5 text-brand-600" />
-              First in Bangladesh&apos;s reliable real estate platform
+              Marketplace-first real estate help for Bangladesh
             </span>
 
             <h1 className="mt-5 max-w-4xl text-balance font-heading text-4xl font-bold uppercase leading-[1.02] tracking-tight text-brand-950 sm:text-5xl lg:text-6xl">
-              Discover homes, commercial properties and your{" "}
-              <span className="text-gold-600">addresses</span> at{" "}
-              <strong>Jolshiri</strong>
+              Find suppliers, properties, and{" "}
+              <span className="text-gold-600">trusted next steps</span>{" "}
+              in one place
             </h1>
 
             <p className="mt-5 max-w-xl text-base leading-relaxed text-ink-600">
-              Premium projects, verified listings, and expert consultation — all
-              in one reliable platform built for families, investors, and
-              businesses.
+              Alivia helps people search building materials, request supplier
+              quotes, compare verified properties, and get expert guidance
+              without guessing where to start.
             </p>
 
             {/* Search card */}
@@ -121,7 +135,7 @@ export function HomeHero({ projects }: { projects: HeroProjectCard[] }) {
               className="mt-7 max-w-xl rounded-3xl border border-black/5 bg-white/95 p-2.5 shadow-(--shadow-elevated) backdrop-blur"
             >
               {/* Tabs */}
-              <div className="flex items-center gap-1 rounded-2xl bg-ink-50 p-1">
+              <div className="grid grid-cols-2 gap-1 rounded-2xl bg-ink-50 p-1 sm:grid-cols-4">
                 {TABS.map((t) => (
                   <button
                     key={t.id}
@@ -150,11 +164,7 @@ export function HomeHero({ projects }: { projects: HeroProjectCard[] }) {
                     autoComplete="off"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder={
-                      tab === "consultation"
-                        ? "Tell us what you need help with…"
-                        : "Search by area, district, or keyword…"
-                    }
+                    placeholder={getPlaceholder(tab)}
                     className="h-11 w-full bg-transparent text-sm text-ink-900 outline-none placeholder:text-ink-400"
                     aria-label="Search"
                   />
@@ -165,7 +175,9 @@ export function HomeHero({ projects }: { projects: HeroProjectCard[] }) {
                   className="gap-2 rounded-xl px-5"
                 >
                   <Search aria-hidden="true" className="h-4 w-4" />
-                  <span className="hidden sm:inline">Search</span>
+                  <span className="hidden sm:inline">
+                    {tab === "marketplace" ? "Find" : "Search"}
+                  </span>
                 </Button>
               </div>
             </form>
@@ -232,31 +244,27 @@ export function HomeHero({ projects }: { projects: HeroProjectCard[] }) {
                 <div aria-hidden="true" className="absolute inset-0 bg-linear-to-t from-brand-950/86 via-brand-950/16 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-6">
                   <span className="inline-flex rounded-full bg-gold-400 px-3 py-1 text-[0.62rem] font-bold uppercase tracking-[0.16em] text-brand-950">
-                    Featured Decision
+                    Start here
                   </span>
                   <h2 className="mt-3 text-balance font-heading text-2xl font-semibold sm:text-3xl">
-                    {featured?.name ?? "Start with a guided property shortlist"}
+                    Tell us what you need and compare trusted options
                   </h2>
                   <p className="mt-1 flex items-center gap-1.5 text-sm text-brand-50/88">
                     <MapPin aria-hidden="true" className="size-4" />
-                    {featured?.location ?? "Jolshiri Abashon, Rupganj"}
+                    Suppliers, properties, projects, and advice across Bangladesh
                   </p>
                   <div className="mt-4 flex flex-wrap gap-2">
                     <Link
-                      href={
-                        featured?.slug
-                          ? ROUTES.PROJECT_DETAIL(featured.slug)
-                          : ROUTES.PROJECTS
-                      }
+                      href={ROUTES.MARKETPLACE}
                     >
                       <Button size="sm" className="gap-1.5 rounded-full bg-white text-brand-950 hover:bg-brand-50">
-                        View Project <ArrowRight aria-hidden="true" className="size-3.5" />
+                        Browse Marketplace <ArrowRight aria-hidden="true" className="size-3.5" />
                       </Button>
                     </Link>
-                    <Link href={ROUTES.CONSULTATION}>
+                    <Link href={ROUTES.MARKETPLACE_REQUEST}>
                       <Button size="sm" variant="outline" className="gap-1.5 rounded-full border-white/30 bg-white/10 text-white hover:bg-white/20">
                         <CalendarDays aria-hidden="true" className="size-3.5" />
-                        Site Visit
+                        Request Quote
                       </Button>
                     </Link>
                   </div>
@@ -265,9 +273,9 @@ export function HomeHero({ projects }: { projects: HeroProjectCard[] }) {
 
               <div className="grid gap-px bg-border/60 sm:grid-cols-3">
                 {[
-                  { label: "Starting Price", value: featured?.price ?? "Advisor matched" },
-                  { label: "Status", value: featured?.status ?? "Consultation ready" },
-                  { label: "Next Step", value: "Compare shortlist" },
+                  { label: "Marketplace", value: "Suppliers & RFQ" },
+                  { label: "Properties", value: "Buy, rent, compare" },
+                  { label: "Advice", value: "Human help" },
                 ].map((item) => (
                   <div key={item.label} className="bg-white px-4 py-4">
                     <p className="text-[0.62rem] font-bold uppercase tracking-[0.16em] text-ink-500">
@@ -350,7 +358,7 @@ export function HomeHero({ projects }: { projects: HeroProjectCard[] }) {
                 </Link>
                 <a
                   href={`tel:${siteConfig.contact.phoneRaw}`}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/5 px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300"
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/25 bg-white/5 px-3.5 text-xs font-semibold text-white transition-colors hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300"
                 >
                   <Phone aria-hidden="true" className="h-3.5 w-3.5" />
                   Call now
@@ -359,10 +367,10 @@ export function HomeHero({ projects }: { projects: HeroProjectCard[] }) {
             </div>
 
             <Link
-              href={ROUTES.PROJECTS}
-              className="mt-4 inline-flex items-center gap-1.5 rounded-full px-1 text-sm font-semibold text-brand-700 hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+              href={ROUTES.MARKETPLACE}
+              className="mt-4 inline-flex min-h-11 items-center gap-1.5 rounded-full px-1 text-sm font-semibold text-brand-700 hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
             >
-              View all flagship projects <ArrowRight aria-hidden="true" className="h-4 w-4" />
+              Browse all marketplace categories <ArrowRight aria-hidden="true" className="h-4 w-4" />
             </Link>
           </div>
         </div>
