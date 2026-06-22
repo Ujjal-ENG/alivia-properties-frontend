@@ -70,7 +70,7 @@ export function DashboardSidebar({
 
   const innerClass =
     variant === "static"
-      ? "m-4 flex w-full flex-col rounded-[1.75rem] border border-white/70 bg-white/92 p-4 shadow-pop backdrop-blur-xl overflow-hidden"
+      ? "liquid-glass m-4 flex w-full flex-col overflow-hidden rounded-[1.75rem] border p-4"
       : "flex h-full w-full flex-col bg-white overflow-hidden";
 
   return (
@@ -110,7 +110,7 @@ export function DashboardSidebar({
           <Link
             href={ROUTES.HOME}
             onClick={onNavigate}
-            className="group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-ink-700 transition-colors hover:bg-brand-50/80 hover:text-brand-800"
+            className="group flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-ink-700 transition-colors hover:bg-brand-50/80 hover:text-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
             title="Go back to the public site"
           >
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700 group-hover:bg-white">
@@ -135,7 +135,7 @@ export function DashboardSidebar({
                     href={item.href}
                     onClick={onNavigate}
                     className={cn(
-                      "group relative flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-all",
+                      "group relative flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-[background-color,color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400",
                       isActive
                         ? "bg-linear-to-r from-brand-700 to-brand-600 text-white shadow-elevated"
                         : "text-ink-700 hover:bg-brand-50/80 hover:text-brand-800",
@@ -196,7 +196,7 @@ export function DashboardSidebar({
           <button
             type="button"
             onClick={handleSignOut}
-            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-ink-700 transition-colors hover:bg-red-50 hover:text-danger"
+            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-ink-700 transition-colors hover:bg-red-50 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
           >
             <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-red-50 text-danger">
               <LogOut className="h-4 w-4" />
