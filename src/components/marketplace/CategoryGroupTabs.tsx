@@ -60,7 +60,7 @@ export function CategoryGroupTabs({ tabs }: { tabs: Tab[] }) {
   return (
     <nav
       aria-label="Marketplace departments"
-      className="mobile-liquid-glass-nav sticky top-0 z-30 border-b border-border/60 bg-white/95 shadow-sm backdrop-blur-sm"
+      className="liquid-glass-nav sticky top-0 z-30 border-b border-border/60 shadow-sm"
     >
       <div className="container-page">
         <div
