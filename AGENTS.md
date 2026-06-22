@@ -39,7 +39,7 @@ Read it fully before writing a single line of code.
 | Icons | lucide-react |
 | Date utilities | date-fns v4 |
 | Charts | Recharts 3 |
-| Theme | next-themes |
+| Theme | Light-mode only — no dark theme (next-themes removed) |
 | Package manager | **pnpm only — never npm or yarn** |
 
 ### Critical version notes
