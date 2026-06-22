@@ -58,12 +58,12 @@ export function DashboardHeader({
 
   return (
     <header className="sticky top-3 z-30">
-      <div className="flex min-h-17 items-center gap-3 rounded-[1.75rem] border border-white/80 bg-white/90 px-3 py-2.5 shadow-pop backdrop-blur-xl sm:gap-4 sm:px-4">
+      <div className="liquid-glass-nav flex min-h-17 items-center gap-3 rounded-[1.75rem] border px-3 py-2.5 sm:gap-4 sm:px-4">
         {onOpenNav && (
           <button
             type="button"
             onClick={onOpenNav}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border/80 bg-white text-ink-700 transition-colors hover:bg-brand-50 lg:hidden"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border/80 bg-white text-ink-700 transition-colors hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 lg:hidden"
             aria-label="Open dashboard navigation"
           >
             <Menu className="h-4 w-4" />
@@ -110,7 +110,7 @@ export function DashboardHeader({
         {/* Search button (mobile / mid widths) */}
         <button
           type="button"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border/80 bg-white text-ink-700 transition-colors hover:bg-brand-50 lg:hidden"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border/80 bg-white text-ink-700 transition-colors hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 lg:hidden"
           aria-label="Search"
         >
           <Search className="h-4 w-4" />
@@ -119,7 +119,7 @@ export function DashboardHeader({
         {/* Back to home */}
         <Link
           href={ROUTES.HOME}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border/80 bg-white text-ink-700 transition-colors hover:bg-brand-50"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border/80 bg-white text-ink-700 transition-colors hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
           title="Back to home"
           aria-label="Back to home"
         >
@@ -131,7 +131,7 @@ export function DashboardHeader({
 
         {/* Avatar dropdown */}
         <DropdownMenu>
-          <DropdownMenuTrigger className="outline-none">
+          <DropdownMenuTrigger className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2">
             <div className="flex h-10 items-center gap-2 rounded-full border border-border/80 bg-white px-1.5 pr-2 transition-colors hover:bg-brand-50 sm:gap-3 sm:pr-3">
               <Avatar className="h-7 w-7">
                 <AvatarImage src={user?.image ?? undefined} alt={user?.name ?? ""} />
