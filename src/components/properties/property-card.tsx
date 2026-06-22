@@ -71,8 +71,8 @@ export function PropertyCard({ property, layout = "grid" }: PropertyCardProps) {
         </Link>
 
         <div className="absolute right-4 top-4 z-10 flex flex-col gap-2">
-          <SaveButton propertyId={property.id} className="h-11 w-11 bg-white/92 text-ink-600 shadow-sm hover:bg-white" />
-          <CompareButton property={property} className="h-11 w-11 bg-white/92 text-ink-600 shadow-sm hover:bg-white" />
+          <SaveButton propertyId={property.id} className="glass-clear glass-interactive h-11 w-11 text-ink-800" />
+          <CompareButton property={property} className="glass-clear glass-interactive h-11 w-11 text-ink-800" />
         </div>
       </div>
 
