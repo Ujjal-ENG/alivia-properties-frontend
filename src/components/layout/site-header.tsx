@@ -50,7 +50,7 @@ function DropdownNav({ item }: { item: NavItem }) {
         href={item.href}
         aria-current={isActive ? "page" : undefined}
         className={cn(
-          "inline-flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-[0.9rem] px-3 py-2 text-[0.8rem] font-semibold transition-colors duration-150",
+          "inline-flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-[0.9rem] px-3 py-2 text-[0.8rem] font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400",
           isActive
             ? "bg-brand-700 text-white shadow-sm"
             : "text-ink-600 hover:bg-white hover:text-ink-900",
@@ -68,14 +68,14 @@ function DropdownNav({ item }: { item: NavItem }) {
       </Link>
 
       {item.children && (
-        <div className="invisible absolute left-0 top-full z-50 mt-2 w-56 translate-y-2 opacity-0 transition-all duration-150 group-hover/nav:visible group-hover/nav:translate-y-0 group-hover/nav:opacity-100">
+        <div className="invisible absolute left-0 top-full z-50 mt-2 w-56 translate-y-2 opacity-0 transition-[opacity,transform] duration-150 group-hover/nav:visible group-hover/nav:translate-y-0 group-hover/nav:opacity-100">
           {/* Arrow pointer */}
           <div className="ml-5 flex h-2.5 w-5 items-end overflow-hidden">
             <div className="h-3.5 w-3.5 rotate-45 rounded-xs border-l border-t border-black/6 bg-white shadow-sm" />
           </div>
           {/* Dropdown panel */}
           <div
-            className="rounded-2xl border border-black/6 bg-white/98 p-1.5 backdrop-blur-xl"
+            className="liquid-glass rounded-2xl border border-black/6 p-1.5"
             style={{ boxShadow: "var(--shadow-pop)" }}
           >
             {item.children.map((child) => (
@@ -84,7 +84,8 @@ function DropdownNav({ item }: { item: NavItem }) {
                 href={child.href}
                 className={cn(
                   "block rounded-[0.8rem] px-4 py-2.5 text-[0.82rem] font-medium text-ink-700 transition-colors hover:bg-brand-50 hover:text-brand-800",
-                  isNavItemActive(pathname, child.href) && "bg-brand-50 text-brand-800",
+                  isNavItemActive(pathname, child.href) &&
+                    "bg-brand-50 text-brand-800",
                 )}
               >
                 {child.label}
@@ -174,7 +175,7 @@ export function SiteHeader() {
                   eye; all motion is disabled under prefers-reduced-motion. */}
               <Link
                 href={ROUTES.BECOME_SUPPLIER}
-                className="cta-pill-supplier group/sup relative hidden items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:-translate-y-px hover:bg-white/20 md:inline-flex"
+                className="cta-pill-supplier group/sup relative hidden items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-widest text-white transition-[transform,background-color] duration-200 hover:-translate-y-px hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300 md:inline-flex"
               >
                 <span
                   className="pointer-events-none absolute inset-0 overflow-hidden rounded-full"
@@ -187,7 +188,7 @@ export function SiteHeader() {
               </Link>
               <Link
                 href={ROUTES.BECOME_INVESTOR}
-                className="cta-pill-investor group/inv relative hidden items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.1em] text-white transition-all duration-200 hover:-translate-y-px hover:bg-white/20 md:inline-flex"
+                className="cta-pill-investor group/inv relative hidden items-center gap-1.5 rounded-full border border-white/15 bg-white/8 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-widest text-white transition-[transform,background-color] duration-200 hover:-translate-y-px hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300 md:inline-flex"
               >
                 <span
                   className="pointer-events-none absolute inset-0 overflow-hidden rounded-full"
@@ -200,7 +201,7 @@ export function SiteHeader() {
               </Link>
               <Link
                 href={ROUTES.MARKETPLACE}
-                className="group/mp relative inline-flex min-h-11 items-center gap-1.5 overflow-hidden rounded-full bg-linear-to-r from-gold-500 to-gold-400 px-3 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-brand-950 shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_4px_14px_rgba(229,176,79,0.45)] transition-all duration-200 hover:-translate-y-px hover:from-gold-400 hover:to-gold-300 hover:shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_6px_20px_rgba(229,176,79,0.6)]"
+                className="group/mp relative inline-flex min-h-11 items-center gap-1.5 overflow-hidden rounded-full bg-linear-to-r from-gold-500 to-gold-400 px-3 text-[0.7rem] font-bold uppercase tracking-[0.12em] text-brand-950 shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_4px_14px_rgba(229,176,79,0.45)] transition-[transform,box-shadow] duration-200 hover:-translate-y-px hover:from-gold-400 hover:to-gold-300 hover:shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_6px_20px_rgba(229,176,79,0.6)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300"
               >
                 <span className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 ease-out group-hover/mp:translate-x-full" />
                 <ShoppingBag className="h-3 w-3" />
@@ -214,7 +215,9 @@ export function SiteHeader() {
                 className="flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-full text-[0.75rem] text-brand-300 transition-colors hover:bg-white/10 hover:text-white sm:min-w-0 sm:px-2"
               >
                 <Phone className="h-3 w-3" />
-                <span className="hidden sm:inline">{siteConfig.contact.phone}</span>
+                <span className="hidden sm:inline">
+                  {siteConfig.contact.phone}
+                </span>
               </a>
               <a
                 href={`https://wa.me/${siteConfig.contact.whatsApp}`}
@@ -232,14 +235,14 @@ export function SiteHeader() {
         {/* Main nav bar */}
         <div
           className={cn(
-            "border-b border-black/5 bg-white/95 backdrop-blur-2xl transition-shadow duration-300",
+            "border-b border-white/30 bg-white/45 backdrop-blur-xl transition-shadow duration-300",
             scrolled && "shadow-sm",
           )}
         >
           <div className="mx-auto w-full max-w-400 px-4 py-2.5 sm:px-6 lg:px-8">
             <div
               className={cn(
-                "mobile-liquid-glass-nav flex items-center justify-between gap-3 rounded-2xl border border-black/6 bg-white px-4 py-2.5 transition-shadow duration-300 md:px-5",
+                "liquid-glass-nav flex items-center justify-between gap-3 rounded-2xl border border-black/6 px-4 py-2.5 transition-shadow duration-300 md:px-5",
                 scrolled ? "shadow-md" : "shadow-sm",
               )}
             >
@@ -251,12 +254,12 @@ export function SiteHeader() {
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[13px] bg-linear-to-br from-brand-600 to-brand-900 shadow-sm">
                   <Building2 className="h-5 w-5 text-white" />
                 </div>
-                <div className="hidden sm:block">
-                  <span className="font-heading block text-[1.1rem] font-semibold leading-tight tracking-tight text-brand-900">
+                <div className="block min-w-0">
+                  <span className="font-heading block truncate text-[0.95rem] font-semibold leading-tight tracking-tight text-brand-900 sm:text-[1.1rem]">
                     Alivia
                     <span className="text-gold-600"> Properties</span>
                   </span>
-                  <span className="text-[0.58rem] font-medium uppercase tracking-[0.16em] text-ink-500">
+                  <span className="hidden text-[0.58rem] font-medium uppercase tracking-[0.16em] text-ink-500 sm:block">
                     Bangladesh Real Estate
                   </span>
                 </div>
@@ -338,7 +341,7 @@ export function SiteHeader() {
                   </Link>
                 )}
                 <button
-                  className="mobile-liquid-glass-control flex size-11 cursor-pointer items-center justify-center rounded-xl border border-ink-200 transition-colors hover:bg-ink-50"
+                  className="liquid-glass-control glass-interactive flex size-11 cursor-pointer items-center justify-center rounded-xl border border-ink-200 transition-colors hover:bg-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
                   onClick={() => setMobileOpen(true)}
                   aria-label="Open navigation menu"
                 >
