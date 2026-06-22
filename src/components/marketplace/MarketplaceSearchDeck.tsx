@@ -87,7 +87,7 @@ export function MarketplaceSearchDeck({
   const quickLinks = getPreferredSuggestions(items).slice(0, 5)
 
   return (
-    <div className="mobile-liquid-glass-dark mt-7 max-w-2xl rounded-[1.75rem] border border-white/15 bg-white/12 p-3 shadow-lg backdrop-blur-md">
+    <div className="liquid-glass-dark mt-7 max-w-2xl rounded-[1.75rem] border border-white/15 p-3 shadow-lg">
       <label
         htmlFor="marketplace-category-search"
         className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.18em] text-gold-200"
