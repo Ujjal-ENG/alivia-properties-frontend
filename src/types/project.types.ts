@@ -38,6 +38,10 @@ export type Project = {
   coverImage?: string          // alias for pages that use coverImage
   galleryImages: string[]
 
+  // video — uploaded clips and/or an external link (YouTube/Vimeo/direct file)
+  videos?: string[]
+  videoUrl?: string
+
   handoverDate?: string
   landSize?: number
   landSizeUnit?: string

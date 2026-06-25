@@ -52,6 +52,8 @@ function getDefaults(initial?: Project): ProjectInput {
     address: initial?.address ?? "",
     coverImageUrl: initial?.coverImageUrl ?? "",
     galleryImages: initial?.galleryImages ?? [],
+    videos: initial?.videos ?? [],
+    videoUrl: initial?.videoUrl ?? "",
     handoverDate: initial?.handoverDate ? initial.handoverDate.slice(0, 10) : "",
     landSize: initial?.landSize,
     landSizeUnit: initial?.landSizeUnit ?? "katha",
@@ -88,6 +90,7 @@ export function ProjectForm({ mode, initialProject }: ProjectFormProps) {
   const { fields, append, remove } = useFieldArray({ control: form.control, name: "units" })
   const coverValue = useWatch({ control: form.control, name: "coverImageUrl" })
   const galleryValue = useWatch({ control: form.control, name: "galleryImages" }) ?? []
+  const videoValues = useWatch({ control: form.control, name: "videos" }) ?? []
   const selectedAmenities = useWatch({ control: form.control, name: "amenities" }) ?? []
 
   async function onSubmit(values: ProjectSubmit) {
@@ -350,6 +353,44 @@ export function ProjectForm({ mode, initialProject }: ProjectFormProps) {
               {form.formState.errors.galleryImages?.message && (
                 <p className="text-sm text-red-600">{form.formState.errors.galleryImages.message}</p>
               )}
+            </div>
+
+            {/* Video — upload a walkthrough clip and/or paste an external link */}
+            <div className="grid gap-5 border-t border-border pt-6 md:grid-cols-2">
+              <div className="space-y-2">
+                <FileUploader
+                  kind="project-video"
+                  multiple
+                  maxFiles={3}
+                  label="Project videos (optional)"
+                  hint="Up to 3 clips · max 125 MB each (mp4, webm, mov)"
+                  value={videoValues}
+                  onChange={(urls) =>
+                    form.setValue("videos", urls, { shouldValidate: true, shouldDirty: true })
+                  }
+                />
+                {form.formState.errors.videos?.message && (
+                  <p className="text-sm text-red-600">{form.formState.errors.videos.message}</p>
+                )}
+              </div>
+
+              <FormField
+                control={form.control}
+                name="videoUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>External video link (optional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="https://youtube.com/watch?v=…"
+                        {...field}
+                        value={field.value ?? ""}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           </div>
 

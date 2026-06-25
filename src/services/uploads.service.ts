@@ -5,6 +5,7 @@ export type UploadKind =
   | "property-image"
   | "property-video"
   | "project-image"
+  | "project-video"
   | "document"
   | "avatar"
   | "category-image"
@@ -36,9 +37,10 @@ export const UPLOAD_RULES: Record<
   UploadKind,
   { mimes: string[]; maxBytes: number; accept: string }
 > = {
-  "property-image": { mimes: IMAGE, maxBytes: 10 * MB, accept: "image/*" },
-  "property-video": { mimes: VIDEO, maxBytes: 60 * MB, accept: "video/*" },
-  "project-image": { mimes: IMAGE, maxBytes: 10 * MB, accept: "image/*" },
+  "property-image": { mimes: IMAGE, maxBytes: 125 * MB, accept: "image/*" },
+  "property-video": { mimes: VIDEO, maxBytes: 125 * MB, accept: "video/*" },
+  "project-image": { mimes: IMAGE, maxBytes: 125 * MB, accept: "image/*" },
+  "project-video": { mimes: VIDEO, maxBytes: 125 * MB, accept: "video/*" },
   document: { mimes: DOC, maxBytes: 15 * MB, accept: ".pdf,.doc,.docx,image/*" },
   avatar: { mimes: IMAGE, maxBytes: 5 * MB, accept: "image/*" },
   "category-image": { mimes: IMAGE, maxBytes: 8 * MB, accept: "image/*" },

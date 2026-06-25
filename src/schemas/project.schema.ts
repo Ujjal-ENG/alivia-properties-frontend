@@ -22,6 +22,11 @@ export const projectSchema = z.object({
 
   coverImageUrl: z.string().optional().default(""),
   galleryImages: z.array(z.string()).max(16, "You can add up to 16 photos").optional().default([]),
+  videos: z.array(z.string()).max(3, "You can add up to 3 videos").optional().default([]),
+  videoUrl: z
+    .union([z.literal(""), z.string().url("Enter a valid video link")])
+    .optional()
+    .default(""),
 
   handoverDate: z.string().optional().default(""),
   landSize: z.coerce.number().min(0).optional(),

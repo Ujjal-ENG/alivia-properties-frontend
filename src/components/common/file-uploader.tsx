@@ -33,7 +33,7 @@ const IMAGE_KINDS: ReadonlySet<UploadKind> = new Set([
   "blog-image",
 ])
 
-const VIDEO_KINDS: ReadonlySet<UploadKind> = new Set(["property-video"])
+const VIDEO_KINDS: ReadonlySet<UploadKind> = new Set(["property-video", "project-video"])
 
 function fileName(url: string): string {
   try {
