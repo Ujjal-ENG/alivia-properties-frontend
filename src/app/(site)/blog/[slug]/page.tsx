@@ -1,10 +1,11 @@
 export const dynamic = "force-dynamic"
 
+import { after } from "next/server"
 import { notFound } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { Clock, ChevronRight, Calendar } from "lucide-react"
-import { blogService } from "@/services/blog.service"
+import { blogService, recordArticleView } from "@/services/blog.service"
 import { ROUTES } from "@/config/routes.config"
 
 const FALLBACK_BLOG_IMAGE =
@@ -18,6 +19,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params
   const post = await blogService.bySlug(slug).catch(() => null)
   if (!post) notFound()
+
+  // Defer the view-count write until after the article HTML is sent, so reading
+  // the post is never blocked by the analytics update. Errors are ignored.
+  after(() => {
+    void recordArticleView(slug).catch(() => {})
+  })
 
   const relatedRes = await blogService.list({ category: post.category, limit: 4 }).catch(() => ({
     data: [],

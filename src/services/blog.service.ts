@@ -50,6 +50,11 @@ export const blogService = {
   bySlug(slug: string): Promise<BlogPost> {
     return httpClient.get<BlogPost>(`${BASE}/${slug}`)
   },
+  // Fire-and-forget view ping. Scheduled by the article page via Next.js
+  // `after()`, so the read isn't blocked by the view-count write.
+  recordView(slug: string): Promise<{ success: boolean }> {
+    return httpClient.post<{ success: boolean }>(`${BASE}/${slug}/view`)
+  },
   adminList(
     params: { page?: number; limit?: number; category?: string; search?: string; status?: string } = {},
     token?: string,
@@ -79,3 +84,4 @@ export const blogService = {
 
 export const getBlogPosts = blogService.list
 export const getBlogPostBySlug = blogService.bySlug
+export const recordArticleView = blogService.recordView
