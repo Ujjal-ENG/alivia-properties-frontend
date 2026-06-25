@@ -1,10 +1,11 @@
 export const dynamic = "force-dynamic"
 
+import { after } from "next/server"
 import { notFound } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { MapPin, Calendar, Building2, Layers, Home, Phone, MessageCircle, ChevronRight } from "lucide-react"
-import { getProject } from "@/services/projects.service"
+import { getProject, recordProjectView } from "@/services/projects.service"
 import { formatPriceRange } from "@/utils/format-price"
 import { PROJECT_STATUS_STYLES } from "@/lib/constants"
 import { ROUTES } from "@/config/routes.config"
@@ -16,16 +17,55 @@ interface ProjectDetailPageProps {
   params: Promise<{ slug: string }>
 }
 
+/** Convert a YouTube/Vimeo watch link to an embeddable iframe URL, else null. */
+function toEmbedUrl(url: string): string | null {
+  try {
+    const u = new URL(url)
+    const host = u.hostname.replace(/^www\.|^m\./, "")
+    if (host === "youtube.com") {
+      const id = u.searchParams.get("v")
+      return id ? `https://www.youtube.com/embed/${id}` : null
+    }
+    if (host === "youtu.be") {
+      const id = u.pathname.slice(1)
+      return id ? `https://www.youtube.com/embed/${id}` : null
+    }
+    if (host === "vimeo.com") {
+      const id = u.pathname.split("/").filter(Boolean)[0]
+      return id ? `https://player.vimeo.com/video/${id}` : null
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
 export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const { slug } = await params
   const res = await getProject(slug)
   if (!res.success) notFound()
   const project = res.data
 
+  // Count this view *after* the response is sent, so the view-count write never
+  // adds latency to the page render. Errors are swallowed — a failed analytics
+  // ping must not surface to the visitor.
+  after(() => {
+    void recordProjectView(slug).catch(() => {})
+  })
+
   const status = PROJECT_STATUS_STYLES[project.status]
   const handover = project.handoverDate
     ? new Date(project.handoverDate).toLocaleDateString("en-BD", { month: "long", year: "numeric" })
     : "TBA"
+
+  // Video tour: external link → iframe embed when it's YouTube/Vimeo, otherwise a
+  // direct <video>. Uploaded clips always render as <video>.
+  const videoEmbed = project.videoUrl ? toEmbedUrl(project.videoUrl) : null
+  const directVideos = [
+    ...(project.videos ?? []),
+    ...(project.videoUrl && !videoEmbed ? [project.videoUrl] : []),
+  ]
+  const hasVideo = Boolean(videoEmbed) || directVideos.length > 0
 
   const schema = {
     "@context": "https://schema.org",
@@ -86,9 +126,9 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[
                 { icon: Calendar,  label: "Handover",  value: handover },
-                { icon: Building2, label: "Floors",    value: `${project.totalFloors} Floors` },
-                { icon: Home,      label: "Total Units", value: `${project.totalUnits} Units` },
-                { icon: Layers,    label: "Land Size",  value: project.landSize },
+                { icon: Building2, label: "Floors",    value: project.totalFloors != null ? `${project.totalFloors} Floors` : "—" },
+                { icon: Home,      label: "Total Units", value: project.totalUnits != null ? `${project.totalUnits} Units` : "—" },
+                { icon: Layers,    label: "Land Size",  value: project.landSize != null ? `${project.landSize} ${project.landSizeUnit ?? "katha"}` : "—" },
               ].map(({ icon: Icon, label, value }) => (
                 <div key={label} className="bg-ink-50 rounded-xl p-4 text-center">
                   <Icon className="h-4 w-4 text-brand-600 mx-auto mb-1.5" />
@@ -103,6 +143,35 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
               <h2 className="text-h3 mb-3">About This Project</h2>
               <p className="text-sm text-muted-foreground leading-relaxed">{project.description}</p>
             </div>
+
+            {/* Video tour */}
+            {hasVideo && (
+              <div>
+                <h2 className="text-h3 mb-4">Video Tour</h2>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {videoEmbed && (
+                    <div className="relative aspect-video overflow-hidden rounded-xl border border-border sm:col-span-2">
+                      <iframe
+                        src={videoEmbed}
+                        title={`${project.name} video tour`}
+                        className="absolute inset-0 h-full w-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                  )}
+                  {directVideos.map((src, i) => (
+                    <video
+                      key={i}
+                      src={src}
+                      controls
+                      preload="metadata"
+                      className="aspect-video w-full rounded-xl border border-border bg-black object-cover"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Unit price table */}
             <div>

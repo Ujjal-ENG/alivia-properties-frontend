@@ -36,7 +36,7 @@ function keyFromUrl(url: string): string {
 // Map the admin form values to the backend write contract: uppercase status,
 // gallery URLs → ordered ImageRef objects, blank optionals dropped.
 function toWritePayload(payload: unknown): Record<string, unknown> {
-  const { galleryImages, status, coverImageUrl, handoverDate, ...rest } =
+  const { galleryImages, status, coverImageUrl, handoverDate, videoUrl, ...rest } =
     (payload ?? {}) as Record<string, unknown>
   const urls = Array.isArray(galleryImages) ? (galleryImages as string[]) : []
   return {
@@ -45,6 +45,7 @@ function toWritePayload(payload: unknown): Record<string, unknown> {
     ...(typeof coverImageUrl === "string"
       ? { coverImageUrl: coverImageUrl || undefined }
       : {}),
+    ...(typeof videoUrl === "string" ? { videoUrl: videoUrl || undefined } : {}),
     ...(typeof handoverDate === "string"
       ? { handoverDate: handoverDate || undefined }
       : {}),
@@ -87,6 +88,11 @@ export const projectsService = {
     const p = await httpClient.get<BackendProject>(`${BASE}/${slug}`)
     return toFrontendProject(p)
   },
+  // Fire-and-forget view ping. Scheduled by the detail page via Next.js
+  // `after()`, so it runs after the response is sent (no public token needed).
+  recordView(slug: string): Promise<{ success: boolean }> {
+    return httpClient.post<{ success: boolean }>(`${BASE}/${slug}/view`)
+  },
   async byId(id: string, token?: string): Promise<Project> {
     const p = await httpClient.get<BackendProject>(`${BASE}/id/${id}`, { token })
     return toFrontendProject(p)
@@ -118,6 +124,7 @@ export const projectsService = {
 
 export const getProjects = projectsService.list
 export const getProjectBySlug = projectsService.bySlug
+export const recordProjectView = projectsService.recordView
 export const getProjectById = projectsService.byId
 export const createProject = projectsService.create
 export const updateProject = projectsService.update
