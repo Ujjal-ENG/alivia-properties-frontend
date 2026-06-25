@@ -81,7 +81,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
             <p className="text-[0.68rem] uppercase tracking-[0.18em] text-ink-500">Inventory</p>
             <p className="mt-2 flex items-center gap-2 text-sm font-medium text-ink-800">
               <Building2 className="h-4 w-4 text-brand-600" />
-              {project.totalFloors} floors · {project.totalUnits} units
+              {project.totalFloors ?? "—"} floors · {project.totalUnits ?? "—"} units
             </p>
           </div>
         </div>
