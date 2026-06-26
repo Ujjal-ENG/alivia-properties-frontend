@@ -77,7 +77,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         </div>
 
         <div className="relative mb-8 h-64 overflow-hidden rounded-2xl md:h-96">
-          <Image src={post.coverImage || FALLBACK_BLOG_IMAGE} alt={post.title} fill className="object-cover" />
+          <Image src={post.coverImage || FALLBACK_BLOG_IMAGE} alt={post.title} fill sizes="(max-width: 1024px) 100vw, 1024px" className="object-cover" />
         </div>
 
         <article className="prose prose-sm max-w-none space-y-4">
@@ -107,7 +107,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               {related.map((item) => (
                 <Link key={item.id} href={ROUTES.BLOG_POST(item.slug)} className="group block overflow-hidden rounded-xl border border-border bg-white transition-shadow hover:shadow-card">
                   <div className="relative h-32 overflow-hidden bg-muted">
-                    <Image src={item.coverImage || FALLBACK_BLOG_IMAGE} alt={item.title} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
+                    <Image src={item.coverImage || FALLBACK_BLOG_IMAGE} alt={item.title} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover transition-transform duration-300 group-hover:scale-105" />
                   </div>
                   <div className="p-3">
                     <p className="line-clamp-2 text-xs font-bold transition-colors group-hover:text-brand-700">{item.title}</p>
