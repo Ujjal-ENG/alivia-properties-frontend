@@ -36,6 +36,27 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Turns a thrown `fetch` rejection into an ApiError with status 0 and a clear,
+ * user-facing message. Browsers report network-level failures with opaque text
+ * — Chrome "Failed to fetch", Safari "Load failed", Firefox "NetworkError…".
+ * These all mean the request never reached the server or the response was
+ * blocked: server down, wrong API URL, HTTP/HTTPS mixed-content, or CORS — NOT
+ * an HTTP error response (those have a real status code and reach the `!res.ok`
+ * branch). The raw text is preserved on `.body` for console/debugging.
+ */
+function toNetworkError(err: unknown): ApiError {
+  const raw = err instanceof Error ? err.message : "Network error";
+  const isNetwork = /failed to fetch|load failed|networkerror|fetch failed/i.test(raw);
+  return new ApiError(
+    isNetwork
+      ? "Can't reach the server. Check your internet connection. If it keeps happening the API may be down, or blocked by HTTPS/CORS configuration."
+      : raw,
+    0,
+    raw,
+  );
+}
+
 type RequestOptions = RequestInit & {
   /** Query string params (will be appended to URL) */
   query?: Record<string, string | number | boolean | null | undefined>;
@@ -84,11 +105,7 @@ async function request<T>(
   try {
     res = await fetch(url, init);
   } catch (err) {
-    throw new ApiError(
-      err instanceof Error ? err.message : "Network error",
-      0,
-      null,
-    );
+    throw toNetworkError(err);
   }
 
   const text = await res.text();
@@ -126,17 +143,22 @@ async function requestPaginated<T>(
 ): Promise<Paginated<T>> {
   const { query, token, next, headers, body, ...rest } = options;
   const url = buildUrl(path, query);
-  const res = await fetch(url, {
-    ...rest,
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(headers ?? {}),
-    },
-    body,
-    next,
-  } as RequestInit & { next?: RequestOptions["next"] });
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      ...rest,
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(headers ?? {}),
+      },
+      body,
+      next,
+    } as RequestInit & { next?: RequestOptions["next"] });
+  } catch (err) {
+    throw toNetworkError(err);
+  }
 
   const text = await res.text();
   let payload: unknown = null;
