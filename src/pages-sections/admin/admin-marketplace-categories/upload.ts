@@ -4,12 +4,16 @@ import type { CategoryImage } from "@/types/marketplace.types"
 
 function explain(err: unknown): Error {
   if (err instanceof ApiError) {
+    if (err.status === 0) {
+      // Network failure — http-client already built a clear, user-facing message.
+      return new Error(err.message)
+    }
     if (err.status === 404) {
       return new Error(
         "Upload route missing on the running backend. Restart NestJS (`pnpm start:dev`) so the latest uploads routes are loaded.",
       )
     }
-    return new Error(`Upload failed (${err.status}): ${err.message}`)
+    return new Error(`Upload failed: ${err.message}`)
   }
   return new Error(
     "Cannot reach the API server. Make sure NestJS is running on port 3001 (`pnpm start:dev`).",
