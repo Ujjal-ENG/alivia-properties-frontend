@@ -161,7 +161,7 @@ export function PropertyImagesUploader({
                 index === 0 ? "border-brand-500 ring-1 ring-brand-500/30" : "border-border",
               )}
             >
-              <Image src={url} alt={`Photo ${index + 1}`} fill unoptimized className="object-cover" />
+              <Image src={url} alt={`Photo ${index + 1}`} fill sizes="(max-width: 768px) 50vw, 200px" unoptimized className="object-cover" />
 
               {index === 0 && (
                 <span className="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded-full bg-brand-700 px-2 py-0.5 text-[0.65rem] font-semibold text-white shadow-sm">
