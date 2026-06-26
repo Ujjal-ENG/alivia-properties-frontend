@@ -251,7 +251,7 @@ export function CategoryFormDialog({
           <div className="flex items-center gap-4">
             <div className="relative size-20 shrink-0 overflow-hidden rounded-xl border border-border bg-ink-50">
               {previewUrl ? (
-                <Image src={previewUrl} alt="Preview" fill className="object-cover" unoptimized />
+                <Image src={previewUrl} alt="Preview" fill sizes="80px" className="object-cover" unoptimized />
               ) : (
                 <div className="flex size-full items-center justify-center text-ink-400">
                   <ImagePlus className="size-7" />
