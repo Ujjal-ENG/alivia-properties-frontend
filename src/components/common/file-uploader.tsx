@@ -153,7 +153,7 @@ export function FileUploader({
                 key={url}
                 className="group relative aspect-square overflow-hidden rounded-[1rem] border border-border"
               >
-                <Image src={url} alt={`Upload ${index + 1}`} fill unoptimized className="object-cover" />
+                <Image src={url} alt={`Upload ${index + 1}`} fill sizes="(max-width: 768px) 50vw, 200px" unoptimized className="object-cover" />
                 {!disabled && (
                   <button
                     type="button"
