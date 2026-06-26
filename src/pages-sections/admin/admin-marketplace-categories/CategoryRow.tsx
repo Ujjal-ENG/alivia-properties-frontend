@@ -42,7 +42,7 @@ export function CategoryRow({ cat, depth, onEdit, onDelete, onAddChild }: Props)
       {/* Thumbnail */}
       <div className="relative size-10 shrink-0 overflow-hidden rounded-lg border border-border bg-ink-50">
         {thumb ? (
-          <Image src={thumb} alt={cat.name} fill className="object-cover" unoptimized />
+          <Image src={thumb} alt={cat.name} fill sizes="40px" className="object-cover" unoptimized />
         ) : (
           <div className="flex size-full items-center justify-center text-ink-300">
             <ImagePlus className="size-4" />
