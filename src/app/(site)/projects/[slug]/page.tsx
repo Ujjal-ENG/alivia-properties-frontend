@@ -96,11 +96,11 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
         {/* Gallery */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 rounded-2xl overflow-hidden mb-8 h-72 md:h-96">
           <div className="col-span-2 row-span-2 relative">
-            <Image src={project.galleryImages[0] ?? project.coverImage} alt={project.name} fill className="object-cover" />
+            <Image src={project.galleryImages[0] ?? project.coverImage} alt={project.name} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
           </div>
           {project.galleryImages.slice(1, 5).map((img, i) => (
             <div key={i} className="relative hidden md:block">
-              <Image src={img} alt={`${project.name} ${i + 2}`} fill className="object-cover" />
+              <Image src={img} alt={`${project.name} ${i + 2}`} fill sizes="25vw" className="object-cover" />
             </div>
           ))}
         </div>
