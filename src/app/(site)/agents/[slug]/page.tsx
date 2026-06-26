@@ -31,7 +31,7 @@ export default async function AgentDetailPage({ params }: { params: Promise<{ sl
     <div>
       <div className="relative h-44 w-full overflow-hidden bg-ink-100 sm:h-56">
         {a.coverImage && (
-          <Image src={a.coverImage} alt="" fill className="object-cover" unoptimized priority />
+          <Image src={a.coverImage} alt="" fill sizes="100vw" className="object-cover" unoptimized priority />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-ink-900/60 to-transparent" />
       </div>
