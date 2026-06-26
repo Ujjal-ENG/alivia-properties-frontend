@@ -19,11 +19,17 @@ const nextConfig: NextConfig = {
       // MinIO object store (admin/seller uploads) in local dev. Backend images
       // are normally rendered with `unoptimized`, but allowing the host here is
       // a safety net so a forgotten `unoptimized` doesn't crash the page.
-      // For production, add the real S3/MinIO public host here too.
       {
         protocol: "http",
         hostname: "localhost",
         port: "9000",
+      },
+      // Production MinIO public host — uploaded images are served from the API
+      // domain (nginx proxies /<bucket>/* → MinIO). Required for the Next image
+      // optimizer to fetch them; without it /_next/image returns 400.
+      {
+        protocol: "https",
+        hostname: "api-prd.aliviaproperties.com",
       },
     ],
   },
