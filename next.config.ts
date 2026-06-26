@@ -2,6 +2,11 @@ import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
   images: {
+    // Next.js 16 blocks the image optimizer from fetching local IPs (localhost →
+    // 127.0.0.1) by default. The MinIO object store runs on localhost:9000 in dev,
+    // so allow it here. DEV ONLY — in production MinIO/S3 has a public host, so do
+    // not ship this flag to prod (remove it or gate behind NODE_ENV).
+    dangerouslyAllowLocalIP: process.env.NODE_ENV !== "production",
     remotePatterns: [
       {
         protocol: "https",
