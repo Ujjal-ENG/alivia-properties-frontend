@@ -137,7 +137,9 @@ export function AdminBlogEditorForm({ post, token }: AdminBlogEditorFormProps) {
     } catch (err) {
       setError(
         err instanceof ApiError
-          ? `Upload failed (${err.status}): ${err.message}`
+          ? err.status === 0
+            ? err.message // network failure — already a clear, user-facing message
+            : `Upload failed: ${err.message}`
           : err instanceof Error
             ? err.message
             : "Could not upload image.",
