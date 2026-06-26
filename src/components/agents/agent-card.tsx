@@ -23,6 +23,7 @@ export function AgentCard({ agent, compact }: AgentCardProps) {
             src={agent.coverImage}
             alt=""
             fill
+            sizes="128px"
             className="object-cover transition-transform duration-300 group-hover:scale-105"
             unoptimized
           />
