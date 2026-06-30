@@ -135,23 +135,19 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
   return (
     <main id="main-content">
       {/* ── Hero ─────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-brand-950 text-white">
-        {/* Background texture */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_42%,color-mix(in_oklch,var(--color-brand-400)_24%,transparent)_0%,transparent_58%),radial-gradient(circle_at_82%_18%,color-mix(in_oklch,var(--color-gold-300)_20%,transparent)_0%,transparent_48%)]" />
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 opacity-[0.13] [background-image:linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] [background-size:64px_64px]"
-        />
-
+      <section className="relative overflow-hidden bg-linear-to-b from-white via-brand-50/35 to-white text-ink-900">
         <div className="container-page relative py-12 lg:py-16">
           <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr]">
             {/* Left copy */}
             <div className="min-w-0">
-              <p className="text-eyebrow mb-3 text-gold-300">Alivia Marketplace</p>
+              <p className="mb-3 inline-flex items-center rounded-full border border-brand-200 bg-white/85 px-3.5 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-brand-700 shadow-sm backdrop-blur">
+                Alivia Marketplace
+              </p>
               <h1 className="text-balance font-heading text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
-                Shop projects, properties, materials, services, and quotes faster.
+                Shop projects, properties, materials, services, and{" "}
+                <span className="text-gold-600">quotes faster.</span>
               </h1>
-              <p className="mt-4 max-w-xl text-sm leading-relaxed text-brand-100 sm:text-base">
+              <p className="mt-4 max-w-xl text-sm leading-relaxed text-ink-600 sm:text-base">
                 Start with Alivia developments, compare verified property
                 listings, then source construction materials or services from the
                 same marketplace desk.
@@ -168,7 +164,7 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
                   <Button
                     size="lg"
                     variant="outline"
-                    className="gap-2 border-white/30 bg-white/10 text-white hover:bg-white/20"
+                    className="gap-2 border-brand-200 bg-white/85 text-brand-800 hover:bg-brand-50"
                   >
                     Browse Categories
                   </Button>
@@ -177,7 +173,7 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
                   <Button
                     size="lg"
                     variant="outline"
-                    className="gap-2 border-white/30 bg-white/10 text-white hover:bg-white/20"
+                    className="gap-2 border-brand-200 bg-white/85 text-brand-800 hover:bg-brand-50"
                   >
                     <Phone aria-hidden="true" className="size-4" />
                     Call Marketplace Desk
@@ -191,14 +187,14 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
 
               {highIntentItems.length > 0 && (
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <span className="flex min-h-9 items-center rounded-full border border-white/12 bg-white/8 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-brand-100">
+                  <span className="flex min-h-9 items-center rounded-full border border-brand-100 bg-white/85 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-brand-700">
                     Popular
                   </span>
                   {highIntentItems.map((item) => (
                     <Link
                       key={item.slug}
                       href={ROUTES.MARKETPLACE_CATEGORY(item.slug)}
-                      className="inline-flex min-h-11 items-center rounded-full border border-white/12 bg-white/8 px-3 text-xs font-semibold text-white transition-[background-color,border-color,color] duration-200 hover:border-gold-300/70 hover:bg-gold-300 hover:text-brand-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300"
+                      className="inline-flex min-h-11 items-center rounded-full border border-brand-100 bg-white/85 px-3 text-xs font-semibold text-brand-800 transition-[background-color,border-color,color] duration-200 hover:border-gold-300 hover:bg-gold-300 hover:text-brand-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
                     >
                       {item.name}
                     </Link>
@@ -207,7 +203,7 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
               )}
 
               {/* Trust pills */}
-              <div className="mt-6 flex flex-wrap gap-2 text-xs text-brand-100">
+              <div className="mt-6 flex flex-wrap gap-2 text-xs text-ink-600">
                 {[
                   { icon: ShieldCheck, label: "Verified businesses" },
                   { icon: Timer, label: "~24h response time" },
@@ -216,9 +212,9 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
                 ].map(({ icon: Icon, label }) => (
                   <span
                     key={label}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-brand-100 bg-white/85 px-3 py-1 shadow-sm"
                   >
-                    <Icon aria-hidden="true" className="size-3.5" />
+                    <Icon aria-hidden="true" className="size-3.5 text-brand-700" />
                     {label}
                   </span>
                 ))}
@@ -585,13 +581,13 @@ function MarketplaceCommandPanel({
   ]
 
   return (
-    <aside className="mobile-liquid-glass-dark rounded-[2rem] border border-white/15 bg-white/10 p-4 backdrop-blur-sm sm:p-5">
+    <aside className="rounded-[2rem] border border-white/70 bg-white/95 p-4 shadow-(--shadow-elevated) backdrop-blur sm:p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-gold-300">
+          <p className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-brand-700">
             Procurement board
           </p>
-          <h2 className="mt-2 font-heading text-2xl font-semibold text-white">
+          <h2 className="mt-2 font-heading text-2xl font-semibold text-brand-950">
             Know the next move before you call.
           </h2>
         </div>
@@ -602,11 +598,11 @@ function MarketplaceCommandPanel({
 
       <dl className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
         {stats.map(({ label, value }) => (
-          <div key={label} className="rounded-2xl border border-white/12 bg-brand-900/70 px-4 py-3">
-            <dt className="text-[10px] font-semibold uppercase tracking-widest text-brand-200">
+          <div key={label} className="rounded-2xl border border-brand-100 bg-brand-50/70 px-4 py-3">
+            <dt className="text-[10px] font-semibold uppercase tracking-widest text-ink-500">
               {label}
             </dt>
-            <dd className="mt-1 font-heading text-3xl font-bold text-white">
+            <dd className="mt-1 font-heading text-3xl font-bold text-brand-950">
               {value}
             </dd>
           </div>
@@ -615,20 +611,20 @@ function MarketplaceCommandPanel({
 
       <div className="mt-5 space-y-2">
         {steps.map(({ icon: Icon, title, body }) => (
-          <div key={title} className="mobile-liquid-glass-dark flex gap-3 rounded-2xl border border-white/10 bg-white/8 p-3">
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-white text-brand-800">
+          <div key={title} className="flex gap-3 rounded-2xl border border-brand-100 bg-white p-3">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-700 text-white">
               <Icon aria-hidden="true" className="size-4" />
             </span>
             <div>
-              <p className="text-sm font-bold text-white">{title}</p>
-              <p className="text-xs leading-relaxed text-brand-100">{body}</p>
+              <p className="text-sm font-bold text-ink-900">{title}</p>
+              <p className="text-xs leading-relaxed text-ink-600">{body}</p>
             </div>
           </div>
         ))}
       </div>
 
       <Link href={ROUTES.MARKETPLACE_REQUEST} className="mt-5 block">
-        <Button className="w-full gap-2 rounded-2xl bg-white text-brand-950 hover:bg-brand-50">
+        <Button className="w-full gap-2 rounded-2xl bg-brand-700 text-white hover:bg-brand-800">
           Start Guided Request
           <ArrowRight aria-hidden="true" className="size-4" />
         </Button>

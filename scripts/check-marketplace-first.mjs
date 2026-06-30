@@ -24,6 +24,15 @@ assert(
     propertyIndex < categoryIndex,
   "marketplace sections must be ordered projects -> properties -> categories",
 )
+assert(
+  marketplace.includes("bg-linear-to-b from-white via-brand-50/35 to-white"),
+  "marketplace hero must use the landing page light color combination",
+)
+assert(
+  !marketplace.includes('className="relative overflow-hidden bg-brand-950 text-white"') &&
+    !marketplace.includes("[background-image:linear-gradient(to_right,white_1px"),
+  "marketplace hero must not use the old dark grid treatment",
+)
 
 if (!process.exitCode) {
   console.log("marketplace-first structure ok")
