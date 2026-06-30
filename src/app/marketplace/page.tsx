@@ -1,21 +1,24 @@
 import type { Metadata } from "next"
+import type { ReactNode } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import {
   ArrowRight,
+  Bath,
+  BedDouble,
   Building2,
-  ClipboardList,
   FileText,
   Home,
+  MapPin,
+  Maximize2,
   PackageSearch,
   PencilRuler,
   Phone,
   ShieldCheck,
   Sparkles,
-  Store,
   Timer,
   Truck,
   WalletCards,
-  Wrench,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -28,6 +31,11 @@ import {
 import { ROUTES } from "@/config/routes.config"
 import { siteConfig } from "@/config/site.config"
 import { marketplaceService, type MarketplaceCategory } from "@/services/marketplace.service"
+import { projectsService } from "@/services/projects.service"
+import { propertiesService } from "@/services/properties.service"
+import type { Project } from "@/types/project.types"
+import type { Property } from "@/types/property.types"
+import { formatPrice, formatPriceRange, formatRent } from "@/utils/format-price"
 
 export const dynamic = "force-dynamic"
 
@@ -50,14 +58,25 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
         ? (params.search[0] ?? "")
         : ""
 
-  const [categoriesRes, suppliersRes, productsRes] = await Promise.allSettled([
-    marketplaceService.listCategories(),
-    marketplaceService.listSuppliers({ limit: 1 }),
-    marketplaceService.listProducts({ limit: 1 }),
-  ])
+  const [projectsRes, propertiesRes, categoriesRes, suppliersRes, productsRes] =
+    await Promise.allSettled([
+      projectsService.list({ limit: 6 }),
+      propertiesService.list({ limit: 6 }),
+      marketplaceService.listCategories(),
+      marketplaceService.listSuppliers({ limit: 1 }),
+      marketplaceService.listProducts({ limit: 1 }),
+    ])
 
+  const projects: Project[] =
+    projectsRes.status === "fulfilled" ? projectsRes.value.data : []
+  const properties: Property[] =
+    propertiesRes.status === "fulfilled" ? propertiesRes.value.data : []
   const categories: MarketplaceCategory[] =
     categoriesRes.status === "fulfilled" ? categoriesRes.value : []
+  const projectTotal =
+    projectsRes.status === "fulfilled" ? projectsRes.value.meta.total : projects.length
+  const propertyTotal =
+    propertiesRes.status === "fulfilled" ? propertiesRes.value.meta.total : properties.length
   const supplierTotal =
     suppliersRes.status === "fulfilled" ? suppliersRes.value.meta.total : 0
   const productTotal =
@@ -130,13 +149,12 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
             <div className="min-w-0">
               <p className="text-eyebrow mb-3 text-gold-300">Alivia Marketplace</p>
               <h1 className="text-balance font-heading text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
-                Source materials, services, and quotes faster with Alivia Marketplace.
+                Shop projects, properties, materials, services, and quotes faster.
               </h1>
               <p className="mt-4 max-w-xl text-sm leading-relaxed text-brand-100 sm:text-base">
-                Search by item, browse by construction stage, or send one RFQ.
-                Alivia routes your request to relevant Bangladeshi suppliers and
-                service providers so homeowners, builders, and project teams can
-                compare with less noise.
+                Start with Alivia developments, compare verified property
+                listings, then source construction materials or services from the
+                same marketplace desk.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
@@ -209,6 +227,8 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
 
             {/* Right stats panel */}
             <MarketplaceCommandPanel
+              projectTotal={projectTotal}
+              propertyTotal={propertyTotal}
               departmentTotal={groups.length}
               categoryTotal={totalCategories}
               supplierTotal={supplierTotal}
@@ -218,41 +238,37 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
         </div>
       </section>
 
-      <MarketplaceAudienceBand />
+      <MarketplaceRail
+        id="marketplace-projects"
+        eyebrow="Projects"
+        title="First, choose a development"
+        body="Start with Alivia projects and compare location, status, inventory, and starting price."
+        href={ROUTES.PROJECTS}
+        cta="View all projects"
+      >
+        {projects.length > 0 ? (
+          projects.map((project) => <ProjectMarketCard key={project.id} project={project} />)
+        ) : (
+          <MarketplaceEmptyCard label="No projects loaded yet" href={ROUTES.PROJECTS} />
+        )}
+      </MarketplaceRail>
 
-      <section className="border-y border-border/70 bg-white">
-        <div className="container-page py-7">
-          <div className="grid gap-3 md:grid-cols-3">
-            {[
-              {
-                icon: ClipboardList,
-                title: "One RFQ, multiple matches",
-                body: "Share quantity, location, and timeline once. Keep the requirement clear from the start.",
-              },
-              {
-                icon: ShieldCheck,
-                title: "Category-led discovery",
-                body: "Browse by build stage instead of guessing supplier names or scrolling random listings.",
-              },
-              {
-                icon: Phone,
-                title: "Human routing support",
-                body: "If the category is unclear, the marketplace desk helps direct the request.",
-              },
-            ].map(({ icon: Icon, title, body }) => (
-            <div key={title} className="mobile-liquid-glass flex gap-3 rounded-2xl bg-ink-50/70 p-4">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-brand-700 text-white">
-                  <Icon aria-hidden="true" className="size-4" />
-                </span>
-                <div className="min-w-0">
-                  <h2 className="font-sans text-sm font-bold text-ink-900">{title}</h2>
-                  <p className="mt-1 text-sm leading-relaxed text-ink-600">{body}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <MarketplaceRail
+        id="marketplace-properties"
+        eyebrow="Properties"
+        title="Then compare property listings"
+        body="Browse sale and rent options with price, area, size, and bedroom signals kept visible."
+        href={ROUTES.PROPERTIES}
+        cta="Browse properties"
+      >
+        {properties.length > 0 ? (
+          properties.map((property) => (
+            <PropertyMarketCard key={property.id} property={property} />
+          ))
+        ) : (
+          <MarketplaceEmptyCard label="No properties loaded yet" href={ROUTES.PROPERTIES} />
+        )}
+      </MarketplaceRail>
 
       {/* ── Sticky category tab navigation ───────────────────────── */}
       {tabs.length > 0 && <CategoryGroupTabs tabs={tabs} />}
@@ -367,18 +383,196 @@ export default async function MarketplacePage({ searchParams }: MarketplacePageP
   )
 }
 
+function MarketplaceRail({
+  id,
+  eyebrow,
+  title,
+  body,
+  href,
+  cta,
+  children,
+}: {
+  id: string
+  eyebrow: string
+  title: string
+  body: string
+  href: string
+  cta: string
+  children: ReactNode
+}) {
+  return (
+    <section id={id} className="container-page scroll-mt-28 py-8 first:pt-10">
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="max-w-2xl">
+          <p className="text-eyebrow mb-2">{eyebrow}</p>
+          <h2 className="font-heading text-3xl font-bold text-brand-950">{title}</h2>
+          <p className="mt-2 text-sm leading-relaxed text-ink-600">{body}</p>
+        </div>
+        <Link
+          href={href}
+          className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-brand-700 hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+        >
+          {cta}
+          <ArrowRight aria-hidden="true" className="size-4" />
+        </Link>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{children}</div>
+    </section>
+  )
+}
+
+function ProjectMarketCard({ project }: { project: Project }) {
+  const cover = project.coverImage ?? project.coverImageUrl ?? project.galleryImages[0]
+  const price =
+    project.priceFrom && project.priceTo
+      ? formatPriceRange(project.priceFrom, project.priceTo)
+      : project.priceFrom
+        ? formatPrice(project.priceFrom, true)
+        : "Price on request"
+
+  return (
+    <Link
+      href={ROUTES.PROJECT_DETAIL(project.slug)}
+      className="group grid overflow-hidden rounded-2xl border border-border/70 bg-white shadow-sm transition-[border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-(--shadow-card) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:grid-cols-[10rem_1fr]"
+    >
+      <div className="relative aspect-4/3 bg-ink-100 sm:aspect-auto">
+        {cover ? (
+          <Image
+            src={cover}
+            alt={project.name}
+            fill
+            unoptimized
+            sizes="(max-width: 768px) 100vw, 180px"
+            className="object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+          />
+        ) : (
+          <div className="flex size-full items-center justify-center bg-brand-50 text-brand-700">
+            <Building2 aria-hidden="true" className="size-8" />
+          </div>
+        )}
+      </div>
+      <div className="min-w-0 p-4">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
+          {titleCase(project.status)}
+        </p>
+        <h3 className="mt-2 line-clamp-2 text-base font-bold text-ink-900">
+          {project.name}
+        </h3>
+        <p className="mt-1 flex items-center gap-1 text-sm text-ink-500">
+          <MapPin aria-hidden="true" className="size-3.5 shrink-0 text-brand-600" />
+          <span className="truncate">{project.location}</span>
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2 text-xs text-ink-600">
+          <span className="rounded-full bg-brand-50 px-2.5 py-1 font-semibold text-brand-800">
+            {price}
+          </span>
+          {project.totalUnits ? (
+            <span className="rounded-full bg-ink-50 px-2.5 py-1">
+              {project.totalUnits} units
+            </span>
+          ) : null}
+        </div>
+      </div>
+    </Link>
+  )
+}
+
+function PropertyMarketCard({ property }: { property: Property }) {
+  const cover = property.images[0]
+  const price =
+    property.purpose === "rent"
+      ? formatRent(property.price)
+      : formatPrice(property.price, true)
+
+  return (
+    <Link
+      href={ROUTES.PROPERTY_DETAIL(property.slug)}
+      className="group grid overflow-hidden rounded-2xl border border-border/70 bg-white shadow-sm transition-[border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-(--shadow-card) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:grid-cols-[10rem_1fr]"
+    >
+      <div className="relative aspect-4/3 bg-ink-100 sm:aspect-auto">
+        {cover ? (
+          <Image
+            src={cover}
+            alt={property.title}
+            fill
+            unoptimized
+            sizes="(max-width: 768px) 100vw, 180px"
+            className="object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+          />
+        ) : (
+          <div className="flex size-full items-center justify-center bg-brand-50 text-brand-700">
+            <Home aria-hidden="true" className="size-8" />
+          </div>
+        )}
+      </div>
+      <div className="min-w-0 p-4">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">
+          {property.purpose === "rent" ? "For rent" : "For sale"}
+        </p>
+        <h3 className="mt-2 line-clamp-2 text-base font-bold text-ink-900">
+          {property.title}
+        </h3>
+        <p className="mt-1 flex items-center gap-1 text-sm text-ink-500">
+          <MapPin aria-hidden="true" className="size-3.5 shrink-0 text-brand-600" />
+          <span className="truncate">
+            {property.area}, {property.district}
+          </span>
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2 text-xs text-ink-600">
+          <span className="rounded-full bg-brand-50 px-2.5 py-1 font-semibold text-brand-800">
+            {price}
+          </span>
+          {property.bedrooms ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-ink-50 px-2.5 py-1">
+              <BedDouble aria-hidden="true" className="size-3.5 text-brand-600" />
+              {property.bedrooms}
+            </span>
+          ) : null}
+          {property.bathrooms ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-ink-50 px-2.5 py-1">
+              <Bath aria-hidden="true" className="size-3.5 text-brand-600" />
+              {property.bathrooms}
+            </span>
+          ) : null}
+          <span className="inline-flex items-center gap-1 rounded-full bg-ink-50 px-2.5 py-1">
+            <Maximize2 aria-hidden="true" className="size-3.5 text-brand-600" />
+            {property.size} {property.sizeUnit}
+          </span>
+        </div>
+      </div>
+    </Link>
+  )
+}
+
+function MarketplaceEmptyCard({ label, href }: { label: string; href: string }) {
+  return (
+    <Link
+      href={href}
+      className="flex min-h-48 items-center justify-center rounded-2xl border border-dashed border-border bg-ink-50 p-5 text-center text-sm font-semibold text-ink-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+    >
+      {label}
+    </Link>
+  )
+}
+
 function MarketplaceCommandPanel({
+  projectTotal,
+  propertyTotal,
   departmentTotal,
   categoryTotal,
   supplierTotal,
   productTotal,
 }: {
+  projectTotal: number
+  propertyTotal: number
   departmentTotal: number
   categoryTotal: number
   supplierTotal: number
   productTotal: number
 }) {
   const stats = [
+    { label: "Projects", value: projectTotal },
+    { label: "Properties", value: propertyTotal },
     { label: "Departments", value: departmentTotal },
     { label: "Categories", value: categoryTotal },
     { label: "Suppliers", value: supplierTotal },
@@ -406,7 +600,7 @@ function MarketplaceCommandPanel({
         </span>
       </div>
 
-      <dl className="mt-5 grid grid-cols-2 gap-2">
+      <dl className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
         {stats.map(({ label, value }) => (
           <div key={label} className="rounded-2xl border border-white/12 bg-brand-900/70 px-4 py-3">
             <dt className="text-[10px] font-semibold uppercase tracking-widest text-brand-200">
@@ -443,75 +637,6 @@ function MarketplaceCommandPanel({
   )
 }
 
-function MarketplaceAudienceBand() {
-  const audiences = [
-    {
-      icon: Home,
-      label: "Homeowners",
-      title: "Need one reliable place to start?",
-      body: "Find tiles, fittings, electrical items, repairs, and services without knowing every supplier name.",
-      href: ROUTES.MARKETPLACE_REQUEST,
-      cta: "Request help",
-    },
-    {
-      icon: Building2,
-      label: "Project teams",
-      title: "Need comparable quotes faster?",
-      body: "Browse departments, collect category options, and send clearer RFQs to suppliers.",
-      href: ROUTES.MARKETPLACE,
-      cta: "Browse departments",
-    },
-    {
-      icon: Store,
-      label: "Suppliers",
-      title: "Want quote-ready customers?",
-      body: "Show what you sell or serve and receive leads tied to the right category.",
-      href: ROUTES.BECOME_SUPPLIER,
-      cta: "Become a supplier",
-    },
-    {
-      icon: Wrench,
-      label: "Service providers",
-      title: "Offer skilled work people can find.",
-      body: "Electricians, plumbers, painters, fitters, technicians, and contractors can be discovered by trade.",
-      href: ROUTES.BECOME_SUPPLIER,
-      cta: "List service",
-    },
-  ]
-
-  return (
-    <section className="bg-linear-to-b from-brand-950 to-white">
-      <div className="container-page pb-10">
-        <div className="-mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {audiences.map(({ icon: Icon, label, title, body, href, cta }) => (
-            <Link
-              key={label}
-              href={href}
-              className="mobile-liquid-glass group flex min-h-64 flex-col rounded-3xl border border-black/5 bg-white p-5 shadow-(--shadow-elevated) transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-1 hover:border-brand-200 hover:shadow-(--shadow-pop) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <span className="inline-flex size-11 items-center justify-center rounded-2xl bg-brand-50 text-brand-700">
-                  <Icon aria-hidden="true" className="size-5" />
-                </span>
-                <span className="rounded-full bg-gold-50 px-2.5 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-gold-700">
-                  {label}
-                </span>
-              </div>
-              <h2 className="mt-5 font-sans text-base font-bold leading-snug text-ink-900">
-                {title}
-              </h2>
-              <p className="mt-2 text-sm leading-relaxed text-ink-600">{body}</p>
-              <span className="mt-auto inline-flex items-center gap-1.5 pt-5 text-sm font-semibold text-brand-700 group-hover:text-brand-900">
-                {cta}
-                <ArrowRight
-                  aria-hidden="true"
-                  className="size-4 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transition-none motion-reduce:transform-none"
-                />
-              </span>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
+function titleCase(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1)
 }
