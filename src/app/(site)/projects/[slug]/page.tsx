@@ -5,6 +5,7 @@ import { notFound } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { MapPin, Calendar, Building2, Layers, Home, Phone, MessageCircle, ChevronRight } from "lucide-react"
+import { ProjectImageLightboxButton } from "@/components/projects/project-image-lightbox-button"
 import { getProject, recordProjectView } from "@/services/projects.service"
 import { formatPriceRange } from "@/utils/format-price"
 import { PROJECT_STATUS_STYLES } from "@/lib/constants"
@@ -12,6 +13,7 @@ import { ROUTES } from "@/config/routes.config"
 import { Button } from "@/components/ui/button"
 import { StructuredData } from "@/components/seo/structured-data"
 import { siteConfig } from "@/config/site.config"
+import type { Project } from "@/types/project.types"
 
 interface ProjectDetailPageProps {
   params: Promise<{ slug: string }>
@@ -40,6 +42,58 @@ function toEmbedUrl(url: string): string | null {
   }
 }
 
+type ProjectWithMaybeMap = Project & {
+  mapEmbedUrl?: string | null
+  mapUrl?: string | null
+  mapPin?: string | null
+}
+
+function toMapEmbedUrl(value?: string | null): string | null {
+  const raw = value?.trim()
+  if (!raw || !/^https?:\/\//i.test(raw)) return null
+
+  try {
+    const url = new URL(raw)
+    const host = url.hostname.replace(/^www\./, "")
+    const isGoogleMap =
+      host === "maps.google.com" ||
+      host === "maps.app.goo.gl" ||
+      host === "goo.gl" ||
+      (host.endsWith("google.com") && url.pathname.startsWith("/maps"))
+
+    if (!isGoogleMap) return null
+    if (url.pathname.includes("/embed")) return url.toString()
+
+    url.searchParams.set("output", "embed")
+    return url.toString()
+  } catch {
+    return null
+  }
+}
+
+function projectMapEmbedUrl(project: Project): string | null {
+  const maybe = project as ProjectWithMaybeMap
+  for (const value of [
+    maybe.mapEmbedUrl,
+    maybe.mapUrl,
+    maybe.mapPin,
+    project.address,
+    project.location,
+  ]) {
+    const embed = toMapEmbedUrl(value)
+    if (embed) return embed
+  }
+  return null
+}
+
+function projectLocationText(project: Project): string {
+  return (
+    [project.address, project.location, project.area, project.division].find(
+      (value) => value && !toMapEmbedUrl(value),
+    ) ?? "Project location"
+  )
+}
+
 export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const { slug } = await params
   const res = await getProject(slug)
@@ -66,6 +120,15 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
     ...(project.videoUrl && !videoEmbed ? [project.videoUrl] : []),
   ]
   const hasVideo = Boolean(videoEmbed) || directVideos.length > 0
+  const galleryImages = Array.from(
+    new Set(
+      [project.coverImage, ...project.galleryImages].filter(
+        (image): image is string => Boolean(image),
+      ),
+    ),
+  )
+  const mapEmbedUrl = projectMapEmbedUrl(project)
+  const locationText = projectLocationText(project)
 
   const schema = {
     "@context": "https://schema.org",
@@ -94,16 +157,20 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
 
       <div className="container-page section-y">
         {/* Gallery */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 rounded-2xl overflow-hidden mb-8 h-72 md:h-96">
-          <div className="col-span-2 row-span-2 relative">
-            <Image src={project.galleryImages[0] ?? project.coverImage} alt={project.name} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
-          </div>
-          {project.galleryImages.slice(1, 5).map((img, i) => (
-            <div key={i} className="relative hidden md:block">
-              <Image src={img} alt={`${project.name} ${i + 2}`} fill sizes="25vw" className="object-cover" />
+        {galleryImages.length > 0 ? (
+          <div className="mb-8 grid h-72 grid-cols-2 gap-2 overflow-hidden rounded-2xl md:h-96 md:grid-cols-4">
+            <div className="relative col-span-2 row-span-2">
+              <Image src={galleryImages[0]} alt={project.name} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
+              <ProjectImageLightboxButton images={galleryImages} index={0} label={project.name} />
             </div>
-          ))}
-        </div>
+            {galleryImages.slice(1, 5).map((img, i) => (
+              <div key={img} className="relative hidden md:block">
+                <Image src={img} alt={`${project.name} ${i + 2}`} fill sizes="25vw" className="object-cover" />
+                <ProjectImageLightboxButton images={galleryImages} index={i + 1} label={project.name} />
+              </div>
+            ))}
+          </div>
+        ) : null}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           {/* Main content */}
@@ -118,7 +185,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
               <p className="text-lead italic text-muted-foreground">{project.tagline}</p>
               <div className="flex items-center gap-1.5 mt-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4 text-brand-600" />
-                {project.address}
+                {locationText}
               </div>
             </div>
 
@@ -143,6 +210,20 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
               <h2 className="text-h3 mb-3">About This Project</h2>
               <p className="text-sm text-muted-foreground leading-relaxed">{project.description}</p>
             </div>
+
+            {mapEmbedUrl ? (
+              <div>
+                <h2 className="text-h3 mb-4">Location Map</h2>
+                <iframe
+                  src={mapEmbedUrl}
+                  title={`${project.name} location map`}
+                  loading="lazy"
+                  allowFullScreen
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="h-80 w-full rounded-xl border border-border bg-ink-50"
+                />
+              </div>
+            ) : null}
 
             {/* Video tour */}
             {hasVideo && (

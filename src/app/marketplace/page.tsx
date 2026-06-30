@@ -433,16 +433,16 @@ function ProjectMarketCard({ project }: { project: Project }) {
   return (
     <Link
       href={ROUTES.PROJECT_DETAIL(project.slug)}
-      className="group grid overflow-hidden rounded-2xl border border-border/70 bg-white shadow-sm transition-[border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-(--shadow-card) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:grid-cols-[10rem_1fr]"
+      className="group flex min-h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-white shadow-sm transition-[border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-(--shadow-card) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
     >
-      <div className="relative aspect-4/3 bg-ink-100 sm:aspect-auto">
+      <div className="relative aspect-4/3 bg-ink-100">
         {cover ? (
           <Image
             src={cover}
             alt={project.name}
             fill
             unoptimized
-            sizes="(max-width: 768px) 100vw, 180px"
+            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
             className="object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
           />
         ) : (
@@ -487,16 +487,16 @@ function PropertyMarketCard({ property }: { property: Property }) {
   return (
     <Link
       href={ROUTES.PROPERTY_DETAIL(property.slug)}
-      className="group grid overflow-hidden rounded-2xl border border-border/70 bg-white shadow-sm transition-[border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-(--shadow-card) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:grid-cols-[10rem_1fr]"
+      className="group flex min-h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-white shadow-sm transition-[border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-(--shadow-card) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
     >
-      <div className="relative aspect-4/3 bg-ink-100 sm:aspect-auto">
+      <div className="relative aspect-4/3 bg-ink-100">
         {cover ? (
           <Image
             src={cover}
             alt={property.title}
             fill
             unoptimized
-            sizes="(max-width: 768px) 100vw, 180px"
+            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
             className="object-cover transition-transform duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
           />
         ) : (

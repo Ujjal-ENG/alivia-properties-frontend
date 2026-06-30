@@ -61,9 +61,11 @@ export function ProjectCard({ project }: ProjectCardProps) {
           </div>
 
           <div className="absolute inset-x-4 bottom-4 text-white">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/70">{project.area}</p>
-            <h3 className="mt-2 font-sans text-2xl font-semibold tracking-tight text-white">{project.name}</h3>
-            <p className="mt-1 text-sm text-white/75">{project.tagline}</p>
+            <p className="line-clamp-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/70">{project.area}</p>
+            <h3 className="mt-2 line-clamp-1 font-sans text-xl font-semibold tracking-tight text-white">{project.name}</h3>
+            {project.tagline ? (
+              <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-white/75">{project.tagline}</p>
+            ) : null}
           </div>
         </div>
       </Link>

@@ -1014,15 +1014,18 @@ export function AdminProjectsTable({ projects }: { projects: Project[] }) {
       key: "project",
       header: "Project",
       primaryOnMobile: true,
+      className: "w-[24rem] max-w-[24rem]",
       render: (p) => (
-        <div className="min-w-0">
+        <div className="min-w-0 max-w-[18rem]">
           <Link
             href={ROUTES.PROJECT_DETAIL(p.slug)}
             className="block truncate font-semibold text-ink-900 hover:text-brand-700"
           >
             {p.name}
           </Link>
-          <p className="mt-0.5 truncate text-xs text-ink-500">{p.location}</p>
+          <p className="mt-0.5 max-w-[18rem] truncate break-all text-xs text-ink-500" title={p.location}>
+            {p.location}
+          </p>
         </div>
       ),
     },
