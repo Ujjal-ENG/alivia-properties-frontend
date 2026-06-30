@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Make the public homepage point to marketplace first and make `/marketplace` show Projects, then Properties, then construction marketplace categories.
+**Goal:** Keep the public homepage unchanged and make `/marketplace` show Projects, then Properties, then construction marketplace categories.
 
 **Architecture:** Keep the change frontend-only. Reuse existing services, route helpers, image handling, and formatting helpers; do not add dependencies or backend fields.
 
@@ -13,9 +13,7 @@
 ## File Structure
 
 - Create: `scripts/check-marketplace-first.mjs`
-  - Small Node smoke check that asserts the two edited pages contain the intended marketplace-first landmarks and section order.
-- Modify: `src/app/(site)/page.tsx`
-  - Replace the brochure-heavy homepage composition with a marketplace gateway using live projects, properties, and marketplace category counts.
+  - Small Node smoke check that asserts `/marketplace` contains the intended section order.
 - Modify: `src/app/marketplace/page.tsx`
   - Add live project/property fetches and rails above the existing construction category groups.
 
@@ -26,14 +24,10 @@
 
 - [ ] **Step 1: Write the failing check**
 
-Create a Node script that reads:
-
-- `src/app/(site)/page.tsx`
-- `src/app/marketplace/page.tsx`
+Create a Node script that reads `src/app/marketplace/page.tsx`.
 
 It must assert:
 
-- homepage contains `marketplace-first-home`
 - marketplace page contains `marketplace-projects`
 - marketplace page contains `marketplace-properties`
 - marketplace page contains `marketplace-categories`
@@ -45,44 +39,7 @@ Run: `node scripts/check-marketplace-first.mjs`
 
 Expected: non-zero exit because the new ids do not exist yet.
 
-### Task 2: Marketplace-First Homepage
-
-**Files:**
-- Modify: `src/app/(site)/page.tsx`
-
-- [ ] **Step 1: Replace the page with a compact marketplace gateway**
-
-Keep `dynamic = "force-dynamic"`. Fetch projects, properties, blog, and marketplace category/supplier/product counts with `Promise.allSettled`.
-
-The first viewport must render:
-
-- `id="marketplace-first-home"`
-- marketplace search/entry copy
-- CTA to `ROUTES.MARKETPLACE`
-- CTA to `ROUTES.MARKETPLACE_REQUEST`
-- quick links for Projects, Properties, Materials, and Services
-
-Below it, render:
-
-- featured projects preview
-- verified properties preview
-- simple construction marketplace stats/category preview
-- concise trust/CTA band
-
-- [ ] **Step 2: Keep data flow server-side**
-
-Use only:
-
-- `projectsService.list`
-- `propertiesService.list`
-- `blogService.list`
-- `marketplaceService.listCategories`
-- `marketplaceService.listSuppliers`
-- `marketplaceService.listProducts`
-
-No component-level fetches. No `src/data/*`.
-
-### Task 3: Marketplace Page Rails
+### Task 2: Marketplace Page Rails
 
 **Files:**
 - Modify: `src/app/marketplace/page.tsx`
@@ -108,7 +65,7 @@ Project cards link to `ROUTES.PROJECT_DETAIL(project.slug)`. Property cards link
 
 Do not change category URLs, quote URLs, or service calls.
 
-### Task 4: Verify
+### Task 3: Verify
 
 **Files:**
 - Run checks only.

@@ -5,19 +5,19 @@ Status: Approved direction, ready for implementation plan
 
 ## Goal
 
-Make Alivia feel marketplace-first instead of brochure-first. The main public landing page should point users strongly toward the marketplace, and `/marketplace` should become the ecommerce-style front door for three marketplace verticals:
+Keep the existing public landing page visual direction and header copy intact. Make `/marketplace` become the ecommerce-style front door for three marketplace verticals:
 
 1. Projects
 2. Properties
 3. Construction marketplace categories
 
-The intended feel is closer to Amazon or AliExpress discovery than a corporate real-estate landing page, while keeping Alivia's premium Bangladesh property brand: emerald, gold, trust, verified supply, and local support.
+The marketplace page should feel closer to Amazon or AliExpress discovery than a corporate brochure, while keeping Alivia's premium Bangladesh property brand: emerald, gold, trust, verified supply, and local support.
 
 ## Scope
 
 In scope:
 
-- Rework the public homepage so marketplace actions dominate the first screen and early sections.
+- Preserve the public homepage's existing color combination, hero/header text, and composition.
 - Rework `/marketplace` into a dense, search-first marketplace page.
 - Show marketplace content in this order on `/marketplace`: projects first, properties second, construction categories third.
 - Keep projects and properties as real listing verticals with links to their existing detail pages.
@@ -47,24 +47,11 @@ This means:
 - Department-style navigation for Projects, Properties, Materials, Services, and RFQ.
 - Product/listing rails with compact cards, badges, price/location metadata, and clear CTAs.
 - A guided quote path for users who do not know exact categories.
-- A homepage that acts as a marketplace gateway, not the final destination.
+- The existing landing page remains the brand gateway; `/marketplace` becomes the shopping gateway.
 
 ## Homepage Design
 
-The homepage should be simplified around marketplace entry:
-
-- First screen:
-  - Marketplace-first hero copy.
-  - Search or "find what you need" control.
-  - Primary CTA: open marketplace.
-  - Secondary CTA: request a quote.
-  - Small links/cards for Projects, Properties, Materials, and Services.
-- Early section:
-  - Replace heavy corporate/project emphasis with "shop by need" cards.
-  - Projects and properties stay visible, but as marketplace categories.
-- Later sections:
-  - Keep only the strongest trust, founder, and insight content if it supports marketplace confidence.
-  - Reduce repeated brochure sections that compete with marketplace actions.
+The homepage is intentionally unchanged in this implementation. Its existing color combination, hero/header text, and composition stay as they were before this marketplace redesign.
 
 ## Marketplace Page Design
 
@@ -136,18 +123,11 @@ Likely new or changed components:
   - Adjust visual density and ecommerce styling without changing their routing contract.
 
 - Homepage:
-  - Replace or simplify the current long page composition in `src/app/(site)/page.tsx`.
-  - Reuse existing project/property services and avoid component-level fetches.
+  - Do not modify `src/app/(site)/page.tsx` for this scope.
 
 ## Data Flow
 
 Pages stay as React Server Components by default.
-
-`src/app/(site)/page.tsx` should fetch only the data needed for the marketplace gateway:
-
-- projects preview
-- properties preview
-- marketplace counts or category preview if needed
 
 `src/app/marketplace/page.tsx` should fetch independent data in parallel with `Promise.allSettled`:
 
@@ -219,5 +199,4 @@ Visual checks:
 
 ## Open Decisions
 
-- Whether the homepage keeps the founder and blog sections after simplification depends on how much they compete with the marketplace flow during implementation.
 - Whether supplier/product rails appear above or below category groups depends on available live data quality.

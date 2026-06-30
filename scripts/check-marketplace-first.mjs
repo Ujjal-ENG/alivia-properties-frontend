@@ -1,6 +1,5 @@
 import { readFileSync } from "node:fs"
 
-const home = readFileSync("src/app/(site)/page.tsx", "utf8")
 const marketplace = readFileSync("src/app/marketplace/page.tsx", "utf8")
 
 function assert(condition, message) {
@@ -9,11 +8,6 @@ function assert(condition, message) {
     process.exitCode = 1
   }
 }
-
-assert(
-  home.includes("marketplace-first-home"),
-  "homepage must expose #marketplace-first-home",
-)
 
 const projectIndex = marketplace.indexOf('id="marketplace-projects"')
 const propertyIndex = marketplace.indexOf('id="marketplace-properties"')
