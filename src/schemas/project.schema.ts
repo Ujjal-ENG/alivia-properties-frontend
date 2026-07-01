@@ -1,5 +1,21 @@
 import { z } from "zod"
 
+const URL_LIKE_REGEX = /(?:https?:\/\/|www\.|[a-z0-9-]+(?:\.[a-z0-9-]+)+(?:[/?#][^\s]*)?)/i
+
+function containsLink(value: string): boolean {
+  const trimmed = value.trim()
+  if (!trimmed) return false
+
+  return trimmed.split(/\s+/).some((part) => {
+    try {
+      new URL(part)
+      return true
+    } catch {
+      return URL_LIKE_REGEX.test(part)
+    }
+  })
+}
+
 /** A single unit/floor type within a project. */
 export const projectUnitSchema = z.object({
   name: z.string().min(1, "Unit name is required"),
@@ -18,7 +34,10 @@ export const projectSchema = z.object({
   status: z.enum(["upcoming", "ongoing", "completed"], "Select a status"),
 
   location: z.string().min(2, "Location is required"),
-  address: z.string().min(2, "Address is required"),
+  address: z
+    .string()
+    .min(2, "Address is required")
+    .refine((value) => !containsLink(value), "Link not allowed here. Please write the full address."),
 
   coverImageUrl: z.string().optional().default(""),
   galleryImages: z.array(z.string()).max(16, "You can add up to 16 photos").optional().default([]),
