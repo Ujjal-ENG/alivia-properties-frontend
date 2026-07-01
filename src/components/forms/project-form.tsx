@@ -227,7 +227,15 @@ export function ProjectForm({ mode, initialProject }: ProjectFormProps) {
                 <FormItem>
                   <FormLabel>Full Address</FormLabel>
                   <FormControl>
-                    <Input placeholder="Block J, Bashundhara R/A, Dhaka 1229" {...field} />
+                    <Input
+                      placeholder="Block J, Bashundhara R/A, Dhaka 1229"
+                      {...field}
+                      value={field.value ?? ""}
+                      onChange={(event) => {
+                        field.onChange(event)
+                        void form.trigger("address")
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
