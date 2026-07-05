@@ -95,6 +95,22 @@ function projectLocationText(project: Project): string {
   )
 }
 
+/** Group landmarks by their drive-time bucket, preserving first-seen order. */
+function groupLandmarks(
+  landmarks: { name: string; group: string }[],
+): { group: string; names: string[] }[] {
+  const order: string[] = []
+  const buckets = new Map<string, string[]>()
+  for (const { name, group } of landmarks) {
+    if (!buckets.has(group)) {
+      buckets.set(group, [])
+      order.push(group)
+    }
+    buckets.get(group)!.push(name)
+  }
+  return order.map((group) => ({ group, names: buckets.get(group)! }))
+}
+
 export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const { slug } = await params
   const res = await getProject(slug)
@@ -130,6 +146,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   )
   const mapEmbedUrl = projectMapEmbedUrl(project)
   const locationText = projectLocationText(project)
+  const landmarkGroups = groupLandmarks(project.nearbyLandmarks ?? [])
   const aboutProject = parseProjectDescription(project.description)
   const specificationEntries = Object.entries(project.specifications ?? {})
   const hasAboutProjectContent =
@@ -194,6 +211,12 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
               </div>
               <h1 className="text-h1 mb-1">{project.name}</h1>
               <p className="text-lead italic text-muted-foreground">{project.tagline}</p>
+              {project.developerName && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Developed by{" "}
+                  <span className="font-medium text-foreground">{project.developerName}</span>
+                </p>
+              )}
               <div className="flex items-center gap-1.5 mt-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4 text-brand-600" />
                 {locationText}
@@ -389,16 +412,22 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
             {/* Nearby */}
             {hasNearbyLandmarks ? (
               <div>
-              <h2 className="text-h3 mb-4">Nearby Landmarks</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {(project.nearbyLandmarks ?? []).map((l) => (
-                  <div key={l.name} className="flex items-center gap-3 bg-ink-50 rounded-xl px-4 py-3 text-sm">
-                    <MapPin className="h-4 w-4 text-brand-600 shrink-0" />
-                    <span className="flex-1 font-medium">{l.name}</span>
-                    <span className="text-muted-foreground">{l.distance}</span>
-                  </div>
-                ))}
-              </div>
+                <h2 className="text-h3 mb-4">Landmarks Nearby</h2>
+                <div className="space-y-6">
+                  {landmarkGroups.map(({ group, names }) => (
+                    <div key={group}>
+                      <p className="text-eyebrow mb-2 text-brand-700">{group}</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+                        {names.map((name, i) => (
+                          <div key={`${name}-${i}`} className="flex items-center gap-2 text-sm">
+                            <MapPin className="h-4 w-4 text-brand-600 shrink-0" />
+                            <span className="font-medium">{name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : null}
           </div>
