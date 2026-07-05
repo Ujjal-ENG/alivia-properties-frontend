@@ -1,8 +1,10 @@
 export const dynamic = "force-dynamic"
 
 import { getInquiries } from "@/services/inquiries.service"
+import { DASHBOARD_PAGE_SIZE } from "@/lib/constants"
 import { DashboardPageHeader } from "@/components/dashboard/dashboard-page-header"
 import { DataTable, type DataTableColumn } from "@/components/dashboard/data-table"
+import { TablePagination } from "@/components/dashboard/table-pagination"
 import { InquiryStatusBadge } from "@/components/dashboard/inquiry-status-badge"
 import { Button } from "@/components/ui/button"
 import { ROUTES } from "@/config/routes.config"
@@ -12,9 +14,15 @@ import Link from "next/link"
 import { Eye } from "lucide-react"
 import type { Inquiry } from "@/types/inquiry.types"
 
-export default async function BuyerInquiriesPage() {
+export default async function BuyerInquiriesPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>
+}) {
   await getCurrentBuyer()
-  const inquiries = await getInquiries()
+  const sp = await searchParams
+  const page = Math.max(1, Number(sp.page) || 1)
+  const inquiries = await getInquiries({ page, limit: DASHBOARD_PAGE_SIZE })
 
   const columns: DataTableColumn<Inquiry>[] = [
     {
@@ -63,6 +71,7 @@ export default async function BuyerInquiriesPage() {
         description="Track every property and project message you have sent."
       />
       <DataTable columns={columns} data={inquiries.data} />
+      <TablePagination meta={inquiries.meta} />
     </div>
   )
 }

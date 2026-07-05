@@ -9,10 +9,12 @@ import {
   Clock3,
   FileText,
   Mail,
+  Package,
   Phone,
   ShieldCheck,
   Star,
   Truck,
+  Wrench,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -93,7 +95,21 @@ export default async function MarketplaceProductPage({ params }: PageProps) {
                 />
               </div>
             ) : (
-              <div className="aspect-4/3 w-full bg-ink-100" />
+              <div className="flex aspect-4/3 w-full flex-col items-center justify-center gap-4 bg-linear-to-br from-brand-50 via-white to-gold-50 px-6 text-center">
+                <span className="flex size-20 items-center justify-center rounded-2xl bg-white text-brand-500 shadow-(--shadow-card)">
+                  {serviceMode ? (
+                    <Wrench aria-hidden="true" className="size-9" />
+                  ) : (
+                    <Package aria-hidden="true" className="size-9" />
+                  )}
+                </span>
+                <span className="max-w-xs text-sm font-semibold text-brand-800">
+                  {product.name}
+                </span>
+                <span className="text-xs text-ink-500">
+                  {serviceMode ? "Service image coming soon" : "Product image coming soon"}
+                </span>
+              </div>
             )}
           </div>
 

@@ -18,6 +18,7 @@ import type { Seller, User } from "@/types/user.types"
 import type { Inquiry, InquiryStatus, InquiryType } from "@/types/inquiry.types"
 import type { Booking, BookingStatus } from "@/types/booking.types"
 import { blogService, type BlogPost } from "@/services/blog.service"
+import { useUrlFilter } from "@/hooks/use-url-filter"
 import type { Report, ReportStatus } from "@/data/dummy-reports"
 import type { Buyer } from "@/types/user.types"
 import {
@@ -52,7 +53,7 @@ import { propertiesService } from "@/services/properties.service"
 import { projectsService } from "@/services/projects.service"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import {
   Bar,
   BarChart,
@@ -263,16 +264,18 @@ const STATUS_FILTERS: { value: PropertyStatus | "all"; label: string }[] = [
 
 export function AdminPropertiesTable({
   properties,
-  defaultStatus = "all",
+  status = "all",
+  hideFilters = false,
 }: {
   properties: Property[]
-  defaultStatus?: PropertyStatus | "all"
+  status?: PropertyStatus | "all"
+  hideFilters?: boolean
 }) {
   const { data: session } = useSession()
   const token = session?.accessToken
+  const setFilter = useUrlFilter()
 
   const [rows, setRows] = useState<Property[]>(properties)
-  const [statusFilter, setStatusFilter] = useState<PropertyStatus | "all">(defaultStatus)
   // id of the row currently running a mutation (disables its action buttons)
   const [busyId, setBusyId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -281,14 +284,6 @@ export function AdminPropertiesTable({
   const [rejectTarget, setRejectTarget] = useState<Property | null>(null)
   const [rejectReason, setRejectReason] = useState("")
   const [deleteTarget, setDeleteTarget] = useState<Property | null>(null)
-
-  const filtered = useMemo(
-    () =>
-      statusFilter === "all"
-        ? rows
-        : rows.filter((p) => p.status === statusFilter),
-    [rows, statusFilter],
-  )
 
   function applyUpdate(updated: Property) {
     setRows((current) => current.map((p) => (p.id === updated.id ? { ...p, ...updated } : p)))
@@ -556,26 +551,25 @@ export function AdminPropertiesTable({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
-        {STATUS_FILTERS.map((f) => (
-          <button
-            key={f.value}
-            type="button"
-            onClick={() => setStatusFilter(f.value)}
-            className={cn(
-              "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-              statusFilter === f.value
-                ? "border-brand-700 bg-brand-700 text-white"
-                : "border-border/70 bg-white text-ink-700 hover:bg-brand-50",
-            )}
-          >
-            {f.label}
-          </button>
-        ))}
-        <span className="ml-auto text-xs text-ink-500">
-          {filtered.length} of {rows.length}
-        </span>
-      </div>
+      {hideFilters ? null : (
+        <div className="flex flex-wrap items-center gap-2">
+          {STATUS_FILTERS.map((f) => (
+            <button
+              key={f.value}
+              type="button"
+              onClick={() => setFilter("status", f.value)}
+              className={cn(
+                "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
+                status === f.value
+                  ? "border-brand-700 bg-brand-700 text-white"
+                  : "border-border/70 bg-white text-ink-700 hover:bg-brand-50",
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {error ? (
         <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
@@ -586,7 +580,7 @@ export function AdminPropertiesTable({
 
       <DataTable
         columns={columns}
-        data={filtered}
+        data={rows}
         rowKey={(p) => p.id}
         emptyMessage="No listings match this filter."
       />
@@ -699,14 +693,14 @@ export function AdminPropertiesTable({
   )
 }
 
-export function AdminSellersTable({ sellers }: { sellers: Seller[] }) {
-  const [filter, setFilter] = useState<"all" | "verified" | "pending">("all")
-
-  const filtered = useMemo(() => {
-    if (filter === "verified") return sellers.filter((s) => s.isVerified)
-    if (filter === "pending") return sellers.filter((s) => !s.isVerified)
-    return sellers
-  }, [sellers, filter])
+export function AdminSellersTable({
+  sellers,
+  verified = "all",
+}: {
+  sellers: Seller[]
+  verified?: "all" | "true" | "false"
+}) {
+  const setFilter = useUrlFilter()
 
   const columns: DataTableColumn<Seller>[] = [
     {
@@ -765,10 +759,10 @@ export function AdminSellersTable({ sellers }: { sellers: Seller[] }) {
     },
   ]
 
-  const filters: { value: typeof filter; label: string }[] = [
+  const filters: { value: "all" | "true" | "false"; label: string }[] = [
     { value: "all", label: "All" },
-    { value: "verified", label: "Verified" },
-    { value: "pending", label: "Pending verification" },
+    { value: "true", label: "Verified" },
+    { value: "false", label: "Pending verification" },
   ]
 
   return (
@@ -778,10 +772,10 @@ export function AdminSellersTable({ sellers }: { sellers: Seller[] }) {
           <button
             key={f.value}
             type="button"
-            onClick={() => setFilter(f.value)}
+            onClick={() => setFilter("verified", f.value)}
             className={cn(
               "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-              filter === f.value
+              verified === f.value
                 ? "border-brand-700 bg-brand-700 text-white"
                 : "border-border/70 bg-white text-ink-700 hover:bg-brand-50",
             )}
@@ -789,13 +783,10 @@ export function AdminSellersTable({ sellers }: { sellers: Seller[] }) {
             {f.label}
           </button>
         ))}
-        <span className="ml-auto text-xs text-ink-500">
-          {filtered.length} of {sellers.length}
-        </span>
       </div>
       <DataTable
         columns={columns}
-        data={filtered}
+        data={sellers}
         rowKey={(s) => s.id}
         emptyMessage="No sellers match this filter."
       />
@@ -811,19 +802,20 @@ const ROLE_BADGE_STYLES: Record<UserRow["roleLabel"], string> = {
   Buyer: "border-emerald-200 bg-emerald-50 text-emerald-700",
 }
 
-export function AdminUsersTable({ users }: { users: UserRow[] }) {
-  const [filter, setFilter] = useState<"all" | "Admin" | "Seller" | "Buyer">("all")
+export function AdminUsersTable({
+  users,
+  role = "all",
+}: {
+  users: UserRow[]
+  role?: "all" | "admin" | "seller" | "buyer"
+}) {
+  const setFilter = useUrlFilter()
 
-  const filtered = useMemo(
-    () => (filter === "all" ? users : users.filter((u) => u.roleLabel === filter)),
-    [users, filter],
-  )
-
-  const filters: { value: "all" | "Admin" | "Seller" | "Buyer"; label: string }[] = [
+  const filters: { value: "all" | "admin" | "seller" | "buyer"; label: string }[] = [
     { value: "all", label: "All" },
-    { value: "Admin", label: "Admins" },
-    { value: "Seller", label: "Sellers" },
-    { value: "Buyer", label: "Buyers" },
+    { value: "admin", label: "Admins" },
+    { value: "seller", label: "Sellers" },
+    { value: "buyer", label: "Buyers" },
   ]
 
   const columns: DataTableColumn<UserRow>[] = [
@@ -900,10 +892,10 @@ export function AdminUsersTable({ users }: { users: UserRow[] }) {
           <button
             key={f.value}
             type="button"
-            onClick={() => setFilter(f.value)}
+            onClick={() => setFilter("role", f.value)}
             className={cn(
               "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-              filter === f.value
+              role === f.value
                 ? "border-brand-700 bg-brand-700 text-white"
                 : "border-border/70 bg-white text-ink-700 hover:bg-brand-50",
             )}
@@ -911,13 +903,10 @@ export function AdminUsersTable({ users }: { users: UserRow[] }) {
             {f.label}
           </button>
         ))}
-        <span className="ml-auto text-xs text-ink-500">
-          {filtered.length} of {users.length}
-        </span>
       </div>
       <DataTable
         columns={columns}
-        data={filtered}
+        data={users}
         rowKey={(u) => u.id}
         emptyMessage="No users match this filter."
       />
@@ -941,19 +930,20 @@ const PROJECT_STATUS_FILTERS: { value: ProjectStatus | "all"; label: string }[] 
   { value: "completed", label: "Completed" },
 ]
 
-export function AdminProjectsTable({ projects }: { projects: Project[] }) {
+export function AdminProjectsTable({
+  projects,
+  status = "all",
+}: {
+  projects: Project[]
+  status?: ProjectStatus | "all"
+}) {
   const { data: session } = useSession()
   const token = session?.accessToken
+  const setFilter = useUrlFilter()
   const [rows, setRows] = useState<Project[]>(projects)
-  const [filter, setFilter] = useState<ProjectStatus | "all">("all")
   const [busyId, setBusyId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null)
-
-  const filtered = useMemo(
-    () => (filter === "all" ? rows : rows.filter((p) => p.status === filter)),
-    [rows, filter],
-  )
 
   function applyUpdate(updated: Project) {
     setRows((current) => current.map((p) => (p.id === updated.id ? { ...p, ...updated } : p)))
@@ -1167,10 +1157,10 @@ export function AdminProjectsTable({ projects }: { projects: Project[] }) {
           <button
             key={f.value}
             type="button"
-            onClick={() => setFilter(f.value)}
+            onClick={() => setFilter("status", f.value)}
             className={cn(
               "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-              filter === f.value
+              status === f.value
                 ? "border-brand-700 bg-brand-700 text-white"
                 : "border-border/70 bg-white text-ink-700 hover:bg-brand-50",
             )}
@@ -1178,9 +1168,6 @@ export function AdminProjectsTable({ projects }: { projects: Project[] }) {
             {f.label}
           </button>
         ))}
-        <span className="ml-auto text-xs text-ink-500">
-          {filtered.length} of {rows.length}
-        </span>
       </div>
 
       {error ? (
@@ -1192,7 +1179,7 @@ export function AdminProjectsTable({ projects }: { projects: Project[] }) {
 
       <DataTable
         columns={columns}
-        data={filtered}
+        data={rows}
         rowKey={(p) => p.id}
         emptyMessage="No projects match this filter."
       />
@@ -1274,22 +1261,16 @@ export function AdminInquiriesTable({
   // When set, the table is locked to one type (e.g. the Supplier/Investor request
   // pages) — the type filter chips are hidden and only that type is shown.
   lockedType,
+  status = "all",
+  type = "all",
 }: {
   inquiries: Inquiry[]
   basePath?: string
   lockedType?: InquiryType
+  status?: InquiryStatus | "all"
+  type?: InquiryType | "all"
 }) {
-  const [statusFilter, setStatusFilter] = useState<InquiryStatus | "all">("all")
-  const [typeFilter, setTypeFilter] = useState<InquiryType | "all">("all")
-
-  const filtered = useMemo(() => {
-    return inquiries.filter((i) => {
-      if (lockedType && i.type !== lockedType) return false
-      if (statusFilter !== "all" && i.status !== statusFilter) return false
-      if (!lockedType && typeFilter !== "all" && i.type !== typeFilter) return false
-      return true
-    })
-  }, [inquiries, statusFilter, typeFilter, lockedType])
+  const setFilter = useUrlFilter()
 
   const columns: DataTableColumn<Inquiry>[] = [
     {
@@ -1369,10 +1350,10 @@ export function AdminInquiriesTable({
           <button
             key={f.value}
             type="button"
-            onClick={() => setStatusFilter(f.value)}
+            onClick={() => setFilter("status", f.value)}
             className={cn(
               "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-              statusFilter === f.value
+              status === f.value
                 ? "border-brand-700 bg-brand-700 text-white"
                 : "border-border/70 bg-white text-ink-700 hover:bg-brand-50",
             )}
@@ -1386,10 +1367,10 @@ export function AdminInquiriesTable({
             <button
               key={f.value}
               type="button"
-              onClick={() => setTypeFilter(f.value)}
+              onClick={() => setFilter("type", f.value)}
               className={cn(
                 "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-                typeFilter === f.value
+                type === f.value
                   ? "border-ink-700 bg-ink-700 text-white"
                   : "border-border/70 bg-white text-ink-700 hover:bg-ink-50",
               )}
@@ -1397,13 +1378,10 @@ export function AdminInquiriesTable({
               {f.label}
             </button>
           ))}
-        <span className="ml-auto text-xs text-ink-500">
-          {filtered.length} of {inquiries.length}
-        </span>
       </div>
       <DataTable
         columns={columns}
-        data={filtered}
+        data={inquiries}
         rowKey={(i) => i.id}
         emptyMessage="No inquiries match this filter."
       />
@@ -1421,16 +1399,14 @@ const BOOKING_STATUS_FILTERS: { value: BookingStatus | "all"; label: string }[] 
   { value: "completed", label: "Completed" },
 ]
 
-export function AdminBookingsTable({ bookings }: { bookings: Booking[] }) {
-  const [statusFilter, setStatusFilter] = useState<BookingStatus | "all">("all")
-
-  const filtered = useMemo(
-    () =>
-      statusFilter === "all"
-        ? bookings
-        : bookings.filter((b) => b.status === statusFilter),
-    [bookings, statusFilter],
-  )
+export function AdminBookingsTable({
+  bookings,
+  status = "all",
+}: {
+  bookings: Booking[]
+  status?: BookingStatus | "all"
+}) {
+  const setFilter = useUrlFilter()
 
   const columns: DataTableColumn<Booking>[] = [
     {
@@ -1507,10 +1483,10 @@ export function AdminBookingsTable({ bookings }: { bookings: Booking[] }) {
           <button
             key={f.value}
             type="button"
-            onClick={() => setStatusFilter(f.value)}
+            onClick={() => setFilter("status", f.value)}
             className={cn(
               "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-              statusFilter === f.value
+              status === f.value
                 ? "border-brand-700 bg-brand-700 text-white"
                 : "border-border/70 bg-white text-ink-700 hover:bg-brand-50",
             )}
@@ -1518,13 +1494,10 @@ export function AdminBookingsTable({ bookings }: { bookings: Booking[] }) {
             {f.label}
           </button>
         ))}
-        <span className="ml-auto text-xs text-ink-500">
-          {filtered.length} of {bookings.length}
-        </span>
       </div>
       <DataTable
         columns={columns}
-        data={filtered}
+        data={bookings}
         rowKey={(b) => b.id}
         emptyMessage="No bookings match this filter."
       />
@@ -1534,17 +1507,19 @@ export function AdminBookingsTable({ bookings }: { bookings: Booking[] }) {
 
 // ─── AdminBlogTable ────────────────────────────────────────────────────────────
 
-export function AdminBlogTable({ posts, token }: { posts: BlogPost[]; token?: string }) {
+export function AdminBlogTable({
+  posts,
+  token,
+  status = "all",
+}: {
+  posts: BlogPost[]
+  token?: string
+  status?: "all" | "published" | "draft"
+}) {
   const router = useRouter()
-  const [filter, setFilter] = useState<"all" | "published" | "draft">("all")
+  const setFilter = useUrlFilter()
   const [busyId, setBusyId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-
-  const filtered = useMemo(() => {
-    if (filter === "published") return posts.filter((p) => p.isPublished)
-    if (filter === "draft") return posts.filter((p) => !p.isPublished)
-    return posts
-  }, [posts, filter])
 
   const columns: DataTableColumn<BlogPost>[] = [
     {
@@ -1682,7 +1657,7 @@ export function AdminBlogTable({ posts, token }: { posts: BlogPost[]; token?: st
     }
   }
 
-  const filters: { value: typeof filter; label: string }[] = [
+  const filters: { value: "all" | "published" | "draft"; label: string }[] = [
     { value: "all", label: "All" },
     { value: "published", label: "Published" },
     { value: "draft", label: "Draft" },
@@ -1695,10 +1670,10 @@ export function AdminBlogTable({ posts, token }: { posts: BlogPost[]; token?: st
           <button
             key={f.value}
             type="button"
-            onClick={() => setFilter(f.value)}
+            onClick={() => setFilter("status", f.value)}
             className={cn(
               "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-              filter === f.value
+              status === f.value
                 ? "border-brand-700 bg-brand-700 text-white"
                 : "border-border/70 bg-white text-ink-700 hover:bg-brand-50",
             )}
@@ -1706,9 +1681,6 @@ export function AdminBlogTable({ posts, token }: { posts: BlogPost[]; token?: st
             {f.label}
           </button>
         ))}
-        <span className="ml-auto text-xs text-ink-500">
-          {filtered.length} of {posts.length}
-        </span>
       </div>
       {error ? (
         <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
@@ -1717,7 +1689,7 @@ export function AdminBlogTable({ posts, token }: { posts: BlogPost[]; token?: st
       ) : null}
       <DataTable
         columns={columns}
-        data={filtered}
+        data={posts}
         rowKey={(p) => p.id}
         emptyMessage="No blog posts found."
       />
@@ -1740,16 +1712,14 @@ const REPORT_STATUS_STYLES: Record<ReportStatus, string> = {
   resolved: "border-emerald-200 bg-emerald-50 text-emerald-700",
 }
 
-export function AdminReportsTable({ reports }: { reports: Report[] }) {
-  const [statusFilter, setStatusFilter] = useState<ReportStatus | "all">("all")
-
-  const filtered = useMemo(
-    () =>
-      statusFilter === "all"
-        ? reports
-        : reports.filter((r) => r.status === statusFilter),
-    [reports, statusFilter],
-  )
+export function AdminReportsTable({
+  reports,
+  status = "all",
+}: {
+  reports: Report[]
+  status?: ReportStatus | "all"
+}) {
+  const setFilter = useUrlFilter()
 
   const columns: DataTableColumn<Report>[] = [
     {
@@ -1819,10 +1789,10 @@ export function AdminReportsTable({ reports }: { reports: Report[] }) {
           <button
             key={f.value}
             type="button"
-            onClick={() => setStatusFilter(f.value)}
+            onClick={() => setFilter("status", f.value)}
             className={cn(
               "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-              statusFilter === f.value
+              status === f.value
                 ? "border-brand-700 bg-brand-700 text-white"
                 : "border-border/70 bg-white text-ink-700 hover:bg-brand-50",
             )}
@@ -1830,13 +1800,10 @@ export function AdminReportsTable({ reports }: { reports: Report[] }) {
             {f.label}
           </button>
         ))}
-        <span className="ml-auto text-xs text-ink-500">
-          {filtered.length} of {reports.length}
-        </span>
       </div>
       <DataTable
         columns={columns}
-        data={filtered}
+        data={reports}
         rowKey={(r) => r.id}
         emptyMessage="No reports match this filter."
       />
@@ -1954,16 +1921,14 @@ export function BuyerProfileForm({ buyer }: { buyer: Buyer | null }) {
 
 // ─── SellerPropertiesTable ─────────────────────────────────────────────────────
 
-export function SellerPropertiesTable({ properties }: { properties: Property[] }) {
-  const [statusFilter, setStatusFilter] = useState<PropertyStatus | "all">("all")
-
-  const filtered = useMemo(
-    () =>
-      statusFilter === "all"
-        ? properties
-        : properties.filter((p) => p.status === statusFilter),
-    [properties, statusFilter],
-  )
+export function SellerPropertiesTable({
+  properties,
+  status = "all",
+}: {
+  properties: Property[]
+  status?: PropertyStatus | "all"
+}) {
+  const setFilter = useUrlFilter()
 
   const columns: DataTableColumn<Property>[] = [
     {
@@ -2036,10 +2001,10 @@ export function SellerPropertiesTable({ properties }: { properties: Property[] }
           <button
             key={f.value}
             type="button"
-            onClick={() => setStatusFilter(f.value)}
+            onClick={() => setFilter("status", f.value)}
             className={cn(
               "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-              statusFilter === f.value
+              status === f.value
                 ? "border-brand-700 bg-brand-700 text-white"
                 : "border-border/70 bg-white text-ink-700 hover:bg-brand-50",
             )}
@@ -2047,13 +2012,10 @@ export function SellerPropertiesTable({ properties }: { properties: Property[] }
             {f.label}
           </button>
         ))}
-        <span className="ml-auto text-xs text-ink-500">
-          {filtered.length} of {properties.length}
-        </span>
       </div>
       <DataTable
         columns={columns}
-        data={filtered}
+        data={properties}
         rowKey={(p) => p.id}
         emptyMessage="No listings yet."
       />

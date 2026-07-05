@@ -3,17 +3,27 @@ export const dynamic = "force-dynamic"
 import Link from "next/link"
 import { auth } from "@/auth"
 import { DashboardPageHeader } from "@/components/dashboard/dashboard-page-header"
+import { TablePagination } from "@/components/dashboard/table-pagination"
 import { Button } from "@/components/ui/button"
 import { PropertyCard } from "@/components/properties/property-card"
 import { ROUTES } from "@/config/routes.config"
+import { DASHBOARD_PAGE_SIZE } from "@/lib/constants"
 import { propertiesService } from "@/services/properties.service"
 
-export default async function BuyerSavedPropertiesPage() {
+export default async function BuyerSavedPropertiesPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>
+}) {
   const session = await auth()
-  const saved = await propertiesService.saved(session?.accessToken).catch(() => ({
-    data: [],
-    meta: { page: 1, limit: 20, total: 0, totalPages: 0 },
-  }))
+  const sp = await searchParams
+  const page = Math.max(1, Number(sp.page) || 1)
+  const saved = await propertiesService
+    .saved({ page, limit: DASHBOARD_PAGE_SIZE }, session?.accessToken)
+    .catch(() => ({
+      data: [],
+      meta: { page: 1, limit: DASHBOARD_PAGE_SIZE, total: 0, totalPages: 0 },
+    }))
 
   return (
     <div>
@@ -40,6 +50,7 @@ export default async function BuyerSavedPropertiesPage() {
           {saved.data.map((property) => <PropertyCard key={property.id} property={property} />)}
         </div>
       )}
+      <TablePagination meta={saved.meta} />
     </div>
   )
 }

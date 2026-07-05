@@ -13,6 +13,7 @@ import { ROUTES } from "@/config/routes.config"
 import { Button } from "@/components/ui/button"
 import { StructuredData } from "@/components/seo/structured-data"
 import { siteConfig } from "@/config/site.config"
+import { parseProjectDescription } from "@/lib/project-description"
 import type { Project } from "@/types/project.types"
 
 interface ProjectDetailPageProps {
@@ -94,6 +95,22 @@ function projectLocationText(project: Project): string {
   )
 }
 
+/** Group landmarks by their drive-time bucket, preserving first-seen order. */
+function groupLandmarks(
+  landmarks: { name: string; group: string }[],
+): { group: string; names: string[] }[] {
+  const order: string[] = []
+  const buckets = new Map<string, string[]>()
+  for (const { name, group } of landmarks) {
+    if (!buckets.has(group)) {
+      buckets.set(group, [])
+      order.push(group)
+    }
+    buckets.get(group)!.push(name)
+  }
+  return order.map((group) => ({ group, names: buckets.get(group)! }))
+}
+
 export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const { slug } = await params
   const res = await getProject(slug)
@@ -129,6 +146,17 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   )
   const mapEmbedUrl = projectMapEmbedUrl(project)
   const locationText = projectLocationText(project)
+  const landmarkGroups = groupLandmarks(project.nearbyLandmarks ?? [])
+  const aboutProject = parseProjectDescription(project.description)
+  const specificationEntries = Object.entries(project.specifications ?? {})
+  const hasAboutProjectContent =
+    aboutProject.specs.length > 0 ||
+    aboutProject.highlights.length > 0 ||
+    aboutProject.paragraphs.length > 0
+  const hasUnits = (project.units ?? []).length > 0
+  const hasAmenities = (project.amenities ?? []).length > 0
+  const hasSpecifications = specificationEntries.length > 0
+  const hasNearbyLandmarks = (project.nearbyLandmarks ?? []).length > 0
 
   const schema = {
     "@context": "https://schema.org",
@@ -183,6 +211,12 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
               </div>
               <h1 className="text-h1 mb-1">{project.name}</h1>
               <p className="text-lead italic text-muted-foreground">{project.tagline}</p>
+              {project.developerName && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Developed by{" "}
+                  <span className="font-medium text-foreground">{project.developerName}</span>
+                </p>
+              )}
               <div className="flex items-center gap-1.5 mt-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4 text-brand-600" />
                 {locationText}
@@ -206,10 +240,67 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
             </div>
 
             {/* Description */}
-            <div>
-              <h2 className="text-h3 mb-3">About This Project</h2>
-              <p className="text-sm text-muted-foreground leading-relaxed">{project.description}</p>
-            </div>
+            {hasAboutProjectContent ? (
+              <div>
+                <div className="mb-4">
+                  <h2 className="text-h3 mb-2">About This Project</h2>
+                  <p className="text-sm text-muted-foreground">
+                    A cleaner overview of the key details, layout, and standout project points.
+                  </p>
+                </div>
+
+                <div className="rounded-[1.75rem] border border-border bg-linear-to-br from-white via-ink-50/60 to-white p-5 md:p-6">
+                  {aboutProject.specs.length > 0 ? (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {aboutProject.specs.map((item) => (
+                        <div
+                          key={`${item.label}-${item.value}`}
+                          className="rounded-[1.25rem] border border-border/80 bg-white/90 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.04)]"
+                        >
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-700">
+                            {item.label}
+                          </p>
+                          <p className="mt-2 text-sm leading-6 text-ink-800">
+                            {item.value}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  {aboutProject.highlights.length > 0 ? (
+                    <div className={aboutProject.specs.length > 0 ? "mt-5" : ""}>
+                      <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                        Highlights
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {aboutProject.highlights.map((item) => (
+                          <span
+                            key={item}
+                            className="inline-flex items-center rounded-full border border-brand-100 bg-brand-50/70 px-3 py-1.5 text-xs font-medium text-brand-800"
+                          >
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {aboutProject.paragraphs.length > 0 ? (
+                    <div className={aboutProject.specs.length > 0 || aboutProject.highlights.length > 0 ? "mt-5 space-y-3" : "space-y-3"}>
+                      {aboutProject.paragraphs.map((paragraph) => (
+                        <p
+                          key={paragraph}
+                          className="text-sm leading-relaxed text-muted-foreground"
+                        >
+                          {paragraph}
+                        </p>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
 
             {mapEmbedUrl ? (
               <div>
@@ -255,7 +346,8 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
             )}
 
             {/* Unit price table */}
-            <div>
+            {hasUnits ? (
+              <div>
               <h2 className="text-h3 mb-4">Unit Types & Pricing</h2>
               <div className="rounded-xl border border-border overflow-hidden">
                 <table className="w-full text-sm">
@@ -284,10 +376,12 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                   </tbody>
                 </table>
               </div>
-            </div>
+              </div>
+            ) : null}
 
             {/* Amenities */}
-            <div>
+            {hasAmenities ? (
+              <div>
               <h2 className="text-h3 mb-4">Amenities</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {(project.amenities ?? []).map((a) => (
@@ -297,34 +391,45 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                   </div>
                 ))}
               </div>
-            </div>
+              </div>
+            ) : null}
 
             {/* Specifications */}
-            <div>
+            {hasSpecifications ? (
+              <div>
               <h2 className="text-h3 mb-4">Specifications</h2>
               <div className="rounded-xl border border-border overflow-hidden">
-                {Object.entries(project.specifications ?? {}).map(([key, value], i) => (
+                {specificationEntries.map(([key, value], i) => (
                   <div key={key} className={`grid grid-cols-2 px-4 py-3 text-sm ${i % 2 === 0 ? "bg-ink-50" : "bg-white"}`}>
                     <span className="font-medium text-muted-foreground">{key}</span>
                     <span>{value}</span>
                   </div>
                 ))}
               </div>
-            </div>
+              </div>
+            ) : null}
 
             {/* Nearby */}
-            <div>
-              <h2 className="text-h3 mb-4">Nearby Landmarks</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {(project.nearbyLandmarks ?? []).map((l) => (
-                  <div key={l.name} className="flex items-center gap-3 bg-ink-50 rounded-xl px-4 py-3 text-sm">
-                    <MapPin className="h-4 w-4 text-brand-600 shrink-0" />
-                    <span className="flex-1 font-medium">{l.name}</span>
-                    <span className="text-muted-foreground">{l.distance}</span>
-                  </div>
-                ))}
+            {hasNearbyLandmarks ? (
+              <div>
+                <h2 className="text-h3 mb-4">Landmarks Nearby</h2>
+                <div className="space-y-6">
+                  {landmarkGroups.map(({ group, names }) => (
+                    <div key={group}>
+                      <p className="text-eyebrow mb-2 text-brand-700">{group}</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+                        {names.map((name, i) => (
+                          <div key={`${name}-${i}`} className="flex items-center gap-2 text-sm">
+                            <MapPin className="h-4 w-4 text-brand-600 shrink-0" />
+                            <span className="font-medium">{name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : null}
           </div>
 
           {/* Sidebar */}

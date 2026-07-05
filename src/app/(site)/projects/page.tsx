@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic"
 import Link from "next/link"
 import { getProjects } from "@/services/projects.service"
 import { ProjectCard } from "@/components/projects/project-card"
+import { ProjectsPagination } from "@/components/projects/projects-pagination"
 import { SectionHeader } from "@/components/common/section-header"
 import { EmptyState } from "@/components/common/empty-state"
 import { Building2 } from "lucide-react"
@@ -16,12 +17,19 @@ const STATUS_TABS: { label: string; value: string }[] = [
 ]
 
 interface ProjectsPageProps {
-  searchParams: Promise<{ status?: string }>
+  searchParams: Promise<{ status?: string; page?: string }>
 }
 
 export default async function ProjectsPage({ searchParams }: ProjectsPageProps) {
-  const { status } = await searchParams
-  const res = await getProjects({ status: status as ProjectStatus | undefined, limit: 12 })
+  const { status, page: rawPage } = await searchParams
+  const page = Math.max(1, Number(rawPage) || 1)
+  const res = await getProjects({
+    status: status as ProjectStatus | undefined,
+    page,
+    limit: 12,
+  })
+  const start = res.meta.total === 0 ? 0 : (res.meta.page - 1) * res.meta.limit + 1
+  const end = Math.min(res.meta.page * res.meta.limit, res.meta.total)
 
   return (
     <div className="section-y">
@@ -34,23 +42,29 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
         />
 
         {/* Status filter */}
-        <div className="flex gap-2 mt-8 mb-10 flex-wrap">
-          {STATUS_TABS.map((tab) => {
-            const isActive = (status ?? "") === tab.value
-            return (
-              <Link
-                key={tab.value}
-                href={tab.value ? `/projects?status=${tab.value}` : "/projects"}
-                className={`inline-flex min-h-11 items-center rounded-full px-5 text-sm font-medium transition-colors ${
-                  isActive
-                    ? "bg-brand-600 text-white"
-                    : "bg-white border border-border text-foreground hover:border-brand-300 hover:text-brand-700"
-                }`}
-              >
-                {tab.label}
-              </Link>
-            )
-          })}
+        <div className="mt-8 mb-10 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap gap-2">
+            {STATUS_TABS.map((tab) => {
+              const isActive = (status ?? "") === tab.value
+              return (
+                <Link
+                  key={tab.value}
+                  href={tab.value ? `/projects?status=${tab.value}` : "/projects"}
+                  className={`inline-flex min-h-11 items-center rounded-full px-5 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-brand-600 text-white"
+                      : "bg-white border border-border text-foreground hover:border-brand-300 hover:text-brand-700"
+                  }`}
+                >
+                  {tab.label}
+                </Link>
+              )
+            })}
+          </div>
+
+          <p className="text-sm text-muted-foreground">
+            {res.meta.total === 0 ? "0 projects" : `Showing ${start}-${end} of ${res.meta.total}`}
+          </p>
         </div>
 
         {res.data.length === 0 ? (
@@ -66,6 +80,10 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
             ))}
           </div>
         )}
+
+        {res.meta.totalPages > 1 ? (
+          <ProjectsPagination page={res.meta.page} totalPages={res.meta.totalPages} />
+        ) : null}
       </div>
     </div>
   )

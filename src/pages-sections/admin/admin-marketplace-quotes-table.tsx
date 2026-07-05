@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { ROUTES } from "@/config/routes.config"
+import { useUrlFilter } from "@/hooks/use-url-filter"
 import { cn } from "@/lib/utils"
 import { ApiError } from "@/services/http-client"
 import { quotesService } from "@/services/quotes.service"
@@ -47,14 +48,16 @@ export function AdminMarketplaceQuotesTable({
   quotes,
   detailBasePath = ROUTES.ADMIN_MARKETPLACE_QUOTES,
   salesReps = [],
+  status = "all",
 }: {
   quotes: QuoteRequest[]
   detailBasePath?: string
   salesReps?: User[]
+  status?: QuoteStatus | "all"
 }) {
   const { data: session } = useSession()
+  const setFilter = useUrlFilter()
   const [rows, setRows] = useState(quotes)
-  const [statusFilter, setStatusFilter] = useState<QuoteStatus | "all">("all")
   const [selectedQuoteId, setSelectedQuoteId] = useState<string | null>(null)
   const [draftStatus, setDraftStatus] = useState<QuoteStatus>("NEW")
   const [draftAssignedTo, setDraftAssignedTo] = useState("")
@@ -68,14 +71,6 @@ export function AdminMarketplaceQuotesTable({
   const selectedQuote = useMemo(
     () => rows.find((quote) => quote.id === selectedQuoteId) ?? null,
     [rows, selectedQuoteId],
-  )
-
-  const filtered = useMemo(
-    () =>
-      statusFilter === "all"
-        ? rows
-        : rows.filter((quote) => quote.status === statusFilter),
-    [rows, statusFilter],
   )
 
   function openReview(quote: QuoteRequest) {
@@ -272,10 +267,10 @@ export function AdminMarketplaceQuotesTable({
           <button
             key={filter.value}
             type="button"
-            onClick={() => setStatusFilter(filter.value)}
+            onClick={() => setFilter("status", filter.value)}
             className={cn(
               "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-              statusFilter === filter.value
+              status === filter.value
                 ? "border-brand-700 bg-brand-700 text-white"
                 : "border-border/70 bg-white text-ink-700 hover:bg-brand-50",
             )}
@@ -283,13 +278,10 @@ export function AdminMarketplaceQuotesTable({
             {filter.label}
           </button>
         ))}
-        <span className="ml-auto text-xs text-ink-500">
-          {filtered.length} of {rows.length}
-        </span>
       </div>
       <DataTable
         columns={columns}
-        data={filtered}
+        data={rows}
         rowKey={(quote) => quote.id}
         emptyMessage="No marketplace quote requests match this filter."
       />

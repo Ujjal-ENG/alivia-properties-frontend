@@ -18,7 +18,7 @@ export type ProjectUnit = {
 
 export type NearbyLandmark = {
   name: string
-  distance: string
+  group: string
 }
 
 export type Project = {

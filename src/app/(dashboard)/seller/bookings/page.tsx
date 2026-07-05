@@ -1,23 +1,23 @@
 export const dynamic = "force-dynamic"
 
 import { getBookings } from "@/services/bookings.service"
-import { getProperties } from "@/services/properties.service"
+import { DASHBOARD_PAGE_SIZE } from "@/lib/constants"
 import { DashboardPageHeader } from "@/components/dashboard/dashboard-page-header"
+import { TablePagination } from "@/components/dashboard/table-pagination"
 import { AdminBookingsTable } from "@/pages-sections/admin/admin-views"
 import { getCurrentSeller } from "@/utils/dashboard-session"
+import type { BookingStatus } from "@/types/booking.types"
 
-export default async function SellerBookingsPage() {
-  const seller = await getCurrentSeller()
-  const emptyPage = { data: [], meta: { page: 1, limit: 50, total: 0, totalPages: 0 } }
-  const [bookings, properties] = await Promise.all([
-    getBookings(),
-    getProperties({ sellerId: seller.id, limit: 50 }).catch(() => emptyPage),
-  ])
+export default async function SellerBookingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>
+}) {
+  await getCurrentSeller()
+  const sp = await searchParams
+  const page = Math.max(1, Number(sp.page) || 1)
 
-  const propertyIds = new Set(properties.data.map((property) => property.id))
-  const relatedBookings = bookings.data.filter(
-    (booking) => booking.propertyId && propertyIds.has(booking.propertyId),
-  )
+  const res = await getBookings({ page, limit: DASHBOARD_PAGE_SIZE, status: sp.status })
 
   return (
     <div>
@@ -25,7 +25,12 @@ export default async function SellerBookingsPage() {
         title="Bookings"
         description="Track consultation requests linked to your marketplace listings."
       />
-      <AdminBookingsTable bookings={relatedBookings} />
+      <AdminBookingsTable
+        key={`${page}-${sp.status ?? "all"}`}
+        bookings={res.data}
+        status={(sp.status as BookingStatus) ?? "all"}
+      />
+      <TablePagination meta={res.meta} />
     </div>
   )
 }

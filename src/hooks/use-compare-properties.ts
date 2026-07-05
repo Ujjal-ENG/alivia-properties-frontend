@@ -15,14 +15,16 @@ function getList(): string[] {
 }
 
 export function useCompareProperties() {
-  // Lazy init reads localStorage once on mount (SSR-safe)
-  const [list, setList] = useState<string[]>(() => getList())
+  // Start empty to match server render, then reconcile with localStorage after
+  // mount — avoids a hydration mismatch when the list already has items.
+  const [list, setList] = useState<string[]>([])
 
   useEffect(() => {
     function syncFromStorage() {
       setList(getList())
     }
 
+    syncFromStorage()
     window.addEventListener("storage", syncFromStorage)
     window.addEventListener(COMPARE_EVENT, syncFromStorage)
     return () => {

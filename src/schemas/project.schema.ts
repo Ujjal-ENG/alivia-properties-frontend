@@ -61,6 +61,15 @@ export const projectSchema = z.object({
   units: z.array(projectUnitSchema).optional().default([]),
 
   developerName: z.string().optional().default(""),
+  nearbyLandmarks: z
+    .array(
+      z.object({
+        name: z.string().min(1, "Landmark name is required"),
+        group: z.string().min(1, "Group is required"),
+      }),
+    )
+    .optional()
+    .default([]),
   isFeatured: z.boolean().optional().default(false),
 })
 

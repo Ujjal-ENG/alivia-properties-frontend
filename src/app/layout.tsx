@@ -41,7 +41,13 @@ export default async function RootLayout({
         >
           Skip to main content
         </a>
-        <SessionProvider session={session}>{children}</SessionProvider>
+        <SessionProvider
+          session={session}
+          refetchInterval={5 * 60}
+          refetchOnWindowFocus
+        >
+          {children}
+        </SessionProvider>
       </body>
     </html>
   );

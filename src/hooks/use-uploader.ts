@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useRef, useState } from "react"
-import { useSession } from "next-auth/react"
+import { getSession, useSession } from "next-auth/react"
 import { ApiError } from "@/services/http-client"
 import {
   uploadsService,
@@ -38,7 +38,12 @@ export function useUploader(kind: UploadKind) {
         }
       }
 
-      if (!token) {
+      // Pull a fresh session at upload time so the access token is current even
+      // if the tab has sat idle past the 15-min access-token lifetime — this
+      // triggers the auth refresh flow and avoids a stale-token 401 mid-upload.
+      const fresh = await getSession()
+      const uploadToken = fresh?.accessToken
+      if (!uploadToken || fresh?.error === "RefreshAccessTokenError") {
         setError("You must be signed in to upload files.")
         return []
       }
@@ -48,8 +53,8 @@ export function useUploader(kind: UploadKind) {
       try {
         const results =
           files.length === 1
-            ? [await uploadsService.uploadFile(files[0], kind, token)]
-            : await uploadsService.uploadFiles(files, kind, token)
+            ? [await uploadsService.uploadFile(files[0], kind, uploadToken)]
+            : await uploadsService.uploadFiles(files, kind, uploadToken)
         const urls = results.map((r) => r.publicUrl)
         urls.forEach((url) => sessionUrls.current.add(url))
         return urls
@@ -70,7 +75,7 @@ export function useUploader(kind: UploadKind) {
         setUploading(false)
       }
     },
-    [kind, token],
+    [kind],
   )
 
   /**

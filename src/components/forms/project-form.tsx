@@ -73,6 +73,10 @@ function getDefaults(initial?: Project): ProjectInput {
       available: u.available ?? u.total ?? 0,
     })),
     developerName: initial?.developerName ?? "",
+    nearbyLandmarks: (initial?.nearbyLandmarks ?? []).map((l) => ({
+      name: l.name ?? "",
+      group: l.group ?? "",
+    })),
     isFeatured: initial?.isFeatured ?? false,
   }
 }
@@ -88,6 +92,11 @@ export function ProjectForm({ mode, initialProject }: ProjectFormProps) {
   })
 
   const { fields, append, remove } = useFieldArray({ control: form.control, name: "units" })
+  const {
+    fields: landmarkFields,
+    append: appendLandmark,
+    remove: removeLandmark,
+  } = useFieldArray({ control: form.control, name: "nearbyLandmarks" })
   const coverValue = useWatch({ control: form.control, name: "coverImageUrl" })
   const galleryValue = useWatch({ control: form.control, name: "galleryImages" }) ?? []
   const videoValues = useWatch({ control: form.control, name: "videos" }) ?? []
@@ -500,6 +509,75 @@ export function ProjectForm({ mode, initialProject }: ProjectFormProps) {
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Nearby landmarks */}
+          <div className="surface-card p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-ink-900">Nearby Landmarks</h2>
+                <p className="text-sm text-ink-500">
+                  Group landmarks by drive time — e.g. “5–10 min Drive”.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-full"
+                onClick={() => appendLandmark({ name: "", group: "" })}
+              >
+                <Plus className="h-4 w-4" /> Add landmark
+              </Button>
+            </div>
+
+            <datalist id="landmark-groups">
+              <option value="Within 5 min Drive" />
+              <option value="5–10 min Drive" />
+              <option value="10–20 min Drive" />
+              <option value="20–30 min Drive" />
+            </datalist>
+
+            {landmarkFields.length === 0 ? (
+              <p className="mt-4 rounded-[1rem] border border-dashed border-border bg-ink-50/60 px-4 py-6 text-center text-sm text-ink-500">
+                No landmarks added yet.
+              </p>
+            ) : (
+              <div className="mt-4 space-y-3">
+                {landmarkFields.map((landmark, index) => (
+                  <div
+                    key={landmark.id}
+                    className="grid items-end gap-3 rounded-[1.25rem] border border-border p-4 sm:grid-cols-[1fr_1fr_auto]"
+                  >
+                    <div>
+                      <label className="text-xs font-medium text-ink-700">Landmark</label>
+                      <Input
+                        placeholder="North South University"
+                        {...form.register(`nearbyLandmarks.${index}.name`)}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-ink-700">Drive-time group</label>
+                      <Input
+                        list="landmark-groups"
+                        placeholder="5–10 min Drive"
+                        {...form.register(`nearbyLandmarks.${index}.group`)}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      aria-label={`Remove landmark ${index + 1}`}
+                      className="size-9 shrink-0 rounded-full border-red-200 text-red-600 hover:bg-red-50"
+                      onClick={() => removeLandmark(index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 ))}
               </div>
