@@ -125,9 +125,9 @@ export const propertiesService = {
   remove(id: string, token?: string): Promise<void> {
     return httpClient.delete<void>(`${BASE}/${id}`, { token })
   },
-  saved(token?: string): Promise<Paginated<Property>> {
+  saved(params: { page?: number; limit?: number } = {}, token?: string): Promise<Paginated<Property>> {
     return httpClient
-      .paginated<BackendProperty>(`${BASE}/me/saved`, { token })
+      .paginated<BackendProperty>(`${BASE}/me/saved`, { query: params, token })
       .then((res) => ({ ...res, data: res.data.map(toFrontendProperty) }))
   },
   save(id: string, token?: string): Promise<{ success: boolean }> {

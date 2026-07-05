@@ -10,7 +10,7 @@ import { propertiesService } from "@/services/properties.service"
 
 export default async function BuyerSavedPropertiesPage() {
   const session = await auth()
-  const saved = await propertiesService.saved(session?.accessToken).catch(() => ({
+  const saved = await propertiesService.saved({}, session?.accessToken).catch(() => ({
     data: [],
     meta: { page: 1, limit: 20, total: 0, totalPages: 0 },
   }))
