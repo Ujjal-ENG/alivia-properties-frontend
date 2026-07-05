@@ -935,19 +935,20 @@ const PROJECT_STATUS_FILTERS: { value: ProjectStatus | "all"; label: string }[] 
   { value: "completed", label: "Completed" },
 ]
 
-export function AdminProjectsTable({ projects }: { projects: Project[] }) {
+export function AdminProjectsTable({
+  projects,
+  status = "all",
+}: {
+  projects: Project[]
+  status?: ProjectStatus | "all"
+}) {
   const { data: session } = useSession()
   const token = session?.accessToken
+  const setFilter = useUrlFilter()
   const [rows, setRows] = useState<Project[]>(projects)
-  const [filter, setFilter] = useState<ProjectStatus | "all">("all")
   const [busyId, setBusyId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null)
-
-  const filtered = useMemo(
-    () => (filter === "all" ? rows : rows.filter((p) => p.status === filter)),
-    [rows, filter],
-  )
 
   function applyUpdate(updated: Project) {
     setRows((current) => current.map((p) => (p.id === updated.id ? { ...p, ...updated } : p)))
@@ -1161,10 +1162,10 @@ export function AdminProjectsTable({ projects }: { projects: Project[] }) {
           <button
             key={f.value}
             type="button"
-            onClick={() => setFilter(f.value)}
+            onClick={() => setFilter("status", f.value)}
             className={cn(
               "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-              filter === f.value
+              status === f.value
                 ? "border-brand-700 bg-brand-700 text-white"
                 : "border-border/70 bg-white text-ink-700 hover:bg-brand-50",
             )}
@@ -1172,9 +1173,6 @@ export function AdminProjectsTable({ projects }: { projects: Project[] }) {
             {f.label}
           </button>
         ))}
-        <span className="ml-auto text-xs text-ink-500">
-          {filtered.length} of {rows.length}
-        </span>
       </div>
 
       {error ? (
@@ -1186,7 +1184,7 @@ export function AdminProjectsTable({ projects }: { projects: Project[] }) {
 
       <DataTable
         columns={columns}
-        data={filtered}
+        data={rows}
         rowKey={(p) => p.id}
         emptyMessage="No projects match this filter."
       />
@@ -1528,17 +1526,19 @@ export function AdminBookingsTable({ bookings }: { bookings: Booking[] }) {
 
 // ─── AdminBlogTable ────────────────────────────────────────────────────────────
 
-export function AdminBlogTable({ posts, token }: { posts: BlogPost[]; token?: string }) {
+export function AdminBlogTable({
+  posts,
+  token,
+  status = "all",
+}: {
+  posts: BlogPost[]
+  token?: string
+  status?: "all" | "published" | "draft"
+}) {
   const router = useRouter()
-  const [filter, setFilter] = useState<"all" | "published" | "draft">("all")
+  const setFilter = useUrlFilter()
   const [busyId, setBusyId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-
-  const filtered = useMemo(() => {
-    if (filter === "published") return posts.filter((p) => p.isPublished)
-    if (filter === "draft") return posts.filter((p) => !p.isPublished)
-    return posts
-  }, [posts, filter])
 
   const columns: DataTableColumn<BlogPost>[] = [
     {
@@ -1676,7 +1676,7 @@ export function AdminBlogTable({ posts, token }: { posts: BlogPost[]; token?: st
     }
   }
 
-  const filters: { value: typeof filter; label: string }[] = [
+  const filters: { value: "all" | "published" | "draft"; label: string }[] = [
     { value: "all", label: "All" },
     { value: "published", label: "Published" },
     { value: "draft", label: "Draft" },
@@ -1689,10 +1689,10 @@ export function AdminBlogTable({ posts, token }: { posts: BlogPost[]; token?: st
           <button
             key={f.value}
             type="button"
-            onClick={() => setFilter(f.value)}
+            onClick={() => setFilter("status", f.value)}
             className={cn(
               "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-              filter === f.value
+              status === f.value
                 ? "border-brand-700 bg-brand-700 text-white"
                 : "border-border/70 bg-white text-ink-700 hover:bg-brand-50",
             )}
@@ -1700,9 +1700,6 @@ export function AdminBlogTable({ posts, token }: { posts: BlogPost[]; token?: st
             {f.label}
           </button>
         ))}
-        <span className="ml-auto text-xs text-ink-500">
-          {filtered.length} of {posts.length}
-        </span>
       </div>
       {error ? (
         <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
@@ -1711,7 +1708,7 @@ export function AdminBlogTable({ posts, token }: { posts: BlogPost[]; token?: st
       ) : null}
       <DataTable
         columns={columns}
-        data={filtered}
+        data={posts}
         rowKey={(p) => p.id}
         emptyMessage="No blog posts found."
       />
