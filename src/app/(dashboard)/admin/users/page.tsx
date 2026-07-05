@@ -1,17 +1,45 @@
 export const dynamic = "force-dynamic"
 
 import { AlertCircle, Users } from "lucide-react"
-import { getUsers } from "@/services/users.service"
+import { auth } from "@/auth"
+import { usersService, loadErrorMessage } from "@/services/users.service"
+import { DASHBOARD_PAGE_SIZE } from "@/lib/constants"
 import { DashboardPageHeader } from "@/components/dashboard/dashboard-page-header"
+import { TablePagination } from "@/components/dashboard/table-pagination"
 import { AdminUsersTable } from "@/pages-sections/admin/admin-views"
+import type { User, UserRole } from "@/types/user.types"
+import type { PaginationMeta } from "@/services/http-client"
 
-export default async function AdminUsersPage() {
-  const { data, error } = await getUsers()
-  const rows = [
-    ...data.admins.map((admin) => ({ ...admin, roleLabel: "Admin" as const })),
-    ...data.sellers.map((seller) => ({ ...seller, roleLabel: "Seller" as const })),
-    ...data.buyers.map((buyer) => ({ ...buyer, roleLabel: "Buyer" as const })),
-  ]
+const ROLE_LABELS: Record<UserRole, "Admin" | "Seller" | "Buyer"> = {
+  admin: "Admin",
+  seller: "Seller",
+  buyer: "Buyer",
+}
+
+export default async function AdminUsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>
+}) {
+  const sp = await searchParams
+  const page = Math.max(1, Number(sp.page) || 1)
+  const session = await auth()
+  const token = session?.accessToken
+
+  let error: string | null = null
+  let rows: (User & { roleLabel: "Admin" | "Seller" | "Buyer" })[] = []
+  let meta: PaginationMeta | undefined
+
+  try {
+    const res = await usersService.list(
+      { page, limit: DASHBOARD_PAGE_SIZE, role: sp.role ? sp.role.toUpperCase() : undefined },
+      token,
+    )
+    rows = res.data.map((user) => ({ ...user, roleLabel: ROLE_LABELS[user.role] }))
+    meta = res.meta
+  } catch (err) {
+    error = loadErrorMessage(err)
+  }
 
   return (
     <div>
@@ -30,7 +58,14 @@ export default async function AdminUsersPage() {
           </div>
         </div>
       ) : (
-        <AdminUsersTable users={rows} />
+        <>
+          <AdminUsersTable
+            key={`${page}-${sp.role ?? "all"}`}
+            users={rows}
+            role={(sp.role as UserRole | "all") ?? "all"}
+          />
+          <TablePagination meta={meta} />
+        </>
       )}
     </div>
   )

@@ -1,12 +1,39 @@
 export const dynamic = "force-dynamic"
 
 import { AlertCircle, UserCheck } from "lucide-react"
-import { getSellers } from "@/services/users.service"
+import { auth } from "@/auth"
+import { usersService, loadErrorMessage } from "@/services/users.service"
+import { DASHBOARD_PAGE_SIZE } from "@/lib/constants"
 import { DashboardPageHeader } from "@/components/dashboard/dashboard-page-header"
+import { TablePagination } from "@/components/dashboard/table-pagination"
 import { AdminSellersTable } from "@/pages-sections/admin/admin-views"
+import type { Seller } from "@/types/user.types"
+import type { PaginationMeta } from "@/services/http-client"
 
-export default async function AdminSellersPage() {
-  const { sellers, error } = await getSellers()
+export default async function AdminSellersPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>
+}) {
+  const sp = await searchParams
+  const page = Math.max(1, Number(sp.page) || 1)
+  const session = await auth()
+  const token = session?.accessToken
+
+  let error: string | null = null
+  let sellers: Seller[] = []
+  let meta: PaginationMeta | undefined
+
+  try {
+    const res = await usersService.list(
+      { page, limit: DASHBOARD_PAGE_SIZE, role: "SELLER", verified: sp.verified },
+      token,
+    )
+    sellers = res.data as Seller[]
+    meta = res.meta
+  } catch (err) {
+    error = loadErrorMessage(err)
+  }
 
   return (
     <div>
@@ -25,7 +52,14 @@ export default async function AdminSellersPage() {
           </div>
         </div>
       ) : (
-        <AdminSellersTable sellers={sellers} />
+        <>
+          <AdminSellersTable
+            key={`${page}-${sp.verified ?? "all"}`}
+            sellers={sellers}
+            verified={(sp.verified as "all" | "true" | "false") ?? "all"}
+          />
+          <TablePagination meta={meta} />
+        </>
       )}
     </div>
   )

@@ -53,7 +53,7 @@ import { propertiesService } from "@/services/properties.service"
 import { projectsService } from "@/services/projects.service"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import {
   Bar,
   BarChart,
@@ -693,14 +693,14 @@ export function AdminPropertiesTable({
   )
 }
 
-export function AdminSellersTable({ sellers }: { sellers: Seller[] }) {
-  const [filter, setFilter] = useState<"all" | "verified" | "pending">("all")
-
-  const filtered = useMemo(() => {
-    if (filter === "verified") return sellers.filter((s) => s.isVerified)
-    if (filter === "pending") return sellers.filter((s) => !s.isVerified)
-    return sellers
-  }, [sellers, filter])
+export function AdminSellersTable({
+  sellers,
+  verified = "all",
+}: {
+  sellers: Seller[]
+  verified?: "all" | "true" | "false"
+}) {
+  const setFilter = useUrlFilter()
 
   const columns: DataTableColumn<Seller>[] = [
     {
@@ -759,10 +759,10 @@ export function AdminSellersTable({ sellers }: { sellers: Seller[] }) {
     },
   ]
 
-  const filters: { value: typeof filter; label: string }[] = [
+  const filters: { value: "all" | "true" | "false"; label: string }[] = [
     { value: "all", label: "All" },
-    { value: "verified", label: "Verified" },
-    { value: "pending", label: "Pending verification" },
+    { value: "true", label: "Verified" },
+    { value: "false", label: "Pending verification" },
   ]
 
   return (
@@ -772,10 +772,10 @@ export function AdminSellersTable({ sellers }: { sellers: Seller[] }) {
           <button
             key={f.value}
             type="button"
-            onClick={() => setFilter(f.value)}
+            onClick={() => setFilter("verified", f.value)}
             className={cn(
               "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-              filter === f.value
+              verified === f.value
                 ? "border-brand-700 bg-brand-700 text-white"
                 : "border-border/70 bg-white text-ink-700 hover:bg-brand-50",
             )}
@@ -783,13 +783,10 @@ export function AdminSellersTable({ sellers }: { sellers: Seller[] }) {
             {f.label}
           </button>
         ))}
-        <span className="ml-auto text-xs text-ink-500">
-          {filtered.length} of {sellers.length}
-        </span>
       </div>
       <DataTable
         columns={columns}
-        data={filtered}
+        data={sellers}
         rowKey={(s) => s.id}
         emptyMessage="No sellers match this filter."
       />
@@ -805,19 +802,20 @@ const ROLE_BADGE_STYLES: Record<UserRow["roleLabel"], string> = {
   Buyer: "border-emerald-200 bg-emerald-50 text-emerald-700",
 }
 
-export function AdminUsersTable({ users }: { users: UserRow[] }) {
-  const [filter, setFilter] = useState<"all" | "Admin" | "Seller" | "Buyer">("all")
+export function AdminUsersTable({
+  users,
+  role = "all",
+}: {
+  users: UserRow[]
+  role?: "all" | "admin" | "seller" | "buyer"
+}) {
+  const setFilter = useUrlFilter()
 
-  const filtered = useMemo(
-    () => (filter === "all" ? users : users.filter((u) => u.roleLabel === filter)),
-    [users, filter],
-  )
-
-  const filters: { value: "all" | "Admin" | "Seller" | "Buyer"; label: string }[] = [
+  const filters: { value: "all" | "admin" | "seller" | "buyer"; label: string }[] = [
     { value: "all", label: "All" },
-    { value: "Admin", label: "Admins" },
-    { value: "Seller", label: "Sellers" },
-    { value: "Buyer", label: "Buyers" },
+    { value: "admin", label: "Admins" },
+    { value: "seller", label: "Sellers" },
+    { value: "buyer", label: "Buyers" },
   ]
 
   const columns: DataTableColumn<UserRow>[] = [
@@ -894,10 +892,10 @@ export function AdminUsersTable({ users }: { users: UserRow[] }) {
           <button
             key={f.value}
             type="button"
-            onClick={() => setFilter(f.value)}
+            onClick={() => setFilter("role", f.value)}
             className={cn(
               "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-              filter === f.value
+              role === f.value
                 ? "border-brand-700 bg-brand-700 text-white"
                 : "border-border/70 bg-white text-ink-700 hover:bg-brand-50",
             )}
@@ -905,13 +903,10 @@ export function AdminUsersTable({ users }: { users: UserRow[] }) {
             {f.label}
           </button>
         ))}
-        <span className="ml-auto text-xs text-ink-500">
-          {filtered.length} of {users.length}
-        </span>
       </div>
       <DataTable
         columns={columns}
-        data={filtered}
+        data={users}
         rowKey={(u) => u.id}
         emptyMessage="No users match this filter."
       />
