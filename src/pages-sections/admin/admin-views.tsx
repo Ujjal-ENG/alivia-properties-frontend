@@ -18,6 +18,7 @@ import type { Seller, User } from "@/types/user.types"
 import type { Inquiry, InquiryStatus, InquiryType } from "@/types/inquiry.types"
 import type { Booking, BookingStatus } from "@/types/booking.types"
 import { blogService, type BlogPost } from "@/services/blog.service"
+import { useUrlFilter } from "@/hooks/use-url-filter"
 import type { Report, ReportStatus } from "@/data/dummy-reports"
 import type { Buyer } from "@/types/user.types"
 import {
@@ -263,16 +264,18 @@ const STATUS_FILTERS: { value: PropertyStatus | "all"; label: string }[] = [
 
 export function AdminPropertiesTable({
   properties,
-  defaultStatus = "all",
+  status = "all",
+  hideFilters = false,
 }: {
   properties: Property[]
-  defaultStatus?: PropertyStatus | "all"
+  status?: PropertyStatus | "all"
+  hideFilters?: boolean
 }) {
   const { data: session } = useSession()
   const token = session?.accessToken
+  const setFilter = useUrlFilter()
 
   const [rows, setRows] = useState<Property[]>(properties)
-  const [statusFilter, setStatusFilter] = useState<PropertyStatus | "all">(defaultStatus)
   // id of the row currently running a mutation (disables its action buttons)
   const [busyId, setBusyId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -281,14 +284,6 @@ export function AdminPropertiesTable({
   const [rejectTarget, setRejectTarget] = useState<Property | null>(null)
   const [rejectReason, setRejectReason] = useState("")
   const [deleteTarget, setDeleteTarget] = useState<Property | null>(null)
-
-  const filtered = useMemo(
-    () =>
-      statusFilter === "all"
-        ? rows
-        : rows.filter((p) => p.status === statusFilter),
-    [rows, statusFilter],
-  )
 
   function applyUpdate(updated: Property) {
     setRows((current) => current.map((p) => (p.id === updated.id ? { ...p, ...updated } : p)))
@@ -556,26 +551,25 @@ export function AdminPropertiesTable({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
-        {STATUS_FILTERS.map((f) => (
-          <button
-            key={f.value}
-            type="button"
-            onClick={() => setStatusFilter(f.value)}
-            className={cn(
-              "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-              statusFilter === f.value
-                ? "border-brand-700 bg-brand-700 text-white"
-                : "border-border/70 bg-white text-ink-700 hover:bg-brand-50",
-            )}
-          >
-            {f.label}
-          </button>
-        ))}
-        <span className="ml-auto text-xs text-ink-500">
-          {filtered.length} of {rows.length}
-        </span>
-      </div>
+      {hideFilters ? null : (
+        <div className="flex flex-wrap items-center gap-2">
+          {STATUS_FILTERS.map((f) => (
+            <button
+              key={f.value}
+              type="button"
+              onClick={() => setFilter("status", f.value)}
+              className={cn(
+                "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
+                status === f.value
+                  ? "border-brand-700 bg-brand-700 text-white"
+                  : "border-border/70 bg-white text-ink-700 hover:bg-brand-50",
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {error ? (
         <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
@@ -586,7 +580,7 @@ export function AdminPropertiesTable({
 
       <DataTable
         columns={columns}
-        data={filtered}
+        data={rows}
         rowKey={(p) => p.id}
         emptyMessage="No listings match this filter."
       />
@@ -1954,16 +1948,14 @@ export function BuyerProfileForm({ buyer }: { buyer: Buyer | null }) {
 
 // ─── SellerPropertiesTable ─────────────────────────────────────────────────────
 
-export function SellerPropertiesTable({ properties }: { properties: Property[] }) {
-  const [statusFilter, setStatusFilter] = useState<PropertyStatus | "all">("all")
-
-  const filtered = useMemo(
-    () =>
-      statusFilter === "all"
-        ? properties
-        : properties.filter((p) => p.status === statusFilter),
-    [properties, statusFilter],
-  )
+export function SellerPropertiesTable({
+  properties,
+  status = "all",
+}: {
+  properties: Property[]
+  status?: PropertyStatus | "all"
+}) {
+  const setFilter = useUrlFilter()
 
   const columns: DataTableColumn<Property>[] = [
     {
@@ -2036,10 +2028,10 @@ export function SellerPropertiesTable({ properties }: { properties: Property[] }
           <button
             key={f.value}
             type="button"
-            onClick={() => setStatusFilter(f.value)}
+            onClick={() => setFilter("status", f.value)}
             className={cn(
               "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-              statusFilter === f.value
+              status === f.value
                 ? "border-brand-700 bg-brand-700 text-white"
                 : "border-border/70 bg-white text-ink-700 hover:bg-brand-50",
             )}
@@ -2047,13 +2039,10 @@ export function SellerPropertiesTable({ properties }: { properties: Property[] }
             {f.label}
           </button>
         ))}
-        <span className="ml-auto text-xs text-ink-500">
-          {filtered.length} of {properties.length}
-        </span>
       </div>
       <DataTable
         columns={columns}
-        data={filtered}
+        data={properties}
         rowKey={(p) => p.id}
         emptyMessage="No listings yet."
       />

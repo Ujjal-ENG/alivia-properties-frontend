@@ -3,18 +3,27 @@ export const dynamic = "force-dynamic"
 import Link from "next/link"
 import { auth } from "@/auth"
 import { getProperties } from "@/services/properties.service"
+import { DASHBOARD_PAGE_SIZE } from "@/lib/constants"
 import { DashboardPageHeader } from "@/components/dashboard/dashboard-page-header"
+import { TablePagination } from "@/components/dashboard/table-pagination"
 import { Button } from "@/components/ui/button"
 import { ROUTES } from "@/config/routes.config"
 import { SellerPropertiesTable } from "@/pages-sections/admin/admin-views"
 import { getCurrentSeller } from "@/utils/dashboard-session"
+import type { PropertyStatus } from "@/types/property.types"
 
-export default async function SellerPropertiesPage() {
+export default async function SellerPropertiesPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>
+}) {
+  const sp = await searchParams
+  const page = Math.max(1, Number(sp.page) || 1)
   const seller = await getCurrentSeller()
   const session = await auth()
-  const emptyPage = { data: [], meta: { page: 1, limit: 50, total: 0, totalPages: 0 } }
-  const properties = await getProperties(
-    { sellerId: seller.id, limit: 50 },
+  const emptyPage = { data: [], meta: { page: 1, limit: DASHBOARD_PAGE_SIZE, total: 0, totalPages: 0 } }
+  const res = await getProperties(
+    { sellerId: seller.id, page, limit: DASHBOARD_PAGE_SIZE, status: sp.status },
     session?.accessToken,
   ).catch(() => emptyPage)
 
@@ -31,7 +40,12 @@ export default async function SellerPropertiesPage() {
           </Link>
         )}
       />
-      <SellerPropertiesTable properties={properties.data} />
+      <SellerPropertiesTable
+        key={`${page}-${sp.status ?? "all"}`}
+        properties={res.data}
+        status={(sp.status as PropertyStatus | "all") ?? "all"}
+      />
+      <TablePagination meta={res.meta} />
     </div>
   )
 }
