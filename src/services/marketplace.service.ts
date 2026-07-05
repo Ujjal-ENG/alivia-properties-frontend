@@ -20,6 +20,8 @@ export type MarketplaceCategory = {
   parentSlug?: string | null
   order: number
   isActive?: boolean
+  /** Live count of products attached to this category (from listCategories). */
+  productCount?: number
   variants?: CategoryVariant[]
   attributes?: CategoryAttribute[]
 }
