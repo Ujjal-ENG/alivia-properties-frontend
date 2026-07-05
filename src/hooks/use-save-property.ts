@@ -18,14 +18,16 @@ function getSaved(): string[] {
 
 export function useSaveProperty(propertyId: string) {
   const { data: session } = useSession()
-  // Lazy init — reads localStorage once on mount (SSR-safe)
-  const [saved, setSaved] = useState(() => getSaved().includes(propertyId))
+  // Start false to match server render, then reconcile with localStorage after
+  // mount — avoids a hydration mismatch when the item is already saved.
+  const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     function sync() {
       setSaved(getSaved().includes(propertyId))
     }
 
+    sync()
     window.addEventListener("storage", sync)
     window.addEventListener(SAVED_EVENT, sync)
     return () => {
