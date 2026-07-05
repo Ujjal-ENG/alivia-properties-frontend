@@ -1266,22 +1266,16 @@ export function AdminInquiriesTable({
   // When set, the table is locked to one type (e.g. the Supplier/Investor request
   // pages) — the type filter chips are hidden and only that type is shown.
   lockedType,
+  status = "all",
+  type = "all",
 }: {
   inquiries: Inquiry[]
   basePath?: string
   lockedType?: InquiryType
+  status?: InquiryStatus | "all"
+  type?: InquiryType | "all"
 }) {
-  const [statusFilter, setStatusFilter] = useState<InquiryStatus | "all">("all")
-  const [typeFilter, setTypeFilter] = useState<InquiryType | "all">("all")
-
-  const filtered = useMemo(() => {
-    return inquiries.filter((i) => {
-      if (lockedType && i.type !== lockedType) return false
-      if (statusFilter !== "all" && i.status !== statusFilter) return false
-      if (!lockedType && typeFilter !== "all" && i.type !== typeFilter) return false
-      return true
-    })
-  }, [inquiries, statusFilter, typeFilter, lockedType])
+  const setFilter = useUrlFilter()
 
   const columns: DataTableColumn<Inquiry>[] = [
     {
@@ -1361,10 +1355,10 @@ export function AdminInquiriesTable({
           <button
             key={f.value}
             type="button"
-            onClick={() => setStatusFilter(f.value)}
+            onClick={() => setFilter("status", f.value)}
             className={cn(
               "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-              statusFilter === f.value
+              status === f.value
                 ? "border-brand-700 bg-brand-700 text-white"
                 : "border-border/70 bg-white text-ink-700 hover:bg-brand-50",
             )}
@@ -1378,10 +1372,10 @@ export function AdminInquiriesTable({
             <button
               key={f.value}
               type="button"
-              onClick={() => setTypeFilter(f.value)}
+              onClick={() => setFilter("type", f.value)}
               className={cn(
                 "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-                typeFilter === f.value
+                type === f.value
                   ? "border-ink-700 bg-ink-700 text-white"
                   : "border-border/70 bg-white text-ink-700 hover:bg-ink-50",
               )}
@@ -1389,13 +1383,10 @@ export function AdminInquiriesTable({
               {f.label}
             </button>
           ))}
-        <span className="ml-auto text-xs text-ink-500">
-          {filtered.length} of {inquiries.length}
-        </span>
       </div>
       <DataTable
         columns={columns}
-        data={filtered}
+        data={inquiries}
         rowKey={(i) => i.id}
         emptyMessage="No inquiries match this filter."
       />
@@ -1731,16 +1722,14 @@ const REPORT_STATUS_STYLES: Record<ReportStatus, string> = {
   resolved: "border-emerald-200 bg-emerald-50 text-emerald-700",
 }
 
-export function AdminReportsTable({ reports }: { reports: Report[] }) {
-  const [statusFilter, setStatusFilter] = useState<ReportStatus | "all">("all")
-
-  const filtered = useMemo(
-    () =>
-      statusFilter === "all"
-        ? reports
-        : reports.filter((r) => r.status === statusFilter),
-    [reports, statusFilter],
-  )
+export function AdminReportsTable({
+  reports,
+  status = "all",
+}: {
+  reports: Report[]
+  status?: ReportStatus | "all"
+}) {
+  const setFilter = useUrlFilter()
 
   const columns: DataTableColumn<Report>[] = [
     {
@@ -1810,10 +1799,10 @@ export function AdminReportsTable({ reports }: { reports: Report[] }) {
           <button
             key={f.value}
             type="button"
-            onClick={() => setStatusFilter(f.value)}
+            onClick={() => setFilter("status", f.value)}
             className={cn(
               "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-              statusFilter === f.value
+              status === f.value
                 ? "border-brand-700 bg-brand-700 text-white"
                 : "border-border/70 bg-white text-ink-700 hover:bg-brand-50",
             )}
@@ -1821,13 +1810,10 @@ export function AdminReportsTable({ reports }: { reports: Report[] }) {
             {f.label}
           </button>
         ))}
-        <span className="ml-auto text-xs text-ink-500">
-          {filtered.length} of {reports.length}
-        </span>
       </div>
       <DataTable
         columns={columns}
-        data={filtered}
+        data={reports}
         rowKey={(r) => r.id}
         emptyMessage="No reports match this filter."
       />
