@@ -1,6 +1,6 @@
-import type { Metadata } from "next"
-import Image from "next/image"
-import Link from "next/link"
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 import {
   ArrowRight,
   Boxes,
@@ -16,50 +16,52 @@ import {
   ShoppingCart,
   Sparkles,
   Store,
+  TrendingUp,
   Truck,
   User,
   Wrench,
   Zap,
   type LucideIcon,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { ROUTES } from "@/config/routes.config"
-import { siteConfig } from "@/config/site.config"
-import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/config/routes.config";
+import { siteConfig } from "@/config/site.config";
+import { cn } from "@/lib/utils";
 import {
   marketplaceService,
   type MarketplaceCategory,
   type ProductWithSupplier,
-} from "@/services/marketplace.service"
+} from "@/services/marketplace.service";
+import { projectsService } from "@/services/projects.service";
+import { propertiesService } from "@/services/properties.service";
+import { PropertyCard } from "@/components/properties/property-card";
+import { SiteFooter } from "@/components/layout/site-footer";
+import {
+  FlagshipProjects,
+  type FlagshipProject,
+} from "@/pages-sections/home/flagship-projects";
+import { formatPrice } from "@/utils/format-price";
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Marketplace - Alivia Properties",
   description:
     "Browse verified suppliers, source construction categories, and request quotes from one construction marketplace.",
-}
+};
 
 type MarketplacePageProps = {
-  searchParams?: Promise<Record<string, string | string[] | undefined>>
-}
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
 
 type DepartmentGroup = {
-  group: MarketplaceCategory
-  items: MarketplaceCategory[]
-}
+  group: MarketplaceCategory;
+  items: MarketplaceCategory[];
+};
 
-type FeaturedCategory = {
-  category: MarketplaceCategory
-  group: MarketplaceCategory
-  subcategoryCount: number
-}
-
-const FALLBACK_HERO_IMAGE =
-  "/marketplace-reference/hero-building.png"
-const FALLBACK_LOGO_MARK =
-  "/marketplace-reference/logo-mark.png"
+const FALLBACK_HERO_IMAGE = "/marketplace-reference/hero-building.png";
+const FALLBACK_LOGO_MARK = "/marketplace-reference/logo-mark.png";
 
 const FALLBACK_CATEGORIES: MarketplaceCategory[] = [
   {
@@ -77,7 +79,10 @@ const FALLBACK_CATEGORIES: MarketplaceCategory[] = [
     description: "2,500+ products",
     level: "CATEGORY",
     parentSlug: "materials",
-    image: { key: "cat-materials", url: "/marketplace-reference/cat-materials.png" },
+    image: {
+      key: "cat-materials",
+      url: "/marketplace-reference/cat-materials.png",
+    },
     order: 1,
   },
   {
@@ -95,7 +100,10 @@ const FALLBACK_CATEGORIES: MarketplaceCategory[] = [
     description: "1,800+ products",
     level: "CATEGORY",
     parentSlug: "equipment-tools",
-    image: { key: "cat-equipment", url: "/marketplace-reference/cat-equipment.png" },
+    image: {
+      key: "cat-equipment",
+      url: "/marketplace-reference/cat-equipment.png",
+    },
     order: 2,
   },
   {
@@ -131,7 +139,10 @@ const FALLBACK_CATEGORIES: MarketplaceCategory[] = [
     description: "1,200+ products",
     level: "CATEGORY",
     parentSlug: "electrical-lighting",
-    image: { key: "cat-electrical", url: "/marketplace-reference/cat-electrical.png" },
+    image: {
+      key: "cat-electrical",
+      url: "/marketplace-reference/cat-electrical.png",
+    },
     order: 4,
   },
   {
@@ -149,14 +160,18 @@ const FALLBACK_CATEGORIES: MarketplaceCategory[] = [
     description: "1,100+ products",
     level: "CATEGORY",
     parentSlug: "plumbing-hvac",
-    image: { key: "cat-plumbing", url: "/marketplace-reference/cat-plumbing.png" },
+    image: {
+      key: "cat-plumbing",
+      url: "/marketplace-reference/cat-plumbing.png",
+    },
     order: 5,
   },
   {
     id: "dept-interior",
     slug: "interior-finishing",
     name: "Interior & Finishing",
-    description: "Tiles, paints, doors, sanitary, kitchen, and finishing items.",
+    description:
+      "Tiles, paints, doors, sanitary, kitchen, and finishing items.",
     level: "DEPARTMENT",
     order: 6,
   },
@@ -167,7 +182,10 @@ const FALLBACK_CATEGORIES: MarketplaceCategory[] = [
     description: "1,300+ products",
     level: "CATEGORY",
     parentSlug: "interior-finishing",
-    image: { key: "cat-interior", url: "/marketplace-reference/cat-interior.png" },
+    image: {
+      key: "cat-interior",
+      url: "/marketplace-reference/cat-interior.png",
+    },
     order: 6,
   },
   {
@@ -185,7 +203,10 @@ const FALLBACK_CATEGORIES: MarketplaceCategory[] = [
     description: "900+ services",
     level: "CATEGORY",
     parentSlug: "services",
-    image: { key: "cat-services", url: "/marketplace-reference/cat-services.png" },
+    image: {
+      key: "cat-services",
+      url: "/marketplace-reference/cat-services.png",
+    },
     order: 7,
   },
   {
@@ -206,7 +227,7 @@ const FALLBACK_CATEGORIES: MarketplaceCategory[] = [
     image: { key: "cat-deals", url: "/marketplace-reference/cat-deals.png" },
     order: 8,
   },
-]
+];
 
 const FALLBACK_PRODUCTS: ProductWithSupplier[] = [
   {
@@ -257,18 +278,33 @@ const FALLBACK_PRODUCTS: ProductWithSupplier[] = [
     description: "Cement for structural work.",
     inStock: true,
   },
-]
+];
 
 const DEPARTMENT_ICON_RULES: Array<{ keywords: string[]; icon: LucideIcon }> = [
-  { keywords: ["material", "cement", "steel", "tile", "block", "brick"], icon: Boxes },
-  { keywords: ["equipment", "tool", "machine", "hardware", "lift"], icon: Wrench },
+  {
+    keywords: ["material", "cement", "steel", "tile", "block", "brick"],
+    icon: Boxes,
+  },
+  {
+    keywords: ["equipment", "tool", "machine", "hardware", "lift"],
+    icon: Wrench,
+  },
   { keywords: ["safety", "ppe", "fire", "security"], icon: ShieldCheck },
-  { keywords: ["electrical", "light", "power", "cable", "solar"], icon: Zap },
+  {
+    keywords: ["electric", "electrical", "light", "power", "cable", "solar"],
+    icon: Zap,
+  },
   { keywords: ["plumbing", "hvac", "sanitary", "water", "pipe"], icon: Truck },
-  { keywords: ["interior", "finish", "paint", "door", "kitchen", "furniture"], icon: Store },
-  { keywords: ["service", "contractor", "repair", "maintenance"], icon: Headphones },
+  {
+    keywords: ["interior", "finish", "paint", "door", "kitchen", "furniture"],
+    icon: Store,
+  },
+  {
+    keywords: ["service", "contractor", "repair", "maintenance"],
+    icon: Headphones,
+  },
   { keywords: ["deal", "offer", "discount"], icon: Sparkles },
-]
+];
 
 const BENEFITS = [
   {
@@ -296,36 +332,36 @@ const BENEFITS = [
     title: "Secure Payments",
     body: "100% secure payments",
   },
-] as const
+] as const;
 
 function getParam(
   params: Record<string, string | string[] | undefined> | undefined,
   key: string,
 ) {
-  const value = params?.[key]
+  const value = params?.[key];
 
-  if (typeof value === "string") return value
-  if (Array.isArray(value)) return value[0] ?? ""
-  return ""
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) return value[0] ?? "";
+  return "";
 }
 
 function levelOf(category: MarketplaceCategory) {
-  if (category.level) return category.level
-  if (!category.parentSlug) return "DEPARTMENT"
-  return "CATEGORY"
+  if (category.level) return category.level;
+  if (!category.parentSlug) return "DEPARTMENT";
+  return "CATEGORY";
 }
 
 function imageForCategory(category: MarketplaceCategory) {
-  return category.image?.url ?? category.iconUrl ?? null
+  return category.image?.url ?? category.iconUrl ?? null;
 }
 
 function iconForKeyword(label: string) {
-  const lower = label.toLowerCase()
+  const lower = label.toLowerCase();
   const rule = DEPARTMENT_ICON_RULES.find(({ keywords }) =>
     keywords.some((keyword) => lower.includes(keyword)),
-  )
+  );
 
-  return rule?.icon ?? Package
+  return rule?.icon ?? Package;
 }
 
 function categoryMatches(
@@ -334,7 +370,7 @@ function categoryMatches(
   parentName: string | undefined,
   subcategoryNames: string[],
 ) {
-  if (!query) return true
+  if (!query) return true;
 
   const haystack = [
     category.name,
@@ -343,169 +379,170 @@ function categoryMatches(
     subcategoryNames.join(" "),
   ]
     .join(" ")
-    .toLowerCase()
+    .toLowerCase();
 
-  return haystack.includes(query)
+  return haystack.includes(query);
 }
 
 function formatProductPrice(product: ProductWithSupplier) {
-  const value = Number.isFinite(product.price) ? Math.round(product.price) : 0
-  const unit = product.unit?.trim() ? ` / ${product.unit}` : ""
-  return `৳${value.toLocaleString("en-BD")}${unit}`
+  const value = Number.isFinite(product.price) ? Math.round(product.price) : 0;
+  const unit = product.unit?.trim() ? ` / ${product.unit}` : "";
+  return `৳${value.toLocaleString("en-BD")}${unit}`;
 }
 
 function quoteHrefForProduct(product: ProductWithSupplier) {
   const params = new URLSearchParams({
     productId: product.id,
     productSlug: product.slug,
-  })
+  });
 
   if (product.supplier?.slug) {
-    params.set("supplierSlug", product.supplier.slug)
+    params.set("supplierSlug", product.supplier.slug);
   }
 
   if (product.category?.slug) {
-    params.set("categorySlug", product.category.slug)
+    params.set("categorySlug", product.category.slug);
   }
 
-  return `${ROUTES.MARKETPLACE_QUOTE}?${params.toString()}`
+  return `${ROUTES.MARKETPLACE_QUOTE}?${params.toString()}`;
 }
 
 export default async function MarketplacePage({
   searchParams,
 }: MarketplacePageProps) {
-  const params = await searchParams
-  const initialSearch = getParam(params, "search")
-  const selectedDepartment = getParam(params, "department")
-  const query = initialSearch.trim().toLowerCase()
+  const params = await searchParams;
+  const initialSearch = getParam(params, "search");
+  const selectedDepartment = getParam(params, "department");
+  const query = initialSearch.trim().toLowerCase();
 
-  const [categoriesRes, suppliersRes, productsRes] = await Promise.allSettled([
-    marketplaceService.listCategories(),
-    marketplaceService.listSuppliers({ limit: 6 }),
-    marketplaceService.listProducts({ limit: 4 }),
-  ])
+  const [categoriesRes, suppliersRes, productsRes, projectsRes, propertiesRes] =
+    await Promise.allSettled([
+      marketplaceService.listCategories(),
+      marketplaceService.listSuppliers({ limit: 6 }),
+      marketplaceService.listProducts({ limit: 4 }),
+      projectsService.list({ limit: 6 }),
+      propertiesService.list({ limit: 4 }),
+    ]);
+
+  const flagship: FlagshipProject[] = (
+    projectsRes.status === "fulfilled" ? projectsRes.value.data : []
+  ).map((p) => ({
+    slug: p.slug,
+    name: p.name,
+    location: p.location,
+    status: p.status,
+    price:
+      p.priceFrom && p.priceFrom > 0 ? formatPrice(p.priceFrom, true) : null,
+    units: p.totalUnits ? `${p.totalUnits} units` : null,
+    cover: p.coverImage ?? p.coverImageUrl ?? p.galleryImages?.[0] ?? null,
+  }));
+
+  const properties =
+    propertiesRes.status === "fulfilled" ? propertiesRes.value.data : [];
 
   const loadedCategories =
-    categoriesRes.status === "fulfilled" ? categoriesRes.value : []
+    categoriesRes.status === "fulfilled" ? categoriesRes.value : [];
   const loadedProducts =
-    productsRes.status === "fulfilled" ? productsRes.value.data : []
-  const categories = loadedCategories.length > 0 ? loadedCategories : FALLBACK_CATEGORIES
-  const products = loadedProducts.length > 0 ? loadedProducts : FALLBACK_PRODUCTS
+    productsRes.status === "fulfilled" ? productsRes.value.data : [];
+  const categories =
+    loadedCategories.length > 0 ? loadedCategories : FALLBACK_CATEGORIES;
+  const products =
+    loadedProducts.length > 0 ? loadedProducts : FALLBACK_PRODUCTS;
 
   const supplierTotal =
     suppliersRes.status === "fulfilled" && suppliersRes.value.meta.total > 0
       ? suppliersRes.value.meta.total
-      : 5000
+      : 5000;
   const productTotal =
     productsRes.status === "fulfilled" && productsRes.value.meta.total > 0
       ? productsRes.value.meta.total
-      : 25000
+      : 25000;
 
-  const parentNameBySlug = new Map(categories.map((category) => [category.slug, category.name]))
+  const parentNameBySlug = new Map(
+    categories.map((category) => [category.slug, category.name]),
+  );
 
   const groups = categories
     .filter((category) => levelOf(category) === "DEPARTMENT")
-    .sort((a, b) => a.order - b.order)
+    .sort((a, b) => a.order - b.order);
 
   const childrenByGroup = categories
     .filter((category) => levelOf(category) === "CATEGORY")
     .reduce<Record<string, MarketplaceCategory[]>>((acc, category) => {
-      const key = category.parentSlug
-      if (!key) return acc
-      ;(acc[key] ??= []).push(category)
-      return acc
-    }, {})
+      const key = category.parentSlug;
+      if (!key) return acc;
+      (acc[key] ??= []).push(category);
+      return acc;
+    }, {});
 
   const subcategoriesByCategory = categories
     .filter((category) => levelOf(category) === "SUBCATEGORY")
     .reduce<Record<string, MarketplaceCategory[]>>((acc, category) => {
-      const key = category.parentSlug
-      if (!key) return acc
-      ;(acc[key] ??= []).push(category)
-      return acc
-    }, {})
+      const key = category.parentSlug;
+      if (!key) return acc;
+      (acc[key] ??= []).push(category);
+      return acc;
+    }, {});
 
-  Object.values(childrenByGroup).forEach((items) => items.sort((a, b) => a.order - b.order))
-  Object.values(subcategoriesByCategory).forEach((items) => items.sort((a, b) => a.order - b.order))
+  Object.values(childrenByGroup).forEach((items) =>
+    items.sort((a, b) => a.order - b.order),
+  );
+  Object.values(subcategoriesByCategory).forEach((items) =>
+    items.sort((a, b) => a.order - b.order),
+  );
 
   const visibleGroups: DepartmentGroup[] = groups
     .map((group) => {
       const items = (childrenByGroup[group.slug] ?? []).filter((category) => {
-        if (selectedDepartment && group.slug !== selectedDepartment) return false
+        if (selectedDepartment && group.slug !== selectedDepartment)
+          return false;
 
-        const subcategoryNames = (subcategoriesByCategory[category.slug] ?? []).map(
-          (item) => item.name,
-        )
+        const subcategoryNames = (
+          subcategoriesByCategory[category.slug] ?? []
+        ).map((item) => item.name);
 
         return categoryMatches(
           category,
           query,
           parentNameBySlug.get(category.parentSlug ?? ""),
           subcategoryNames,
-        )
-      })
+        );
+      });
 
-      return { group, items }
+      return { group, items };
     })
-    .filter(({ items }) => items.length > 0)
+    .filter(({ items }) => items.length > 0);
 
-  const featuredCategories: FeaturedCategory[] = visibleGroups
-    .flatMap(({ group, items }) =>
-      items.map((category) => ({
-        category,
-        group,
-        subcategoryCount: subcategoriesByCategory[category.slug]?.length ?? 0,
-      })),
-    )
-    .slice(0, 8)
-
-  const heroImage = FALLBACK_HERO_IMAGE
+  const heroImage = FALLBACK_HERO_IMAGE;
 
   const stats = [
     { icon: Package, label: "Products", value: productTotal },
     { icon: User, label: "Trusted Sellers", value: supplierTotal },
     { icon: Boxes, label: "Projects Completed", value: 12000 },
     { icon: Truck, label: "On-time Delivery", value: 98, suffix: "%" },
-  ]
+  ];
 
-  const clearingSearch = !query && !selectedDepartment
+  const clearingSearch = !query && !selectedDepartment;
 
   return (
+    <>
     <main id="main-content" className="bg-ink-50 text-ink-900">
       <section className="bg-brand-950 text-white">
-        <div className="container-page !max-w-[1492px] flex h-9 flex-wrap items-center justify-between gap-3 text-xs font-semibold">
-          <div className="flex flex-wrap items-center gap-3 text-brand-50/95">
-            <Link
-              href="#contractors"
-              className="inline-flex items-center gap-2 rounded-full px-2 transition-colors hover:bg-white/10"
-            >
-              <ShieldCheck aria-hidden="true" className="size-3.5 text-gold-400" />
-              For Contractors
-            </Link>
-            <span className="hidden h-3 w-px bg-white/20 sm:block" />
-            <Link
-              href="#suppliers"
-              className="inline-flex items-center gap-2 rounded-full px-2 transition-colors hover:bg-white/10"
-            >
-              <Truck aria-hidden="true" className="size-3.5 text-gold-400" />
-              For Suppliers
-            </Link>
-            <span className="hidden h-3 w-px bg-white/20 sm:block" />
-            <Link
-              href="#project-solutions"
-              className="inline-flex items-center gap-2 rounded-full px-2 transition-colors hover:bg-white/10"
-            >
-              <Store aria-hidden="true" className="size-3.5 text-gold-400" />
-              For Businesses
-            </Link>
-          </div>
+        <div className="container-page max-w-373! flex h-9 flex-wrap items-center justify-end gap-3 text-xs font-semibold">
           <div className="flex flex-wrap items-center gap-4 text-brand-100/90">
             <Link
               href={ROUTES.BECOME_SUPPLIER}
               className="inline-flex items-center gap-2 rounded-full px-2 transition-colors hover:bg-white/10 hover:text-white"
             >
-              <ShoppingCart aria-hidden="true" className="size-3.5" />
-              Become a Seller
+              <Store aria-hidden="true" className="size-3.5" />
+              Be a Supplier
+            </Link>
+            <Link
+              href={ROUTES.BECOME_INVESTOR}
+              className="inline-flex items-center gap-2 rounded-full px-2 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <TrendingUp aria-hidden="true" className="size-3.5" />
+              Be an Investor
             </Link>
             <Link
               href={ROUTES.BUYER_MARKETPLACE_QUOTES}
@@ -513,16 +550,19 @@ export default async function MarketplacePage({
             >
               Track Order
             </Link>
-            <a href={`tel:${siteConfig.contact.phoneRaw}`} className="rounded-full px-2 transition-colors hover:bg-white/10 hover:text-white">
+            <a
+              href={`tel:${siteConfig.contact.phoneRaw}`}
+              className="rounded-full px-2 transition-colors hover:bg-white/10 hover:text-white"
+            >
               Help & Support
             </a>
           </div>
         </div>
       </section>
 
-      <section className="sticky top-0 z-30 border-b border-border/60 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/88">
-        <div className="container-page !max-w-[1492px] py-2.5">
-          <div className="grid gap-4 xl:grid-cols-[14.1rem_11.5rem_38.25rem_auto] xl:items-center">
+      <section className="sticky top-0 z-30 border-b border-border/60 bg-white/95 backdrop-blur supports-backdrop-filter:bg-white/88">
+        <div className="container-page max-w-373! py-2.5">
+          <div className="grid gap-4 xl:grid-cols-[auto_11.5rem_minmax(0,1fr)_auto] xl:items-center">
             <Link href={ROUTES.MARKETPLACE} className="flex items-center gap-3">
               <span className="relative size-11 shrink-0 overflow-hidden">
                 <Image
@@ -536,7 +576,7 @@ export default async function MarketplacePage({
               </span>
               <span className="min-w-0">
                 <span className="block truncate text-3xl font-bold text-brand-950">
-                  BuildHub
+                  {siteConfig.name}
                 </span>
                 <span className="block text-xs text-ink-500">
                   Construction marketplace
@@ -583,13 +623,13 @@ export default async function MarketplacePage({
             </div>
           </div>
 
-          {groups.length > 0 ? (
+          {visibleGroups.length > 0 ? (
             <nav
               aria-label="Marketplace departments"
               className="mt-2 flex justify-between gap-2 overflow-x-auto border-t border-border/60 pt-2"
             >
-              {groups.slice(0, 8).map((group) => {
-                const Icon = iconForKeyword(group.name)
+              {visibleGroups.slice(0, 8).map(({ group }) => {
+                const Icon = iconForKeyword(group.name);
                 return (
                   <Link
                     key={group.slug}
@@ -599,159 +639,244 @@ export default async function MarketplacePage({
                     <Icon aria-hidden="true" className="size-5 text-ink-800" />
                     {group.name}
                   </Link>
-                )
+                );
               })}
             </nav>
           ) : null}
         </div>
       </section>
 
-      <section className="container-page !max-w-[1492px] pb-4 pt-0">
-        <div className="overflow-hidden rounded-2xl bg-brand-950 text-white shadow-[0_28px_70px_rgba(10,37,31,0.18)]">
-          <div className="grid min-h-[374px] lg:grid-cols-[minmax(0,0.73fr)_minmax(0,1fr)]">
-            <div className="relative z-10 p-5 sm:p-6 lg:pb-0">
-              <p className="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.05em] text-gold-400">
-                <span aria-hidden="true" className="h-0.5 w-3 bg-gold-400" />
-                One marketplace. Endless possibilities.
-              </p>
-              <h1 className="mt-3 max-w-xl text-balance font-sans text-5xl font-extrabold leading-[0.98] text-white sm:text-[3.55rem]">
-                Build More.
-                <br />
-                <span className="text-gold-400">Spend Less.</span>
-              </h1>
-              <p className="mt-3 max-w-lg text-base leading-6 text-white/88 sm:text-lg">
-                Quality products, competitive prices, and trusted professionals for every
-                construction need.
-              </p>
+      {clearingSearch && (
+        <>
+          <section className="container-page max-w-373! pb-4 pt-0">
+            <div className="overflow-hidden rounded-2xl bg-brand-950 text-white shadow-[0_28px_70px_rgba(10,37,31,0.18)]">
+              <div className="grid min-h-125 lg:grid-cols-[minmax(0,0.73fr)_minmax(0,1fr)]">
+                <div className="relative z-10 p-5 sm:p-6 lg:pb-0">
+                  <p className="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-gold-400">
+                    <span
+                      aria-hidden="true"
+                      className="h-0.5 w-3 bg-gold-400"
+                    />
+                    One marketplace. Endless possibilities.
+                  </p>
+                  <h1 className="mt-3 max-w-xl text-balance font-sans text-5xl font-extrabold leading-[0.98] text-white sm:text-[3.55rem]">
+                    Build More.
+                    <br />
+                    <span className="text-gold-400">Spend Less.</span>
+                  </h1>
+                  <p className="mt-3 max-w-lg text-base leading-6 text-white/88 sm:text-lg">
+                    Quality products, competitive prices, and trusted
+                    professionals for every construction need.
+                  </p>
 
-              <MarketplaceSearchForm
-                departments={groups}
-                initialSearch={initialSearch}
-                selectedDepartment={selectedDepartment}
-                className="mt-3 max-w-xl"
-              />
+                  <MarketplaceSearchForm
+                    departments={groups}
+                    initialSearch={initialSearch}
+                    selectedDepartment={selectedDepartment}
+                    className="mt-3 max-w-xl"
+                  />
 
-              <dl className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {stats.map(({ icon: Icon, label, value, suffix }) => (
-                  <div
-                    key={label}
-                    className="flex items-center gap-2.5 border-white/18 xl:border-r xl:pr-4 last:border-r-0"
-                  >
-                    <Icon aria-hidden="true" className="size-6 shrink-0 text-white" />
-                    <div>
-                      <dd className="text-[22px] font-extrabold leading-6 text-white">
-                        {value >= 1000 ? `${Math.round(value / 1000)}K` : value}
-                        {suffix ?? "+"}
-                      </dd>
-                      <dt className="text-[11px] font-semibold leading-4 text-white/86">{label}</dt>
-                    </div>
-                  </div>
-                ))}
-              </dl>
-            </div>
-
-            <div className="relative flex min-h-[360px] items-start justify-end p-5 lg:min-h-full lg:px-6 lg:pb-3 lg:pt-6">
-              <Image
-                src={heroImage}
-                alt="Construction sourcing showcase"
-                fill
-                unoptimized
-                loading="eager"
-                sizes="(max-width: 1024px) 100vw, 55vw"
-                className="object-cover"
-              />
-              <div
-                aria-hidden="true"
-                className="absolute inset-0 bg-linear-to-r from-brand-950 via-brand-950/20 to-brand-950/12"
-              />
-              <div
-                aria-hidden="true"
-                className="absolute inset-0 bg-linear-to-t from-brand-950/20 via-transparent to-brand-950/10"
-              />
-
-              <aside className="relative z-10 w-full max-w-[310px] rounded-xl bg-white p-5 text-ink-900 shadow-[0_24px_60px_rgba(15,23,42,0.18)]">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-base font-bold text-ink-900">Popular Right Now</p>
-                  </div>
-                </div>
-
-                <div className="mt-4 divide-y divide-ink-200">
-                  {products.length > 0 ? (
-                    products.map((product) => (
-                      <article
-                        key={product.id}
-                        className="flex items-center gap-3 py-2"
+                  <dl className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    {stats.map(({ icon: Icon, label, value, suffix }) => (
+                      <div
+                        key={label}
+                        className="flex items-center gap-2.5 border-white/18 xl:border-r xl:pr-4 last:border-r-0"
                       >
-                        <Link
-                          href={ROUTES.MARKETPLACE_PRODUCT(product.slug)}
-                          className="flex min-w-0 flex-1 items-center gap-3"
-                        >
-                          <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded bg-ink-100">
-                            <Image
-                              src={product.image}
-                              alt={product.name}
-                              fill
-                              unoptimized
-                              sizes="64px"
-                              className="object-cover"
-                            />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-bold text-ink-900">
-                              {product.name}
-                            </p>
-                            <p className="mt-1 text-xs font-medium text-ink-600">
-                              {formatProductPrice(product)}
-                            </p>
-                          </div>
-                        </Link>
-
-                        <Link
-                          href={quoteHrefForProduct(product)}
-                          aria-label={`Request a quote for ${product.name}`}
-                          className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-800 text-white transition-colors hover:bg-brand-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-                        >
-                          <Plus aria-hidden="true" className="size-4" />
-                        </Link>
-                      </article>
-                    ))
-                  ) : (
-                    <div className="rounded-[1.35rem] border border-dashed border-ink-200 px-4 py-6 text-sm text-ink-500">
-                      Product cards will appear here as suppliers publish catalogue items.
-                    </div>
-                  )}
+                        <Icon
+                          aria-hidden="true"
+                          className="size-6 shrink-0 text-white"
+                        />
+                        <div>
+                          <dd className="text-[22px] font-extrabold leading-6 text-white">
+                            {value >= 1000
+                              ? `${Math.round(value / 1000)}K`
+                              : value}
+                            {suffix ?? "+"}
+                          </dd>
+                          <dt className="text-[11px] font-semibold leading-4 text-white/86">
+                            {label}
+                          </dt>
+                        </div>
+                      </div>
+                    ))}
+                  </dl>
                 </div>
-              </aside>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      <section className="container-page !max-w-[1492px] pb-0">
-        <div className="grid gap-4 rounded-xl border border-border/70 bg-white px-6 py-3 shadow-sm sm:grid-cols-2 xl:grid-cols-5">
-          {BENEFITS.map(({ icon: Icon, title, body }) => (
-            <div
-              key={title}
-              className="flex items-center gap-3 rounded-xl border border-transparent xl:border-r xl:border-border/70 xl:pr-5 last:border-r-0"
-            >
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700">
-                <Icon aria-hidden="true" className="size-5" />
-              </span>
-              <div>
-                <p className="text-sm font-semibold text-ink-900">{title}</p>
-                <p className="mt-0.5 line-clamp-1 text-xs leading-5 text-ink-500">{body}</p>
+                <div className="relative flex min-h-110 items-start justify-end p-5 lg:min-h-full lg:px-6 lg:pb-3 lg:pt-6">
+                  <Image
+                    src={heroImage}
+                    alt="Construction sourcing showcase"
+                    fill
+                    unoptimized
+                    loading="eager"
+                    sizes="(max-width: 1024px) 100vw, 55vw"
+                    className="object-cover"
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-linear-to-r from-brand-950 via-brand-950/20 to-brand-950/12"
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-linear-to-t from-brand-950/20 via-transparent to-brand-950/10"
+                  />
+
+                  <aside className="relative z-10 w-full max-w-77.5 rounded-xl bg-white p-5 text-ink-900 shadow-[0_24px_60px_rgba(15,23,42,0.18)]">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-base font-bold text-ink-900">
+                          Popular Right Now
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 divide-y divide-ink-200">
+                      {products.length > 0 ? (
+                        products.map((product) => {
+                          const ProductIcon = iconForKeyword(
+                            product.category?.name ?? product.name,
+                          );
+                          return (
+                          <article
+                            key={product.id}
+                            className="flex items-center gap-3 py-2"
+                          >
+                            <Link
+                              href={ROUTES.MARKETPLACE_PRODUCT(product.slug)}
+                              className="flex min-w-0 flex-1 items-center gap-3"
+                            >
+                              <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded bg-ink-100">
+                                {product.image ? (
+                                  <Image
+                                    src={product.image}
+                                    alt={product.name}
+                                    fill
+                                    unoptimized
+                                    sizes="64px"
+                                    className="object-cover"
+                                  />
+                                ) : (
+                                  <span className="flex size-full items-center justify-center bg-brand-50 text-brand-700">
+                                    <ProductIcon
+                                      aria-hidden="true"
+                                      className="size-5"
+                                    />
+                                  </span>
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-bold text-ink-900">
+                                  {product.name}
+                                </p>
+                                <p className="mt-1 text-xs font-medium text-ink-600">
+                                  {formatProductPrice(product)}
+                                </p>
+                              </div>
+                            </Link>
+
+                            <Link
+                              href={quoteHrefForProduct(product)}
+                              aria-label={`Request a quote for ${product.name}`}
+                              className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-800 text-white transition-colors hover:bg-brand-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                            >
+                              <Plus aria-hidden="true" className="size-4" />
+                            </Link>
+                          </article>
+                          );
+                        })
+                      ) : (
+                        <div className="rounded-[1.35rem] border border-dashed border-ink-200 px-4 py-6 text-sm text-ink-500">
+                          Product cards will appear here as suppliers publish
+                          catalogue items.
+                        </div>
+                      )}
+                    </div>
+                  </aside>
+                </div>
               </div>
             </div>
-          ))}
-        </div>
-      </section>
+          </section>
 
-      <section id="shop-by-category" className="container-page !max-w-[1492px] pb-4 pt-1">
+          <section className="container-page max-w-373! pb-0">
+            <div className="grid gap-4 rounded-xl border border-border/70 bg-white px-6 py-3 shadow-sm sm:grid-cols-2 xl:grid-cols-5">
+              {BENEFITS.map(({ icon: Icon, title, body }) => (
+                <div
+                  key={title}
+                  className="flex items-center gap-3 rounded-xl border border-transparent xl:border-r xl:border-border/70 xl:pr-5 last:border-r-0"
+                >
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700">
+                    <Icon aria-hidden="true" className="size-5" />
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-ink-900">
+                      {title}
+                    </p>
+                    <p className="mt-0.5 line-clamp-1 text-xs leading-5 text-ink-500">
+                      {body}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Flagship projects */}
+          <FlagshipProjects projects={flagship} />
+
+          {/* Verified property listings */}
+          <section className="container-page section-y-sm">
+            <header className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-eyebrow mb-2">Marketplace</p>
+                <h2 className="font-heading text-3xl font-bold uppercase tracking-tight text-brand-950 sm:text-4xl">
+                  Verified property listings.
+                </h2>
+                <p className="mt-3 max-w-2xl text-sm text-ink-600">
+                  Apartments, plots, and commercial spaces from verified sellers
+                  — clear pricing, real documents.
+                </p>
+              </div>
+              <Link href={ROUTES.PROPERTIES}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 rounded-full"
+                >
+                  Browse properties
+                  <ArrowRight aria-hidden="true" className="size-4" />
+                </Button>
+              </Link>
+            </header>
+
+            {properties.length === 0 ? (
+              <div className="rounded-3xl border border-dashed border-border/70 bg-white p-10 text-center text-sm text-ink-600">
+                No properties listed yet.
+              </div>
+            ) : (
+              <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                {properties.map((property) => (
+                  <li key={property.slug}>
+                    <PropertyCard property={property} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </>
+      )}
+
+      <section
+        id="shop-by-category"
+        className="container-page max-w-373! pb-4 pt-1"
+      >
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 className="font-sans text-2xl font-extrabold leading-7 text-ink-900">
-              Shop by Category
+              {clearingSearch
+                ? "Shop by Category"
+                : initialSearch
+                  ? `Results for “${initialSearch}”`
+                  : "Search results"}
             </h2>
             <p className="sr-only">
               {query || selectedDepartment
@@ -773,80 +898,117 @@ export default async function MarketplacePage({
               href={ROUTES.MARKETPLACE_REQUEST}
               className="inline-flex min-h-11 items-center gap-2 rounded-full text-sm font-semibold text-brand-700 transition-colors hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
             >
-              View all categories
+              Can&apos;t find it? Request a quote
               <ArrowRight aria-hidden="true" className="size-4" />
             </Link>
           </div>
         </div>
 
-        {featuredCategories.length > 0 ? (
-          <div className="mt-2 grid gap-5 sm:grid-cols-2 md:grid-cols-4 xl:grid-cols-8">
-            {featuredCategories.map(({ category, group, subcategoryCount }) => {
-              const Icon = iconForKeyword(`${group.name} ${category.name}`)
-              const productCount = category.description || (
-                subcategoryCount > 0
-                  ? `${subcategoryCount * 100}+ products`
-                  : "500+ products"
-              )
+        {visibleGroups.length > 0 ? (
+          <div className="mt-4 space-y-10">
+            {visibleGroups.map(({ group, items }) => {
+              const GroupIcon = iconForKeyword(group.name);
 
               return (
-                <Link
-                  key={category.slug}
-                  href={ROUTES.MARKETPLACE_CATEGORY(category.slug)}
-                  className="group overflow-hidden rounded-lg border border-border/70 bg-white shadow-sm transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-1 hover:border-brand-200 hover:shadow-[0_16px_40px_rgba(12,48,39,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                <div
+                  key={group.slug}
+                  id={`department-${group.slug}`}
+                  aria-label={group.name}
+                  className="scroll-mt-40"
                 >
-                  <div className="relative aspect-[1.65] overflow-hidden bg-ink-100">
-                    <Image
-                      src={imageForCategory(category) ?? heroImage}
-                      alt={category.name}
-                      fill
-                      unoptimized
-                      sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <div
-                      aria-hidden="true"
-                      className="absolute inset-0 bg-linear-to-t from-brand-950/55 via-transparent to-transparent"
-                    />
-                    <span className="absolute -bottom-4 left-4 flex size-10 items-center justify-center rounded-full border border-brand-100 bg-brand-50 text-brand-800 shadow-sm">
-                      <Icon aria-hidden="true" className="size-5" />
+                  <div className="mb-4 flex items-center gap-3">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-800">
+                      <GroupIcon aria-hidden="true" className="size-5" />
                     </span>
-                  </div>
-
-                  <div className="px-3 pb-1.5 pt-4">
-                    <div className="flex items-end justify-between gap-2">
-                      <div>
-                        <p className="line-clamp-1 text-sm font-extrabold text-ink-900">
-                          {category.name}
+                    <div className="min-w-0">
+                      <h3 className="font-sans text-xl font-extrabold leading-6 text-ink-900">
+                        {group.name}
+                      </h3>
+                      {group.description ? (
+                        <p className="line-clamp-1 text-sm text-ink-600">
+                          {group.description}
                         </p>
-                        <p className="mt-1 text-xs font-medium text-ink-600">
-                          {productCount}
-                        </p>
-                      </div>
-                      <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-800 text-white">
-                        <ArrowRight aria-hidden="true" className="size-3.5" />
-                      </span>
+                      ) : null}
                     </div>
                   </div>
-                </Link>
-              )
+
+                  <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+                    {items.map((category) => {
+                      const count = category.productCount ?? 0;
+                      const productLabel =
+                        count > 0
+                          ? `${count} ${count === 1 ? "product" : "products"}`
+                          : category.description || "Browse category";
+
+                      return (
+                        <Link
+                          key={category.slug}
+                          href={ROUTES.MARKETPLACE_CATEGORY(category.slug)}
+                          className="group flex flex-col overflow-hidden rounded-lg border border-border/70 bg-white shadow-sm transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-1 hover:border-brand-200 hover:shadow-[0_16px_40px_rgba(12,48,39,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                        >
+                          <div className="relative aspect-[1.65] overflow-hidden bg-ink-100">
+                            <Image
+                              src={imageForCategory(category) ?? heroImage}
+                              alt={category.name}
+                              fill
+                              unoptimized
+                              sizes="(max-width: 640px) 50vw, (max-width: 1280px) 25vw, 16vw"
+                              className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            />
+                            <div
+                              aria-hidden="true"
+                              className="absolute inset-0 bg-linear-to-t from-brand-950/45 via-transparent to-transparent"
+                            />
+                          </div>
+
+                          <div className="flex flex-1 flex-col px-3 pb-3 pt-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="line-clamp-2 text-sm font-extrabold text-ink-900 group-hover:text-brand-800">
+                                {category.name}
+                              </p>
+                              <span className="mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-800 text-white transition-colors group-hover:bg-brand-950">
+                                <ArrowRight
+                                  aria-hidden="true"
+                                  className="size-3.5"
+                                />
+                              </span>
+                            </div>
+                            <p className="mt-1 line-clamp-2 text-xs font-medium text-ink-600">
+                              {productLabel}
+                            </p>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
             })}
           </div>
         ) : (
           <div className="mt-6 rounded-[1.5rem] border border-dashed border-border bg-white px-6 py-14 text-center">
-            <p className="text-lg font-semibold text-ink-900">No category match yet.</p>
+            <p className="text-lg font-semibold text-ink-900">
+              No category match yet.
+            </p>
             <p className="mt-2 text-sm text-ink-500">
-              Try another keyword, clear filters, or open the quote form and let our desk route
-              the request.
+              Try another keyword, clear filters, or open the quote form and let
+              our desk route the request.
             </p>
             <div className="mt-5 flex flex-wrap justify-center gap-3">
               <Link href={ROUTES.MARKETPLACE}>
-                <Button variant="outline" size="lg" className="rounded-full px-5">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="rounded-full px-5"
+                >
                   Clear filters
                 </Button>
               </Link>
               <Link href={ROUTES.MARKETPLACE_REQUEST}>
-                <Button size="lg" className="rounded-full bg-brand-950 px-5 text-white hover:bg-brand-900">
+                <Button
+                  size="lg"
+                  className="rounded-full bg-brand-950 px-5 text-white hover:bg-brand-900"
+                >
                   Request a Quote
                 </Button>
               </Link>
@@ -855,11 +1017,11 @@ export default async function MarketplacePage({
         )}
       </section>
 
-      <section className="container-page !max-w-[1492px] pb-8">
-        <div className="grid min-h-[134px] overflow-hidden rounded-xl border border-gold-100 bg-linear-to-r from-gold-50 via-white to-gold-50 shadow-sm lg:grid-cols-[minmax(0,38.75rem)_1fr_1fr_1fr]">
+      <section className="container-page max-w-373! pb-8">
+        <div className="grid min-h-33.5 overflow-hidden rounded-xl border border-gold-100 bg-linear-to-r from-gold-50 via-white to-gold-50 shadow-sm lg:grid-cols-[minmax(0,38.75rem)_1fr_1fr_1fr]">
           <article
             id="contractors"
-            className="grid min-h-[134px] md:grid-cols-[minmax(0,1fr)_17rem]"
+            className="grid min-h-33.5 md:grid-cols-[minmax(0,1fr)_17rem]"
           >
             <div className="flex items-center gap-4 px-11 py-5">
               <span className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-brand-900 text-gold-400">
@@ -884,7 +1046,7 @@ export default async function MarketplacePage({
               </div>
             </div>
 
-            <div className="relative hidden min-h-[134px] bg-gold-50 md:block">
+            <div className="relative hidden min-h-33.5 bg-gold-50 md:block">
               <Image
                 src="/marketplace-reference/bulk-project.png"
                 alt="Bulk construction materials"
@@ -971,7 +1133,9 @@ export default async function MarketplacePage({
         </div>
       </section>
     </main>
-  )
+    <SiteFooter />
+    </>
+  );
 }
 
 function MarketplaceSearchForm({
@@ -981,11 +1145,11 @@ function MarketplaceSearchForm({
   compact = false,
   className,
 }: {
-  departments: MarketplaceCategory[]
-  initialSearch: string
-  selectedDepartment: string
-  compact?: boolean
-  className?: string
+  departments: MarketplaceCategory[];
+  initialSearch: string;
+  selectedDepartment: string;
+  compact?: boolean;
+  className?: string;
 }) {
   const selectControl = (
     <div className="relative">
@@ -1011,7 +1175,7 @@ function MarketplaceSearchForm({
         className="pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2 text-ink-500"
       />
     </div>
-  )
+  );
 
   const inputControl = (
     <div className="relative min-w-0">
@@ -1024,13 +1188,11 @@ function MarketplaceSearchForm({
         placeholder="Search materials, equipment, services..."
         className={cn(
           "h-12 w-full bg-white px-4 text-sm font-medium text-ink-900 outline-none transition-[border-color,box-shadow] placeholder:text-ink-400 focus-visible:border-brand-400 focus-visible:ring-2 focus-visible:ring-brand-200",
-          compact
-            ? "rounded-none border-0"
-            : "rounded-none border-0",
+          compact ? "rounded-none border-0" : "rounded-none border-0",
         )}
       />
     </div>
-  )
+  );
 
   return (
     <form
@@ -1043,7 +1205,12 @@ function MarketplaceSearchForm({
         className,
       )}
     >
-      <label className="sr-only" htmlFor={compact ? "marketplace-header-search" : "marketplace-hero-search"}>
+      <label
+        className="sr-only"
+        htmlFor={
+          compact ? "marketplace-header-search" : "marketplace-hero-search"
+        }
+      >
         Search marketplace categories
       </label>
 
@@ -1064,5 +1231,5 @@ function MarketplaceSearchForm({
         <Search aria-hidden="true" className="size-4" />
       </Button>
     </form>
-  )
+  );
 }
