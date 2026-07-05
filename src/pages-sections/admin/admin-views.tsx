@@ -1404,16 +1404,14 @@ const BOOKING_STATUS_FILTERS: { value: BookingStatus | "all"; label: string }[] 
   { value: "completed", label: "Completed" },
 ]
 
-export function AdminBookingsTable({ bookings }: { bookings: Booking[] }) {
-  const [statusFilter, setStatusFilter] = useState<BookingStatus | "all">("all")
-
-  const filtered = useMemo(
-    () =>
-      statusFilter === "all"
-        ? bookings
-        : bookings.filter((b) => b.status === statusFilter),
-    [bookings, statusFilter],
-  )
+export function AdminBookingsTable({
+  bookings,
+  status = "all",
+}: {
+  bookings: Booking[]
+  status?: BookingStatus | "all"
+}) {
+  const setFilter = useUrlFilter()
 
   const columns: DataTableColumn<Booking>[] = [
     {
@@ -1490,10 +1488,10 @@ export function AdminBookingsTable({ bookings }: { bookings: Booking[] }) {
           <button
             key={f.value}
             type="button"
-            onClick={() => setStatusFilter(f.value)}
+            onClick={() => setFilter("status", f.value)}
             className={cn(
               "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-              statusFilter === f.value
+              status === f.value
                 ? "border-brand-700 bg-brand-700 text-white"
                 : "border-border/70 bg-white text-ink-700 hover:bg-brand-50",
             )}
@@ -1501,13 +1499,10 @@ export function AdminBookingsTable({ bookings }: { bookings: Booking[] }) {
             {f.label}
           </button>
         ))}
-        <span className="ml-auto text-xs text-ink-500">
-          {filtered.length} of {bookings.length}
-        </span>
       </div>
       <DataTable
         columns={columns}
-        data={filtered}
+        data={bookings}
         rowKey={(b) => b.id}
         emptyMessage="No bookings match this filter."
       />
