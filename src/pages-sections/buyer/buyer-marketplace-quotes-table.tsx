@@ -1,6 +1,5 @@
 "use client"
 
-import { useMemo, useState } from "react"
 import Link from "next/link"
 import { Eye } from "lucide-react"
 
@@ -8,6 +7,7 @@ import { DataTable, type DataTableColumn } from "@/components/dashboard/data-tab
 import { QuoteStatusBadge } from "@/components/dashboard/quote-status-badge"
 import { Button } from "@/components/ui/button"
 import { ROUTES } from "@/config/routes.config"
+import { useUrlFilter } from "@/hooks/use-url-filter"
 import { cn } from "@/lib/utils"
 import type { QuoteRequest, QuoteStatus } from "@/types/quote.types"
 import { formatDate } from "@/utils/format-date"
@@ -29,16 +29,14 @@ function formatMoney(value?: number | null) {
   return `BDT ${value.toLocaleString("en-BD")}`
 }
 
-export function BuyerMarketplaceQuotesTable({ quotes }: { quotes: QuoteRequest[] }) {
-  const [statusFilter, setStatusFilter] = useState<QuoteStatus | "all">("all")
-
-  const filtered = useMemo(
-    () =>
-      statusFilter === "all"
-        ? quotes
-        : quotes.filter((quote) => quote.status === statusFilter),
-    [quotes, statusFilter],
-  )
+export function BuyerMarketplaceQuotesTable({
+  quotes,
+  status = "all",
+}: {
+  quotes: QuoteRequest[]
+  status?: QuoteStatus | "all"
+}) {
+  const setFilter = useUrlFilter()
 
   const columns: DataTableColumn<QuoteRequest>[] = [
     {
@@ -129,10 +127,10 @@ export function BuyerMarketplaceQuotesTable({ quotes }: { quotes: QuoteRequest[]
           <button
             key={filter.value}
             type="button"
-            onClick={() => setStatusFilter(filter.value)}
+            onClick={() => setFilter("status", filter.value)}
             className={cn(
               "rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
-              statusFilter === filter.value
+              status === filter.value
                 ? "border-brand-700 bg-brand-700 text-white"
                 : "border-border/70 bg-white text-ink-700 hover:bg-brand-50",
             )}
@@ -140,13 +138,10 @@ export function BuyerMarketplaceQuotesTable({ quotes }: { quotes: QuoteRequest[]
             {filter.label}
           </button>
         ))}
-        <span className="ml-auto text-xs text-ink-500">
-          {filtered.length} of {quotes.length}
-        </span>
       </div>
       <DataTable
         columns={columns}
-        data={filtered}
+        data={quotes}
         rowKey={(quote) => quote.id}
         emptyMessage="No marketplace quote requests yet."
       />
