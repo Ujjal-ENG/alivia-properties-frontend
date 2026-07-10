@@ -8,6 +8,8 @@ export type ProjectQueryParams = {
   featured?: boolean
   search?: string
   sort?: string
+  minPrice?: number
+  maxPrice?: number
 }
 
 const BASE = "/projects"
