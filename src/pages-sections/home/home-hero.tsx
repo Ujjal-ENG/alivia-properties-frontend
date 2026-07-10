@@ -226,7 +226,7 @@ export function HomeHero({ projects }: { projects: HeroProjectCard[] }) {
           {/* Right: decision board */}
           <div className="min-w-0">
             <div className="overflow-hidden rounded-[2rem] border border-white/70 bg-white shadow-(--shadow-elevated)">
-              <div className="relative aspect-16/11 overflow-hidden bg-ink-100">
+              <div className="relative aspect-16/11 min-h-88 overflow-hidden bg-ink-100 sm:min-h-0">
                 {featured?.cover ? (
                   <Image
                     src={featured.cover}
