@@ -8,7 +8,6 @@ import {
   Compass,
   FileText,
   FileCheck2,
-  Flame,
   Handshake,
   Headset,
   House,
@@ -21,7 +20,6 @@ import {
   Search,
   ShieldCheck,
   ShoppingBag,
-  Sparkles,
   Star,
   Store,
   TrendingUp,
@@ -31,7 +29,6 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { SaveButton } from "@/components/properties/save-button";
 import { ROUTES } from "@/config/routes.config";
 import { siteConfig } from "@/config/site.config";
 import { PROPERTY_TYPE_OPTIONS } from "@/data/property-types";
@@ -45,9 +42,7 @@ import {
 } from "@/pages-sections/home/home-hero";
 import { blogService } from "@/services/blog.service";
 import { projectsService } from "@/services/projects.service";
-import { propertiesService } from "@/services/properties.service";
-import { isRecent } from "@/utils/format-date";
-import { formatPrice, formatRent } from "@/utils/format-price";
+import { formatPrice } from "@/utils/format-price";
 
 export const dynamic = "force-dynamic";
 
@@ -74,16 +69,13 @@ function projectPrice(p: SoftRecord): string | null {
 }
 
 export default async function HomePage() {
-  const [projectsRes, propertiesRes, blogRes] = await Promise.allSettled([
+  const [projectsRes, blogRes] = await Promise.allSettled([
     projectsService.list({ limit: 12 }),
-    propertiesService.list({ limit: 4 }),
     blogService.list({ limit: 3 }),
   ]);
 
   const projects: SoftRecord[] =
     projectsRes.status === "fulfilled" ? projectsRes.value.data : [];
-  const properties: SoftRecord[] =
-    propertiesRes.status === "fulfilled" ? propertiesRes.value.data : [];
   const posts = blogRes.status === "fulfilled" ? blogRes.value.data : [];
 
   const heroProjects: HeroProjectCard[] = projects.slice(0, 2).map((p) => ({
@@ -135,22 +127,19 @@ export default async function HomePage() {
       {/* 7 — Shop by property type */}
       <PropertyTypeBrowse />
 
-      {/* 8 — Verified listings */}
-      <VerifiedListings properties={properties} />
-
-      {/* 9 — Process */}
+      {/* 8 — Process */}
       <ProcessSection />
 
-      {/* 10 — Testimonials */}
+      {/* 9 — Testimonials */}
       <Testimonials />
 
-      {/* 11 — Founder / about */}
+      {/* 10 — Founder / about */}
       <FounderSection />
 
-      {/* 12 — Expert guidance CTA */}
+      {/* 11 — Expert guidance CTA */}
       <ExpertCta />
 
-      {/* 13 — Market insights */}
+      {/* 12 — Market insights */}
       <MarketInsights posts={posts} />
     </main>
   );
@@ -496,296 +485,6 @@ function PropertyTypeBrowse() {
               </Link>
             );
           })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ───────────────────────── 7. Verified listings ───────────────────────── */
-
-function VerifiedListings({ properties }: { properties: SoftRecord[] }) {
-  const cards = properties.slice(0, 4).map((p) => {
-    const id = pick<string>(p, "id", "");
-    const slug = pick<string>(p, "slug", "");
-    const title = pick<string>(p, "title", "Property");
-    const cover =
-      pick<string | null>(p, "coverImage", null) ??
-      (Array.isArray(p.images)
-        ? ((p.images as Array<{ url?: string } | string>)
-            .map((i) => (typeof i === "string" ? i : i?.url))
-            .find(Boolean) ?? null)
-        : null);
-    const price = pick<number>(p, "price", 0);
-    const purpose = pick<string>(p, "purpose", "sale");
-    const area = pick<string>(p, "area", "");
-    const district = pick<string>(
-      p,
-      "district",
-      pick<string>(p, "city", "Bangladesh"),
-    );
-    const bedrooms = pick<number | undefined>(p, "bedrooms", undefined);
-    const verified =
-      pick<boolean>(p, "isVerified", false) ||
-      pick<string>(p, "status", "") === "verified";
-    const viewCount = pick<number>(p, "viewCount", 0);
-    const createdAt = pick<string | undefined>(p, "createdAt", undefined);
-    const merch: "new" | "popular" | null = isRecent(createdAt, 14)
-      ? "new"
-      : viewCount >= 50
-        ? "popular"
-        : null;
-
-    return {
-      id,
-      slug,
-      title,
-      cover,
-      price,
-      purpose,
-      area,
-      district,
-      bedrooms,
-      verified,
-      merch,
-      href: slug ? ROUTES.PROPERTY_DETAIL(slug) : ROUTES.PROPERTIES,
-      priceLabel:
-        purpose === "rent" ? formatRent(price) : formatPrice(price, true),
-      location: [area, district].filter(Boolean).join(", ") || "Bangladesh",
-    };
-  });
-
-  const featured = cards[0];
-  const supporting = cards.slice(1);
-
-  return (
-    <section className="bg-linear-to-b from-white via-ink-50/70 to-white">
-      <div className="container-page section-y-sm">
-        <header className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="text-eyebrow mb-2">Marketplace</p>
-            <h2 className="text-balance font-heading text-3xl font-bold uppercase tracking-tight text-brand-950 sm:text-4xl">
-              Verified listings from reliable sellers.
-            </h2>
-            <p className="mt-3 max-w-2xl text-sm text-ink-600">
-              Apartments, plots, and commercial spaces — with real sellers,
-              clear pricing, and verification cues you can scan fast.
-            </p>
-          </div>
-          <Link href={ROUTES.PROPERTIES}>
-            <Button variant="outline" size="sm" className="gap-1.5 rounded-full">
-              Browse properties <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
-            </Button>
-          </Link>
-        </header>
-
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-          {cards.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-border/70 bg-white p-10 text-center text-sm text-ink-600 xl:col-span-2">
-              No properties listed yet.
-            </div>
-          ) : (
-            <ul className="grid min-w-0 gap-5 lg:grid-cols-2">
-              {featured && (
-                <li className="relative lg:row-span-3" key={featured.slug || featured.title}>
-                  <Link
-                    href={featured.href}
-                    className="group flex h-full min-h-[460px] flex-col overflow-hidden rounded-[2rem] border border-black/5 bg-white shadow-(--shadow-elevated) transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-(--shadow-pop) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-                  >
-                    <div className="relative min-h-72 flex-1 overflow-hidden bg-ink-100">
-                      {featured.cover ? (
-                        <Image
-                          src={featured.cover}
-                          alt={featured.title}
-                          fill
-                          sizes="(min-width: 1280px) 42vw, (min-width: 1024px) 50vw, 100vw"
-                          className="object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-                        />
-                      ) : (
-                        <div className="flex size-full items-center justify-center bg-linear-to-br from-brand-50 to-gold-50 text-brand-200">
-                          <Building2 aria-hidden="true" className="h-14 w-14" />
-                        </div>
-                      )}
-                      <div aria-hidden="true" className="absolute inset-0 bg-linear-to-t from-brand-950/78 via-brand-950/8 to-transparent" />
-                      <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="inline-flex rounded-full bg-white/92 px-3 py-1 text-[0.62rem] font-bold uppercase tracking-wider text-brand-700 backdrop-blur">
-                            For {featured.purpose}
-                          </span>
-                          {featured.merch === "new" && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-brand-700 px-3 py-1 text-[0.62rem] font-bold uppercase tracking-wider text-white">
-                              <Sparkles aria-hidden="true" className="h-3 w-3" /> New
-                            </span>
-                          )}
-                          {featured.merch === "popular" && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-red-600 px-3 py-1 text-[0.62rem] font-bold uppercase tracking-wider text-white">
-                              <Flame aria-hidden="true" className="h-3 w-3" /> Popular
-                            </span>
-                          )}
-                          {featured.verified && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-brand-700/95 px-3 py-1 text-[0.62rem] font-bold uppercase tracking-wider text-white backdrop-blur">
-                              <BadgeCheck aria-hidden="true" className="h-3 w-3" /> Verified
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="absolute inset-x-0 bottom-0 p-5 text-white">
-                        <p className="font-heading text-2xl font-semibold">
-                          {featured.title}
-                        </p>
-                        <p className="mt-1 inline-flex items-center gap-1.5 text-sm text-white/82">
-                          <MapPin aria-hidden="true" className="h-4 w-4" />
-                          {featured.location}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="grid gap-px bg-border/70 sm:grid-cols-3">
-                      <div className="bg-white px-5 py-4 sm:col-span-2">
-                        <p className="text-[0.62rem] font-bold uppercase tracking-[0.16em] text-ink-500">
-                          Asking price
-                        </p>
-                        <p className="mt-1 font-heading text-2xl font-bold text-gold-600">
-                          {featured.priceLabel}
-                        </p>
-                      </div>
-                      <div className="bg-white px-5 py-4">
-                        <p className="text-[0.62rem] font-bold uppercase tracking-[0.16em] text-ink-500">
-                          Details
-                        </p>
-                        <p className="mt-1 text-sm font-semibold text-ink-900">
-                          {featured.bedrooms !== undefined
-                            ? `${featured.bedrooms} bed`
-                            : "View details"}
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                  {featured.id && (
-                    <SaveButton
-                      propertyId={featured.id}
-                      className="absolute right-4 top-4 z-10 bg-white/90 text-ink-700 backdrop-blur hover:bg-white"
-                    />
-                  )}
-                </li>
-              )}
-
-              {supporting.map((card) => (
-                <li key={card.slug || card.title}>
-                  <Link
-                    href={card.href}
-                    className="group grid overflow-hidden rounded-3xl border border-black/5 bg-white shadow-(--shadow-card) transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-(--shadow-elevated) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 motion-reduce:transition-none motion-reduce:hover:translate-y-0 sm:grid-cols-[160px_1fr]"
-                  >
-                    <div className="relative aspect-16/10 overflow-hidden bg-ink-100 sm:aspect-auto sm:min-h-44">
-                      {card.cover ? (
-                        <Image
-                          src={card.cover}
-                          alt={card.title}
-                          fill
-                          sizes="(min-width: 1024px) 180px, 100vw"
-                          className="object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-                        />
-                      ) : (
-                        <div className="flex size-full items-center justify-center text-brand-200">
-                          <Building2 aria-hidden="true" className="h-10 w-10" />
-                        </div>
-                      )}
-                      <div className="absolute left-3 top-3 flex flex-col items-start gap-1.5">
-                        <span className="inline-flex rounded-full bg-white/92 px-2.5 py-1 text-[0.58rem] font-bold uppercase tracking-wider text-brand-700 backdrop-blur">
-                          For {card.purpose}
-                        </span>
-                        {card.merch === "new" && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-brand-700 px-2.5 py-1 text-[0.58rem] font-bold uppercase tracking-wider text-white">
-                            <Sparkles aria-hidden="true" className="h-3 w-3" /> New
-                          </span>
-                        )}
-                        {card.merch === "popular" && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-red-600 px-2.5 py-1 text-[0.58rem] font-bold uppercase tracking-wider text-white">
-                            <Flame aria-hidden="true" className="h-3 w-3" /> Popular
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex min-w-0 flex-col p-5">
-                      <div className="flex items-start justify-between gap-3">
-                        <p className="line-clamp-2 font-heading text-base font-semibold text-ink-900 group-hover:text-brand-700">
-                          {card.title}
-                        </p>
-                        {card.verified && (
-                          <span className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-full bg-brand-50 px-2 py-1 text-[0.58rem] font-bold uppercase tracking-wider text-brand-700">
-                            <BadgeCheck aria-hidden="true" className="h-3 w-3" />
-                            Verified
-                          </span>
-                        )}
-                      </div>
-                      <p className="mt-2 inline-flex items-center gap-1 text-xs text-ink-500">
-                        <MapPin aria-hidden="true" className="h-3 w-3" />
-                        {card.location}
-                      </p>
-                      <div className="mt-auto flex items-end justify-between gap-3 border-t border-border/60 pt-4">
-                        <span className="font-heading text-lg font-bold text-gold-600">
-                          {card.priceLabel}
-                        </span>
-                        <span className="inline-flex size-8 items-center justify-center rounded-full bg-brand-50 text-brand-700 transition-colors duration-200 group-hover:bg-brand-700 group-hover:text-white">
-                          <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          <aside className="relative overflow-hidden rounded-[2rem] bg-linear-to-br from-brand-800 to-brand-950 p-6 text-white shadow-(--shadow-elevated) xl:sticky xl:top-24 xl:self-start">
-            <Sparkles
-              aria-hidden="true"
-              className="absolute -right-6 -top-6 h-28 w-28 text-gold-400/15"
-            />
-            <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-gold-300">
-              Selling or renting?
-            </p>
-            <h3 className="mt-2 font-heading text-2xl font-semibold">
-              List with people who actually verify.
-            </h3>
-            <p className="mt-3 text-sm leading-relaxed text-brand-100">
-              Reach serious, qualified buyers and tenants. We verify your
-              listing, then put it in front of the right audience.
-            </p>
-
-            <div className="mt-5 grid grid-cols-2 gap-2">
-              {[
-                { value: "Free", label: "verification" },
-                { value: "24h", label: "review target" },
-              ].map((item) => (
-                <div key={item.label} className="rounded-2xl border border-white/10 bg-white/8 p-4">
-                  <p className="font-heading text-2xl font-bold text-gold-300">
-                    {item.value}
-                  </p>
-                  <p className="mt-1 text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-brand-200">
-                    {item.label}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            <ul className="mt-5 space-y-2.5 text-sm text-brand-50">
-              {[
-                "Free listing verification",
-                "Qualified buyer matching",
-                "Dedicated seller dashboard",
-              ].map((t) => (
-                <li key={t} className="flex items-center gap-2">
-                  <BadgeCheck aria-hidden="true" className="h-4 w-4 shrink-0 text-gold-300" />
-                  {t}
-                </li>
-              ))}
-            </ul>
-            <Link href={ROUTES.REGISTER} className="mt-6 block">
-              <Button className="w-full gap-2 rounded-full bg-gold-400 text-brand-950 hover:bg-gold-300">
-                List your property <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
-              </Button>
-            </Link>
-          </aside>
         </div>
       </div>
     </section>
