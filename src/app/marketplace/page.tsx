@@ -8,6 +8,7 @@ import {
   ChevronDown,
   CircleDollarSign,
   Headphones,
+  Lock,
   Package,
   Search,
   ShieldCheck,
@@ -31,8 +32,6 @@ import {
   type MarketplaceCategory,
 } from "@/services/marketplace.service";
 import { projectsService } from "@/services/projects.service";
-import { propertiesService } from "@/services/properties.service";
-import { PropertyCard } from "@/components/properties/property-card";
 import { SiteFooter } from "@/components/layout/site-footer";
 import {
   FlagshipProjects,
@@ -257,26 +256,31 @@ const BENEFITS = [
     icon: ShieldCheck,
     title: "Verified Sellers",
     body: "Only verified & reliable sellers",
+    accent: "brand",
   },
   {
     icon: CircleDollarSign,
     title: "Best Price Guarantee",
     body: "Find the best prices always",
+    accent: "gold",
   },
   {
     icon: Boxes,
     title: "Bulk Order Discounts",
     body: "More quantity, more savings",
+    accent: "brand",
   },
   {
     icon: Truck,
     title: "Fast & Safe Delivery",
     body: "On-time delivery across country",
+    accent: "gold",
   },
   {
-    icon: Store,
+    icon: Lock,
     title: "Secure Payments",
     body: "100% secure payments",
+    accent: "brand",
   },
 ] as const;
 
@@ -560,7 +564,7 @@ export default async function MarketplacePage({
           {visibleGroups.length > 0 ? (
             <nav
               aria-label="Marketplace departments"
-              className="mt-2 flex justify-between gap-2 overflow-x-auto border-t border-border/60 pt-2"
+              className="mt-2 flex items-center gap-1 overflow-x-auto border-t border-border/60 pt-2 scrollbar-none"
             >
               {visibleGroups.slice(0, 8).map(({ group }) => {
                 const Icon = iconForKeyword(group.name);
@@ -568,9 +572,9 @@ export default async function MarketplacePage({
                   <Link
                     key={group.slug}
                     href={`#department-${group.slug}`}
-                    className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-transparent px-3 text-sm font-semibold text-ink-800 transition-colors hover:border-brand-100 hover:bg-brand-50 hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                    className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-transparent px-3.5 text-sm font-semibold text-ink-700 transition-colors duration-200 hover:border-brand-100 hover:bg-brand-50 hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
                   >
-                    <Icon aria-hidden="true" className="size-5 text-ink-800" />
+                    <Icon aria-hidden="true" className="size-4.5 text-brand-700" />
                     {group.name}
                   </Link>
                 );
@@ -582,17 +586,24 @@ export default async function MarketplacePage({
 
       {clearingSearch && (
         <>
-          <section className="container-page max-w-373! pb-0">
-            <div className="grid gap-4 rounded-xl border border-border/70 bg-white px-6 py-3 shadow-sm sm:grid-cols-2 xl:grid-cols-5">
-              {BENEFITS.map(({ icon: Icon, title, body }) => (
+          <section className="border-y border-border/60 bg-linear-to-r from-brand-50/70 via-white to-gold-50/50">
+            <div className="container-page max-w-373! flex snap-x gap-x-8 gap-y-3 overflow-x-auto py-4 scrollbar-none sm:overflow-visible">
+              {BENEFITS.map(({ icon: Icon, title, body, accent }) => (
                 <div
                   key={title}
-                  className="flex items-center gap-3 rounded-xl border border-transparent xl:border-r xl:border-border/70 xl:pr-5 last:border-r-0"
+                  className="group flex min-w-62 shrink-0 snap-start items-center gap-3 sm:min-w-0 sm:flex-1 sm:border-r sm:border-border/60 sm:pr-5 sm:last:border-r-0 sm:last:pr-0"
                 >
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700">
+                  <span
+                    className={cn(
+                      "flex size-11 shrink-0 items-center justify-center rounded-full shadow-sm transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:scale-105",
+                      accent === "gold"
+                        ? "bg-gold-400 text-brand-950"
+                        : "bg-brand-700 text-white",
+                    )}
+                  >
                     <Icon aria-hidden="true" className="size-5" />
                   </span>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-sm font-semibold text-ink-900">
                       {title}
                     </p>
