@@ -37,24 +37,35 @@ export function ProjectAtAGlance({ facts }: { facts: ProjectFact[] }) {
       </div>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-left text-sm">
+          <caption className="sr-only">Key facts about this project</caption>
+          <thead>
+            <tr className="border-b border-border bg-ink-100/60 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+              <th
+                scope="col"
+                className="w-[43%] border-r border-border px-4 py-2.5 font-semibold"
+              >
+                Detail
+              </th>
+              <th scope="col" className="px-4 py-2.5 font-semibold">
+                Information
+              </th>
+            </tr>
+          </thead>
           <tbody>
-            {facts.map((fact, index) => {
+            {facts.map((fact) => {
               const Icon = FACT_ICONS[fact.key]
               return (
-                <tr
-                  key={fact.key}
-                  className={index % 2 === 0 ? "bg-ink-50/70" : "bg-white"}
-                >
+                <tr key={fact.key} className="border-b border-border/70 last:border-b-0">
                   <th
                     scope="row"
-                    className="w-[43%] border-b border-r border-border/80 px-4 py-3.5 align-top font-medium text-muted-foreground last:border-b-0"
+                    className="w-[43%] border-r border-border/70 bg-ink-50/70 px-4 py-3.5 align-top font-medium text-muted-foreground"
                   >
                     <span className="flex items-start gap-2">
                       <Icon aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-brand-600" />
                       <span>{fact.label}</span>
                     </span>
                   </th>
-                  <td className="border-b border-border/80 px-4 py-3.5 font-semibold leading-5 text-ink-900 last:border-b-0">
+                  <td className="px-4 py-3.5 align-top font-semibold leading-5 text-ink-900">
                     {fact.value}
                   </td>
                 </tr>
