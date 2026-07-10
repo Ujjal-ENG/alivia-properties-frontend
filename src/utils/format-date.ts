@@ -1,4 +1,4 @@
-import { format, formatDistanceToNow, isValid, parseISO } from "date-fns"
+import { differenceInDays, format, formatDistanceToNow, isValid, parseISO } from "date-fns"
 
 export function formatDate(date: string | Date, pattern = "d MMM yyyy"): string {
   const d = typeof date === "string" ? parseISO(date) : date
@@ -24,4 +24,10 @@ export function formatHandoverDate(dateStr: string): string {
 
 export function isDatePast(dateStr: string): boolean {
   return new Date(dateStr) < new Date()
+}
+
+export function isRecent(dateStr: string | undefined, withinDays = 14): boolean {
+  if (!dateStr) return false
+  const d = parseISO(dateStr)
+  return isValid(d) && differenceInDays(new Date(), d) <= withinDays
 }
