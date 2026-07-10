@@ -4,7 +4,7 @@ import * as React from "react"
 import { useSession } from "next-auth/react"
 import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { CheckCircle2, Loader2, SendHorizontal, AlertCircle } from "lucide-react"
+import { CheckCircle2, ChevronDown, Loader2, SendHorizontal, AlertCircle } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -298,7 +298,7 @@ export function GetQuoteForm({
     <div className={className}>
       {showHeader && (
         <div className="mb-4 border-b border-border/60 pb-4">
-          <p className="text-eyebrow mb-1">Request a Quote</p>
+          <p className="text-eyebrow mb-1">Ask for a Price</p>
           <h2 className="font-heading text-xl font-semibold text-ink-900">
             {context?.productName
               ? `Get a quote for ${context.productName}`
@@ -445,41 +445,30 @@ export function GetQuoteForm({
             )}
           />
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <FormField
-              control={form.control}
-              name="company"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Company (optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="ABC Construction Ltd." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="city"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>City</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Dhaka" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          <FormField
+            control={form.control}
+            name="message"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>What do you need? *</FormLabel>
+                <FormControl>
+                  <Textarea
+                    rows={5}
+                    placeholder="Describe what you need — name, type, size, quantity, and any other details. Our team follows up to confirm specifics."
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
             control={form.control}
             name="deliveryLocation"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Delivery location *</FormLabel>
+                <FormLabel>Delivery address *</FormLabel>
                 <FormControl>
                   <Input placeholder="Road, area, city" {...field} />
                 </FormControl>
@@ -524,46 +513,54 @@ export function GetQuoteForm({
             />
           </div>
 
-          <FormField
-            control={form.control}
-            name="deliveryDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Desired delivery / start date</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} value={field.value ?? ""} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="message"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Product Description *</FormLabel>
-                <FormControl>
-                  <Textarea
-                    rows={5}
-                    placeholder="Describe the product(s) you need — name, type, size, quantity, finish, brand, and any other details. Our team follows up to confirm specifics."
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
           {enableAttachments && (
             <div className="grid gap-1.5">
               <label className="text-sm font-medium text-ink-800">
-                Attachments <span className="font-normal text-ink-500">(optional)</span>
+                Photo <span className="font-normal text-ink-500">(optional)</span>
               </label>
               <AttachmentUploader value={attachments} onChange={setAttachments} />
             </div>
           )}
+
+          <details className="group rounded-lg border border-border/60">
+            <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium text-ink-800 hover:bg-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400">
+              <span>
+                Add more details <span className="font-normal text-ink-500">(optional)</span>
+              </span>
+              <ChevronDown
+                aria-hidden="true"
+                className="size-4 text-ink-500 transition-transform group-open:rotate-180"
+              />
+            </summary>
+            <div className="grid gap-4 px-3 pb-3 pt-1 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="company"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Company (optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="ABC Construction Ltd." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="deliveryDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Desired delivery / start date</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} value={field.value ?? ""} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </details>
 
           {submitState.status === "error" && (
             <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
