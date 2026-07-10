@@ -2,21 +2,28 @@ import {
   ArrowRight,
   ArrowUpRight,
   BadgeCheck,
+  Briefcase,
   Building2,
   CalendarDays,
   Compass,
   FileText,
   FileCheck2,
+  Flame,
   Handshake,
   Headset,
+  House,
+  LayoutGrid,
+  Map,
   MapPin,
   MessagesSquare,
   Quote,
   ScrollText,
   Search,
   ShieldCheck,
+  ShoppingBag,
   Sparkles,
   Star,
+  Store,
   TrendingUp,
   Users,
 } from "lucide-react";
@@ -24,8 +31,10 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { SaveButton } from "@/components/properties/save-button";
 import { ROUTES } from "@/config/routes.config";
 import { siteConfig } from "@/config/site.config";
+import { PROPERTY_TYPE_OPTIONS } from "@/data/property-types";
 import {
   FlagshipProjects,
   type FlagshipProject,
@@ -37,6 +46,7 @@ import {
 import { blogService } from "@/services/blog.service";
 import { projectsService } from "@/services/projects.service";
 import { propertiesService } from "@/services/properties.service";
+import { isRecent } from "@/utils/format-date";
 import { formatPrice, formatRent } from "@/utils/format-price";
 
 export const dynamic = "force-dynamic";
@@ -65,7 +75,7 @@ function projectPrice(p: SoftRecord): string | null {
 
 export default async function HomePage() {
   const [projectsRes, propertiesRes, blogRes] = await Promise.allSettled([
-    projectsService.list({ limit: 6 }),
+    projectsService.list({ limit: 12 }),
     propertiesService.list({ limit: 4 }),
     blogService.list({ limit: 3 }),
   ]);
@@ -75,11 +85,6 @@ export default async function HomePage() {
   const properties: SoftRecord[] =
     propertiesRes.status === "fulfilled" ? propertiesRes.value.data : [];
   const posts = blogRes.status === "fulfilled" ? blogRes.value.data : [];
-
-  const backendDown =
-    projectsRes.status === "rejected" &&
-    propertiesRes.status === "rejected" &&
-    blogRes.status === "rejected";
 
   const heroProjects: HeroProjectCard[] = projects.slice(0, 2).map((p) => ({
     slug: pick<string>(p, "slug", ""),
@@ -100,25 +105,15 @@ export default async function HomePage() {
       price: projectPrice(p),
       units: total ? `${total} units` : null,
       cover: projectCover(p),
+      availableUnits: pick<number | null>(p, "availableUnits", null),
+      totalUnits: total,
+      isFeatured: pick<boolean>(p, "isFeatured", false),
+      createdAt: pick<string | undefined>(p, "createdAt", undefined),
     };
   });
 
   return (
     <main className="bg-white">
-      {backendDown && (
-        <div className="border-b border-amber-200 bg-amber-50/80">
-          <div className="container-page py-3 text-xs text-amber-900">
-            <span className="font-medium">Heads up:</span> the API at{" "}
-            <span className="font-mono">
-              {process.env.NEXT_PUBLIC_API_BASE_URL ??
-                "http://localhost:3001/api/v1"}
-            </span>{" "}
-            isn&apos;t responding. Start the NestJS backend to populate this
-            page.
-          </div>
-        </div>
-      )}
-
       {/* 1 — Hero */}
       <HomeHero projects={heroProjects} />
 
@@ -137,22 +132,25 @@ export default async function HomePage() {
       {/* 6 — Investment corridors */}
       <InvestmentCorridors />
 
-      {/* 7 — Verified listings */}
+      {/* 7 — Shop by property type */}
+      <PropertyTypeBrowse />
+
+      {/* 8 — Verified listings */}
       <VerifiedListings properties={properties} />
 
-      {/* 8 — Process */}
+      {/* 9 — Process */}
       <ProcessSection />
 
-      {/* 9 — Testimonials */}
+      {/* 10 — Testimonials */}
       <Testimonials />
 
-      {/* 10 — Founder / about */}
+      {/* 11 — Founder / about */}
       <FounderSection />
 
-      {/* 11 — Expert guidance CTA */}
+      {/* 12 — Expert guidance CTA */}
       <ExpertCta />
 
-      {/* 12 — Market insights */}
+      {/* 13 — Market insights */}
       <MarketInsights posts={posts} />
     </main>
   );
@@ -442,10 +440,73 @@ function InvestmentCorridors() {
   );
 }
 
-/* ───────────────────────── 6. Verified listings ───────────────────────── */
+/* ───────────────────────── 6b. Shop by property type ───────────────────────── */
+
+const TYPE_ICON: Record<string, typeof Building2> = {
+  Building2,
+  House,
+  Map,
+  Store,
+  Briefcase,
+  ShoppingBag,
+  LayoutGrid,
+};
+
+function PropertyTypeBrowse() {
+  return (
+    <section className="border-y border-border/60 bg-ink-50/40">
+      <div className="container-page py-8">
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-eyebrow mb-2">Property Collection</p>
+            <h2 className="font-heading text-2xl font-bold uppercase tracking-tight text-brand-950 sm:text-3xl">
+              Curated property pathways
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-600">
+              Start with the property format that matches your next move, then
+              explore verified listings with clearer buying and rental context.
+            </p>
+          </div>
+          <Link href={ROUTES.PROPERTIES}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 rounded-full"
+            >
+              Browse Properties
+              <ArrowRight aria-hidden="true" className="size-4" />
+            </Button>
+          </Link>
+        </div>
+        <div className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-1 scrollbar-none">
+          {PROPERTY_TYPE_OPTIONS.map((t) => {
+            const Icon = TYPE_ICON[t.icon] ?? Building2;
+            return (
+              <Link
+                key={t.value}
+                href={`${ROUTES.PROPERTIES}?type=${t.value}`}
+                className="group flex min-w-32 shrink-0 snap-start flex-col items-center gap-2.5 rounded-2xl border border-black/5 bg-white px-5 py-4 text-center shadow-(--shadow-card) transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-(--shadow-elevated) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+              >
+                <span className="flex size-11 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 transition-colors duration-200 group-hover:bg-brand-700 group-hover:text-white">
+                  <Icon aria-hidden="true" className="size-5" />
+                </span>
+                <span className="text-sm font-semibold text-ink-900">
+                  {t.label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ───────────────────────── 7. Verified listings ───────────────────────── */
 
 function VerifiedListings({ properties }: { properties: SoftRecord[] }) {
   const cards = properties.slice(0, 4).map((p) => {
+    const id = pick<string>(p, "id", "");
     const slug = pick<string>(p, "slug", "");
     const title = pick<string>(p, "title", "Property");
     const cover =
@@ -467,8 +528,16 @@ function VerifiedListings({ properties }: { properties: SoftRecord[] }) {
     const verified =
       pick<boolean>(p, "isVerified", false) ||
       pick<string>(p, "status", "") === "verified";
+    const viewCount = pick<number>(p, "viewCount", 0);
+    const createdAt = pick<string | undefined>(p, "createdAt", undefined);
+    const merch: "new" | "popular" | null = isRecent(createdAt, 14)
+      ? "new"
+      : viewCount >= 50
+        ? "popular"
+        : null;
 
     return {
+      id,
       slug,
       title,
       cover,
@@ -478,6 +547,7 @@ function VerifiedListings({ properties }: { properties: SoftRecord[] }) {
       district,
       bedrooms,
       verified,
+      merch,
       href: slug ? ROUTES.PROPERTY_DETAIL(slug) : ROUTES.PROPERTIES,
       priceLabel:
         purpose === "rent" ? formatRent(price) : formatPrice(price, true),
@@ -517,7 +587,7 @@ function VerifiedListings({ properties }: { properties: SoftRecord[] }) {
           ) : (
             <ul className="grid min-w-0 gap-5 lg:grid-cols-2">
               {featured && (
-                <li className="lg:row-span-3" key={featured.slug || featured.title}>
+                <li className="relative lg:row-span-3" key={featured.slug || featured.title}>
                   <Link
                     href={featured.href}
                     className="group flex h-full min-h-[460px] flex-col overflow-hidden rounded-[2rem] border border-black/5 bg-white shadow-(--shadow-elevated) transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-(--shadow-pop) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
@@ -538,14 +608,26 @@ function VerifiedListings({ properties }: { properties: SoftRecord[] }) {
                       )}
                       <div aria-hidden="true" className="absolute inset-0 bg-linear-to-t from-brand-950/78 via-brand-950/8 to-transparent" />
                       <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4">
-                        <span className="inline-flex rounded-full bg-white/92 px-3 py-1 text-[0.62rem] font-bold uppercase tracking-wider text-brand-700 backdrop-blur">
-                          For {featured.purpose}
-                        </span>
-                        {featured.verified && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-brand-700/95 px-3 py-1 text-[0.62rem] font-bold uppercase tracking-wider text-white backdrop-blur">
-                            <BadgeCheck aria-hidden="true" className="h-3 w-3" /> Verified
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="inline-flex rounded-full bg-white/92 px-3 py-1 text-[0.62rem] font-bold uppercase tracking-wider text-brand-700 backdrop-blur">
+                            For {featured.purpose}
                           </span>
-                        )}
+                          {featured.merch === "new" && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-brand-700 px-3 py-1 text-[0.62rem] font-bold uppercase tracking-wider text-white">
+                              <Sparkles aria-hidden="true" className="h-3 w-3" /> New
+                            </span>
+                          )}
+                          {featured.merch === "popular" && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-red-600 px-3 py-1 text-[0.62rem] font-bold uppercase tracking-wider text-white">
+                              <Flame aria-hidden="true" className="h-3 w-3" /> Popular
+                            </span>
+                          )}
+                          {featured.verified && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-brand-700/95 px-3 py-1 text-[0.62rem] font-bold uppercase tracking-wider text-white backdrop-blur">
+                              <BadgeCheck aria-hidden="true" className="h-3 w-3" /> Verified
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div className="absolute inset-x-0 bottom-0 p-5 text-white">
                         <p className="font-heading text-2xl font-semibold">
@@ -578,6 +660,12 @@ function VerifiedListings({ properties }: { properties: SoftRecord[] }) {
                       </div>
                     </div>
                   </Link>
+                  {featured.id && (
+                    <SaveButton
+                      propertyId={featured.id}
+                      className="absolute right-4 top-4 z-10 bg-white/90 text-ink-700 backdrop-blur hover:bg-white"
+                    />
+                  )}
                 </li>
               )}
 
@@ -601,9 +689,21 @@ function VerifiedListings({ properties }: { properties: SoftRecord[] }) {
                           <Building2 aria-hidden="true" className="h-10 w-10" />
                         </div>
                       )}
-                      <span className="absolute left-3 top-3 inline-flex rounded-full bg-white/92 px-2.5 py-1 text-[0.58rem] font-bold uppercase tracking-wider text-brand-700 backdrop-blur">
-                        For {card.purpose}
-                      </span>
+                      <div className="absolute left-3 top-3 flex flex-col items-start gap-1.5">
+                        <span className="inline-flex rounded-full bg-white/92 px-2.5 py-1 text-[0.58rem] font-bold uppercase tracking-wider text-brand-700 backdrop-blur">
+                          For {card.purpose}
+                        </span>
+                        {card.merch === "new" && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-brand-700 px-2.5 py-1 text-[0.58rem] font-bold uppercase tracking-wider text-white">
+                            <Sparkles aria-hidden="true" className="h-3 w-3" /> New
+                          </span>
+                        )}
+                        {card.merch === "popular" && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-red-600 px-2.5 py-1 text-[0.58rem] font-bold uppercase tracking-wider text-white">
+                            <Flame aria-hidden="true" className="h-3 w-3" /> Popular
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div className="flex min-w-0 flex-col p-5">
                       <div className="flex items-start justify-between gap-3">
