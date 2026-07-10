@@ -26,9 +26,8 @@ import { formatPrice, formatRent } from "@/utils/format-price";
 import { ROUTES } from "@/config/routes.config";
 import { Button } from "@/components/ui/button";
 import { VerifiedBadge } from "@/components/common/verified-badge";
-import { SaveButton } from "@/components/properties/save-button";
-import { CompareButton } from "@/components/properties/compare-button";
 import { PropertyCard } from "@/components/properties/property-card";
+import { PropertyGallery } from "@/components/properties/property-gallery";
 import { MortgageCalculator } from "@/components/properties/mortgage-calculator";
 import { ReportListingDialog } from "@/components/properties/report-listing-dialog";
 import { VirtualTour } from "@/components/properties/virtual-tour";
@@ -224,57 +223,7 @@ export default async function PropertyDetailPage({
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-2">
-            <div className="surface-card overflow-hidden sm:col-span-2 lg:col-span-2">
-              <div className="relative h-100">
-                {p.images[0] && (
-                  <Image
-                    src={p.images[0]}
-                    alt={p.title}
-                    fill
-                    priority
-                    sizes="(max-width: 1024px) 100vw, 45vw"
-                    className="object-cover"
-                  />
-                )}
-                <div className="absolute inset-0 bg-linear-to-t from-ink-950/80 via-ink-950/10 to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-4">
-                  <div className="max-w-md text-white">
-                    <p className="text-[0.68rem] uppercase tracking-[0.18em] text-white/70">
-                      {p.type}
-                    </p>
-                    <p className="mt-2 text-lg font-semibold">
-                      {p.area}, {p.district}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <SaveButton
-                      propertyId={p.id}
-                      className="h-10 w-10 bg-white/92 text-ink-700 hover:bg-white"
-                    />
-                    <CompareButton
-                      property={p}
-                      className="h-10 w-10 bg-white/92 text-ink-700 hover:bg-white"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-            {p.images.slice(1, 4).map((img, i) => (
-              <div
-                key={img}
-                className={`surface-card relative overflow-hidden ${i === 0 ? "sm:col-span-1" : ""} h-36`}
-              >
-                <Image
-                  src={img}
-                  alt={`${p.title} ${i + 2}`}
-                  fill
-                  sizes="(max-width: 1024px) 33vw, 15vw"
-                  className="object-cover"
-                />
-              </div>
-            ))}
-          </div>
+          <PropertyGallery property={p} />
         </div>
 
         <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[1.3fr_0.7fr]">
