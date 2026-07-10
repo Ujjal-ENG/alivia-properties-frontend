@@ -338,12 +338,10 @@ export default async function MarketplacePage({
   const selectedDepartment = getParam(params, "department");
   const query = initialSearch.trim().toLowerCase();
 
-  const [categoriesRes, projectsRes, propertiesRes] =
-    await Promise.allSettled([
-      marketplaceService.listCategories(),
-      projectsService.list({ limit: 6 }),
-      propertiesService.list({ limit: 4 }),
-    ]);
+  const [categoriesRes, projectsRes] = await Promise.allSettled([
+    marketplaceService.listCategories(),
+    projectsService.list({ limit: 6 }),
+  ]);
 
   const flagship: FlagshipProject[] = (
     projectsRes.status === "fulfilled" ? projectsRes.value.data : []
@@ -357,9 +355,6 @@ export default async function MarketplacePage({
     units: p.totalUnits ? `${p.totalUnits} units` : null,
     cover: p.coverImage ?? p.coverImageUrl ?? p.galleryImages?.[0] ?? null,
   }));
-
-  const properties =
-    propertiesRes.status === "fulfilled" ? propertiesRes.value.data : [];
 
   const loadedCategories =
     categoriesRes.status === "fulfilled" ? categoriesRes.value : [];
@@ -612,45 +607,6 @@ export default async function MarketplacePage({
 
           {/* Flagship projects */}
           <FlagshipProjects projects={flagship} />
-
-          {/* Verified property listings */}
-          <section className="container-page section-y-sm">
-            <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="text-eyebrow mb-1.5">Verified Marketplace</p>
-                <h2 className="text-balance font-heading text-3xl font-bold uppercase leading-tight tracking-tight text-brand-950 sm:text-4xl">
-                  Find a place you can <span className="text-gold-600">trust.</span>
-                </h2>
-                <p className="mt-2 max-w-xl text-sm leading-6 text-ink-600">
-                  Browse verified apartments, plots, and commercial spaces.
-                </p>
-              </div>
-              <Link href={ROUTES.PROPERTIES}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5 rounded-full"
-                >
-                  Browse properties
-                  <ArrowRight aria-hidden="true" className="size-4" />
-                </Button>
-              </Link>
-            </header>
-
-            {properties.length === 0 ? (
-              <div className="rounded-3xl border border-dashed border-border/70 bg-white p-10 text-center text-sm text-ink-600">
-                No properties listed yet.
-              </div>
-            ) : (
-              <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                {properties.map((property) => (
-                  <li key={property.slug}>
-                    <PropertyCard property={property} />
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
         </>
       )}
 
