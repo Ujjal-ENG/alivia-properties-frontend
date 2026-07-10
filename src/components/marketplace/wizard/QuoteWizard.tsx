@@ -32,11 +32,11 @@ import { cn } from "@/lib/utils"
 type Step = 1 | 2 | 3 | 4 | 5
 
 const STEP_LABELS: Record<Step, string> = {
-  1: "Department",
-  2: "Category",
-  3: "Subcategory",
-  4: "Suppliers",
-  5: "Request",
+  1: "What",
+  2: "Type",
+  3: "Exact match",
+  4: "Sellers",
+  5: "Details",
 }
 
 type Props = {
@@ -200,7 +200,7 @@ export function QuoteWizard({ tree, initial }: Props) {
         <StepShell
           eyebrow="Step 1 of 5"
           title="What are you looking for?"
-          lead="Pick a department to get started."
+          lead="Tap one to get started."
         >
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {tree.map((d) => (
@@ -222,7 +222,7 @@ export function QuoteWizard({ tree, initial }: Props) {
       {step === 2 && dept && (
         <StepShell
           eyebrow="Step 2 of 5"
-          title={`Choose a category in ${dept.name}`}
+          title={`Pick a type in ${dept.name}`}
           lead="Narrow down to the product group you need."
         >
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -264,7 +264,7 @@ export function QuoteWizard({ tree, initial }: Props) {
       {step === 4 && sub && (
         <StepShell
           eyebrow="Step 4 of 5"
-          title={`Choose suppliers for ${sub.name}`}
+          title={`Choose sellers for ${sub.name}`}
           lead="Select one or more — or skip and let Alivia match you."
         >
           <SupplierStep
@@ -279,8 +279,8 @@ export function QuoteWizard({ tree, initial }: Props) {
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-4">
             <p className="text-sm text-ink-600">
               {selectedSupplierIds.length > 0
-                ? `${selectedSupplierIds.length} supplier${selectedSupplierIds.length === 1 ? "" : "s"} selected`
-                : "No suppliers selected — we'll route your request to verified matches."}
+                ? `${selectedSupplierIds.length} seller${selectedSupplierIds.length === 1 ? "" : "s"} selected`
+                : "No sellers selected — we'll route your request to verified matches."}
             </p>
             <Button onClick={() => advanceTo(5)} className="gap-1.5">
               {selectedSupplierIds.length > 0 ? "Continue" : "Skip — match me"}
@@ -516,7 +516,7 @@ function SupplierStep({
 
   if (suppliers.length === 0) {
     return (
-      <EmptyNote text="No verified suppliers listed here yet — continue and our marketplace team will return vetted matches within 24 hours." />
+      <EmptyNote text="No verified sellers listed here yet — continue and our marketplace team will return vetted matches within 24 hours." />
     )
   }
 
