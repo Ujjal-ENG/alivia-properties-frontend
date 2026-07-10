@@ -39,7 +39,7 @@ export default async function MarketplaceRequestPage({ searchParams }: Props) {
             Marketplace
           </Link>
           <span>›</span>
-          <span className="text-ink-900">Request a Quote</span>
+          <span className="text-ink-900">Ask for a Price</span>
         </nav>
 
         <div className="grid gap-8 lg:grid-cols-[1.5fr_1fr] lg:items-start">
@@ -47,11 +47,10 @@ export default async function MarketplaceRequestPage({ searchParams }: Props) {
             <header className="mb-6 border-b border-border/60 pb-5">
               <p className="text-eyebrow mb-2">Marketplace</p>
               <h1 className="font-heading text-2xl font-semibold text-balance text-ink-900 sm:text-3xl">
-                Request a quote in a few taps
+                Ask for a price in a few taps
               </h1>
               <p className="mt-2 text-sm text-ink-600">
-                Pick a department, category, and product type, choose suppliers, and tell us what
-                you need.
+                Tap through a few quick picks, choose sellers, and tell us the details.
               </p>
             </header>
 
