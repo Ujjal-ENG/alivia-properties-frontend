@@ -8,9 +8,7 @@ import {
   ChevronDown,
   CircleDollarSign,
   Headphones,
-  Menu,
   Package,
-  Plus,
   Search,
   ShieldCheck,
   ShoppingCart,
@@ -31,7 +29,6 @@ import { cn } from "@/lib/utils";
 import {
   marketplaceService,
   type MarketplaceCategory,
-  type ProductWithSupplier,
 } from "@/services/marketplace.service";
 import { projectsService } from "@/services/projects.service";
 import { propertiesService } from "@/services/properties.service";
@@ -60,8 +57,8 @@ type DepartmentGroup = {
   items: MarketplaceCategory[];
 };
 
-const FALLBACK_HERO_IMAGE = "/marketplace-reference/hero-building.png";
 const FALLBACK_LOGO_MARK = "/marketplace-reference/logo-mark.png";
+const CATEGORY_FALLBACK_IMAGE = "/marketplace-reference/cat-materials.png";
 
 const FALLBACK_CATEGORIES: MarketplaceCategory[] = [
   {
@@ -229,57 +226,6 @@ const FALLBACK_CATEGORIES: MarketplaceCategory[] = [
   },
 ];
 
-const FALLBACK_PRODUCTS: ProductWithSupplier[] = [
-  {
-    id: "fallback-steel",
-    slug: "tmt-steel-bars",
-    name: "TMT Steel Bars",
-    supplierId: "fallback-supplier",
-    categorySlug: "construction-materials",
-    image: "/marketplace-reference/product-steel.png",
-    price: 65000,
-    unit: "ton",
-    description: "High-grade reinforcement bars.",
-    inStock: true,
-  },
-  {
-    id: "fallback-mixer",
-    slug: "concrete-mixer",
-    name: "Concrete Mixer",
-    supplierId: "fallback-supplier",
-    categorySlug: "equipment-tools",
-    image: "/marketplace-reference/product-mixer.png",
-    price: 125000,
-    unit: "",
-    description: "Portable mixer for site work.",
-    inStock: true,
-  },
-  {
-    id: "fallback-helmet",
-    slug: "safety-helmet",
-    name: "Safety Helmet",
-    supplierId: "fallback-supplier",
-    categorySlug: "safety-ppe",
-    image: "/marketplace-reference/product-helmet.png",
-    price: 350,
-    unit: "piece",
-    description: "Site safety helmet.",
-    inStock: true,
-  },
-  {
-    id: "fallback-cement",
-    slug: "opc-53-grade-cement",
-    name: "OPC 53 Grade Cement",
-    supplierId: "fallback-supplier",
-    categorySlug: "construction-materials",
-    image: "/marketplace-reference/product-cement.png",
-    price: 420,
-    unit: "bag",
-    description: "Cement for structural work.",
-    inStock: true,
-  },
-];
-
 const DEPARTMENT_ICON_RULES: Array<{ keywords: string[]; icon: LucideIcon }> = [
   {
     keywords: ["material", "cement", "steel", "tile", "block", "brick"],
@@ -384,29 +330,6 @@ function categoryMatches(
   return haystack.includes(query);
 }
 
-function formatProductPrice(product: ProductWithSupplier) {
-  const value = Number.isFinite(product.price) ? Math.round(product.price) : 0;
-  const unit = product.unit?.trim() ? ` / ${product.unit}` : "";
-  return `৳${value.toLocaleString("en-BD")}${unit}`;
-}
-
-function quoteHrefForProduct(product: ProductWithSupplier) {
-  const params = new URLSearchParams({
-    productId: product.id,
-    productSlug: product.slug,
-  });
-
-  if (product.supplier?.slug) {
-    params.set("supplierSlug", product.supplier.slug);
-  }
-
-  if (product.category?.slug) {
-    params.set("categorySlug", product.category.slug);
-  }
-
-  return `${ROUTES.MARKETPLACE_QUOTE}?${params.toString()}`;
-}
-
 export default async function MarketplacePage({
   searchParams,
 }: MarketplacePageProps) {
@@ -415,11 +338,9 @@ export default async function MarketplacePage({
   const selectedDepartment = getParam(params, "department");
   const query = initialSearch.trim().toLowerCase();
 
-  const [categoriesRes, suppliersRes, productsRes, projectsRes, propertiesRes] =
+  const [categoriesRes, projectsRes, propertiesRes] =
     await Promise.allSettled([
       marketplaceService.listCategories(),
-      marketplaceService.listSuppliers({ limit: 6 }),
-      marketplaceService.listProducts({ limit: 4 }),
       projectsService.list({ limit: 6 }),
       propertiesService.list({ limit: 4 }),
     ]);
@@ -442,21 +363,8 @@ export default async function MarketplacePage({
 
   const loadedCategories =
     categoriesRes.status === "fulfilled" ? categoriesRes.value : [];
-  const loadedProducts =
-    productsRes.status === "fulfilled" ? productsRes.value.data : [];
   const categories =
     loadedCategories.length > 0 ? loadedCategories : FALLBACK_CATEGORIES;
-  const products =
-    loadedProducts.length > 0 ? loadedProducts : FALLBACK_PRODUCTS;
-
-  const supplierTotal =
-    suppliersRes.status === "fulfilled" && suppliersRes.value.meta.total > 0
-      ? suppliersRes.value.meta.total
-      : 5000;
-  const productTotal =
-    productsRes.status === "fulfilled" && productsRes.value.meta.total > 0
-      ? productsRes.value.meta.total
-      : 25000;
 
   const parentNameBySlug = new Map(
     categories.map((category) => [category.slug, category.name]),
@@ -513,15 +421,6 @@ export default async function MarketplacePage({
     })
     .filter(({ items }) => items.length > 0);
 
-  const heroImage = FALLBACK_HERO_IMAGE;
-
-  const stats = [
-    { icon: Package, label: "Products", value: productTotal },
-    { icon: User, label: "Trusted Sellers", value: supplierTotal },
-    { icon: Boxes, label: "Projects Completed", value: 12000 },
-    { icon: Truck, label: "On-time Delivery", value: 98, suffix: "%" },
-  ];
-
   const clearingSearch = !query && !selectedDepartment;
 
   return (
@@ -548,7 +447,7 @@ export default async function MarketplacePage({
               href={ROUTES.BUYER_MARKETPLACE_QUOTES}
               className="rounded-full px-2 transition-colors hover:bg-white/10 hover:text-white"
             >
-              Track Order
+              My Orders
             </Link>
             <a
               href={`tel:${siteConfig.contact.phoneRaw}`}
@@ -562,46 +461,86 @@ export default async function MarketplacePage({
 
       <section className="sticky top-0 z-30 border-b border-border/60 bg-white/95 backdrop-blur supports-backdrop-filter:bg-white/88">
         <div className="container-page max-w-373! py-2.5">
-          <div className="grid gap-4 xl:grid-cols-[auto_11.5rem_minmax(0,1fr)_auto] xl:items-center">
-            <Link href={ROUTES.MARKETPLACE} className="flex items-center gap-3">
-              <span className="relative size-11 shrink-0 overflow-hidden">
-                <Image
-                  src={FALLBACK_LOGO_MARK}
-                  alt=""
-                  fill
-                  unoptimized
-                  sizes="44px"
-                  className="object-cover"
-                />
-              </span>
-              <span className="min-w-0">
-                <span className="block truncate text-3xl font-bold text-brand-950">
-                  {siteConfig.name}
+          <div className="grid gap-2 xl:grid-cols-[auto_11.5rem_minmax(0,1fr)_auto] xl:items-center xl:gap-4">
+            <div className="flex items-center justify-between gap-3 xl:contents">
+              <Link href={ROUTES.MARKETPLACE} className="flex min-w-0 items-center gap-2.5 xl:gap-3">
+                <span className="relative size-9 shrink-0 overflow-hidden xl:size-11">
+                  <Image
+                    src={FALLBACK_LOGO_MARK}
+                    alt=""
+                    fill
+                    unoptimized
+                    sizes="44px"
+                    className="object-cover"
+                  />
                 </span>
-                <span className="block text-xs text-ink-500">
-                  Construction marketplace
+                <span className="min-w-0">
+                  <span className="block truncate text-lg font-bold text-brand-950 xl:text-3xl">
+                    {siteConfig.name}
+                  </span>
+                  <span className="hidden text-xs text-ink-500 xl:block">
+                    Construction marketplace
+                  </span>
                 </span>
-              </span>
-            </Link>
+              </Link>
 
-            <Link href="#shop-by-category">
-              <Button
-                size="lg"
-                className="h-11 w-full justify-start gap-3 rounded-md bg-brand-950 px-5 text-white hover:bg-brand-900"
+              {/* Compact account/cart icons — replaced by the labeled versions below at xl */}
+              <div className="flex shrink-0 items-center gap-1.5 xl:hidden">
+                <Link
+                  href={ROUTES.LOGIN}
+                  aria-label="My account"
+                  className="flex size-10 items-center justify-center rounded-full text-ink-700 transition-colors hover:bg-brand-50 hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                >
+                  <User aria-hidden="true" className="size-4.5" />
+                </Link>
+                <Link href={ROUTES.MARKETPLACE_REQUEST} aria-label="Cart" className="relative">
+                  <Button
+                    size="icon"
+                    className="relative size-10 rounded-full bg-white text-ink-900 shadow-none hover:bg-brand-50"
+                  >
+                    <ShoppingCart aria-hidden="true" className="size-4.5" />
+                  </Button>
+                  <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-gold-400 text-[10px] font-bold text-brand-950">
+                    0
+                  </span>
+                </Link>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 xl:contents">
+              <Link
+                href={ROUTES.PROJECTS}
+                aria-label="Browse projects"
+                className="cta-browse-projects flex size-11 shrink-0 touch-manipulation cursor-pointer items-center justify-center rounded-md bg-gold-400 text-brand-950 shadow-md shadow-gold-200/70 transition-[transform,background-color,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:bg-gold-300 hover:shadow-lg hover:shadow-gold-200/90 active:translate-y-0 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-900 focus-visible:ring-offset-2 motion-reduce:transition-none motion-reduce:hover:translate-y-0 xl:hidden"
               >
-                <Menu aria-hidden="true" className="size-5" />
-                Browse Categories
-              </Button>
-            </Link>
+                <Building2 aria-hidden="true" className="cta-browse-icon size-5" />
+              </Link>
+              <Link href={ROUTES.PROJECTS} className="hidden xl:block">
+                <Button
+                  size="lg"
+                  className="cta-browse-projects group h-11 w-full touch-manipulation cursor-pointer justify-start gap-2 rounded-md bg-gold-400 px-4 font-bold text-brand-950 shadow-md shadow-gold-200/70 transition-[transform,background-color,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:bg-gold-300 hover:shadow-lg hover:shadow-gold-200/90 active:translate-y-0 active:scale-[0.98] focus-visible:ring-brand-900 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                >
+                  <Building2 aria-hidden="true" className="cta-browse-icon size-5" />
+                  Browse Projects
+                  <ArrowRight
+                    aria-hidden="true"
+                    className="ml-auto size-4 transition-transform duration-300 ease-out group-hover:translate-x-1.5 group-hover:scale-110 group-active:translate-x-0 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0 motion-reduce:group-hover:scale-100"
+                  />
+                </Button>
+              </Link>
 
-            <MarketplaceSearchForm
-              departments={groups}
-              initialSearch={initialSearch}
-              selectedDepartment={selectedDepartment}
-              compact
-            />
+              <div className="min-w-0 flex-1 xl:contents">
+                <MarketplaceSearchForm
+                  departments={groups}
+                  initialSearch={initialSearch}
+                  selectedDepartment={selectedDepartment}
+                  compact
+                />
+              </div>
+            </div>
 
-            <div className="flex items-center gap-3 justify-self-start xl:justify-self-end">
+            {/* Labeled account/cart — xl only, compact icon versions above cover mobile/tablet */}
+            <div className="hidden items-center gap-3 xl:flex xl:justify-self-end">
               <Link
                 href={ROUTES.LOGIN}
                 className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-semibold text-ink-700 transition-colors hover:bg-brand-50 hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
@@ -648,155 +587,6 @@ export default async function MarketplacePage({
 
       {clearingSearch && (
         <>
-          <section className="container-page max-w-373! pb-4 pt-0">
-            <div className="overflow-hidden rounded-2xl bg-brand-950 text-white shadow-[0_28px_70px_rgba(10,37,31,0.18)]">
-              <div className="grid min-h-125 lg:grid-cols-[minmax(0,0.73fr)_minmax(0,1fr)]">
-                <div className="relative z-10 p-5 sm:p-6 lg:pb-0">
-                  <p className="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-gold-400">
-                    <span
-                      aria-hidden="true"
-                      className="h-0.5 w-3 bg-gold-400"
-                    />
-                    One marketplace. Endless possibilities.
-                  </p>
-                  <h1 className="mt-3 max-w-xl text-balance font-sans text-5xl font-extrabold leading-[0.98] text-white sm:text-[3.55rem]">
-                    Build More.
-                    <br />
-                    <span className="text-gold-400">Spend Less.</span>
-                  </h1>
-                  <p className="mt-3 max-w-lg text-base leading-6 text-white/88 sm:text-lg">
-                    Quality products, competitive prices, and trusted
-                    professionals for every construction need.
-                  </p>
-
-                  <MarketplaceSearchForm
-                    departments={groups}
-                    initialSearch={initialSearch}
-                    selectedDepartment={selectedDepartment}
-                    className="mt-3 max-w-xl"
-                  />
-
-                  <dl className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    {stats.map(({ icon: Icon, label, value, suffix }) => (
-                      <div
-                        key={label}
-                        className="flex items-center gap-2.5 border-white/18 xl:border-r xl:pr-4 last:border-r-0"
-                      >
-                        <Icon
-                          aria-hidden="true"
-                          className="size-6 shrink-0 text-white"
-                        />
-                        <div>
-                          <dd className="text-[22px] font-extrabold leading-6 text-white">
-                            {value >= 1000
-                              ? `${Math.round(value / 1000)}K`
-                              : value}
-                            {suffix ?? "+"}
-                          </dd>
-                          <dt className="text-[11px] font-semibold leading-4 text-white/86">
-                            {label}
-                          </dt>
-                        </div>
-                      </div>
-                    ))}
-                  </dl>
-                </div>
-
-                <div className="relative flex min-h-110 items-start justify-end p-5 lg:min-h-full lg:px-6 lg:pb-3 lg:pt-6">
-                  <Image
-                    src={heroImage}
-                    alt="Construction sourcing showcase"
-                    fill
-                    unoptimized
-                    loading="eager"
-                    sizes="(max-width: 1024px) 100vw, 55vw"
-                    className="object-cover"
-                  />
-                  <div
-                    aria-hidden="true"
-                    className="absolute inset-0 bg-linear-to-r from-brand-950 via-brand-950/20 to-brand-950/12"
-                  />
-                  <div
-                    aria-hidden="true"
-                    className="absolute inset-0 bg-linear-to-t from-brand-950/20 via-transparent to-brand-950/10"
-                  />
-
-                  <aside className="relative z-10 w-full max-w-77.5 rounded-xl bg-white p-5 text-ink-900 shadow-[0_24px_60px_rgba(15,23,42,0.18)]">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-base font-bold text-ink-900">
-                          Popular Right Now
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 divide-y divide-ink-200">
-                      {products.length > 0 ? (
-                        products.map((product) => {
-                          const ProductIcon = iconForKeyword(
-                            product.category?.name ?? product.name,
-                          );
-                          return (
-                          <article
-                            key={product.id}
-                            className="flex items-center gap-3 py-2"
-                          >
-                            <Link
-                              href={ROUTES.MARKETPLACE_PRODUCT(product.slug)}
-                              className="flex min-w-0 flex-1 items-center gap-3"
-                            >
-                              <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded bg-ink-100">
-                                {product.image ? (
-                                  <Image
-                                    src={product.image}
-                                    alt={product.name}
-                                    fill
-                                    unoptimized
-                                    sizes="64px"
-                                    className="object-cover"
-                                  />
-                                ) : (
-                                  <span className="flex size-full items-center justify-center bg-brand-50 text-brand-700">
-                                    <ProductIcon
-                                      aria-hidden="true"
-                                      className="size-5"
-                                    />
-                                  </span>
-                                )}
-                              </div>
-                              <div className="min-w-0">
-                                <p className="truncate text-sm font-bold text-ink-900">
-                                  {product.name}
-                                </p>
-                                <p className="mt-1 text-xs font-medium text-ink-600">
-                                  {formatProductPrice(product)}
-                                </p>
-                              </div>
-                            </Link>
-
-                            <Link
-                              href={quoteHrefForProduct(product)}
-                              aria-label={`Request a quote for ${product.name}`}
-                              className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-800 text-white transition-colors hover:bg-brand-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-                            >
-                              <Plus aria-hidden="true" className="size-4" />
-                            </Link>
-                          </article>
-                          );
-                        })
-                      ) : (
-                        <div className="rounded-[1.35rem] border border-dashed border-ink-200 px-4 py-6 text-sm text-ink-500">
-                          Product cards will appear here as suppliers publish
-                          catalogue items.
-                        </div>
-                      )}
-                    </div>
-                  </aside>
-                </div>
-              </div>
-            </div>
-          </section>
-
           <section className="container-page max-w-373! pb-0">
             <div className="grid gap-4 rounded-xl border border-border/70 bg-white px-6 py-3 shadow-sm sm:grid-cols-2 xl:grid-cols-5">
               {BENEFITS.map(({ icon: Icon, title, body }) => (
@@ -825,15 +615,14 @@ export default async function MarketplacePage({
 
           {/* Verified property listings */}
           <section className="container-page section-y-sm">
-            <header className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+            <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-eyebrow mb-2">Marketplace</p>
-                <h2 className="font-heading text-3xl font-bold uppercase tracking-tight text-brand-950 sm:text-4xl">
-                  Verified property listings.
+                <p className="text-eyebrow mb-1.5">Verified Marketplace</p>
+                <h2 className="text-balance font-heading text-3xl font-bold uppercase leading-tight tracking-tight text-brand-950 sm:text-4xl">
+                  Find a place you can <span className="text-gold-600">trust.</span>
                 </h2>
-                <p className="mt-3 max-w-2xl text-sm text-ink-600">
-                  Apartments, plots, and commercial spaces from verified sellers
-                  — clear pricing, real documents.
+                <p className="mt-2 max-w-xl text-sm leading-6 text-ink-600">
+                  Browse verified apartments, plots, and commercial spaces.
                 </p>
               </div>
               <Link href={ROUTES.PROPERTIES}>
@@ -873,7 +662,9 @@ export default async function MarketplacePage({
           <div>
             <h2 className="font-sans text-2xl font-extrabold leading-7 text-ink-900">
               {clearingSearch
-                ? "Shop by Category"
+                ? <>
+                    Build by <span className="text-gold-600">Category</span>
+                  </>
                 : initialSearch
                   ? `Results for “${initialSearch}”`
                   : "Search results"}
@@ -898,7 +689,7 @@ export default async function MarketplacePage({
               href={ROUTES.MARKETPLACE_REQUEST}
               className="inline-flex min-h-11 items-center gap-2 rounded-full text-sm font-semibold text-brand-700 transition-colors hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
             >
-              Can&apos;t find it? Request a quote
+              Can&apos;t find it? Ask for a price
               <ArrowRight aria-hidden="true" className="size-4" />
             </Link>
           </div>
@@ -948,7 +739,7 @@ export default async function MarketplacePage({
                         >
                           <div className="relative aspect-[1.65] overflow-hidden bg-ink-100">
                             <Image
-                              src={imageForCategory(category) ?? heroImage}
+                              src={imageForCategory(category) ?? CATEGORY_FALLBACK_IMAGE}
                               alt={category.name}
                               fill
                               unoptimized
@@ -1009,7 +800,7 @@ export default async function MarketplacePage({
                   size="lg"
                   className="rounded-full bg-brand-950 px-5 text-white hover:bg-brand-900"
                 >
-                  Request a Quote
+                  Ask for a Price
                 </Button>
               </Link>
             </div>
@@ -1034,15 +825,30 @@ export default async function MarketplacePage({
                 <p className="mt-1 text-sm leading-6 text-ink-700">
                   Get exclusive discounts on bulk purchases.
                 </p>
-                <Link href={ROUTES.MARKETPLACE_REQUEST}>
-                  <Button
-                    size="sm"
-                    className="mt-2 gap-2 rounded-md bg-brand-800 px-4 text-white hover:bg-brand-900"
-                  >
-                    Request a Quote
-                    <ArrowRight aria-hidden="true" className="size-4" />
-                  </Button>
-                </Link>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <Link href={ROUTES.MARKETPLACE_REQUEST}>
+                    <Button
+                      size="sm"
+                      className="gap-2 rounded-md bg-brand-800 px-4 text-white hover:bg-brand-900"
+                    >
+                      Ask for a Price
+                      <ArrowRight aria-hidden="true" className="size-4" />
+                    </Button>
+                  </Link>
+                  <Link href={ROUTES.PROPERTIES}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="cta-browse-properties group min-h-11 touch-manipulation cursor-pointer gap-2 rounded-md border-gold-500 bg-gold-400 px-4 font-bold text-brand-950 shadow-md shadow-gold-200/70 transition-[transform,background-color,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:bg-gold-300 hover:shadow-lg hover:shadow-gold-200/90 active:translate-y-0 active:scale-[0.98] focus-visible:ring-brand-900 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                    >
+                      Browse Properties
+                      <ArrowRight
+                        aria-hidden="true"
+                        className="size-4 transition-transform duration-300 ease-out group-hover:translate-x-1.5 group-hover:scale-110 group-active:translate-x-0 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0 motion-reduce:group-hover:scale-100"
+                      />
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
 
@@ -1185,7 +991,7 @@ function MarketplaceSearchForm({
         type="search"
         defaultValue={initialSearch}
         autoComplete="off"
-        placeholder="Search materials, equipment, services..."
+        placeholder="What are you looking for?"
         className={cn(
           "h-12 w-full bg-white px-4 text-sm font-medium text-ink-900 outline-none transition-[border-color,box-shadow] placeholder:text-ink-400 focus-visible:border-brand-400 focus-visible:ring-2 focus-visible:ring-brand-200",
           compact ? "rounded-none border-0" : "rounded-none border-0",
@@ -1200,7 +1006,7 @@ function MarketplaceSearchForm({
       className={cn(
         "grid",
         compact
-          ? "overflow-hidden rounded-md border border-ink-200 bg-white md:grid-cols-[minmax(0,1fr)_9.25rem_3rem]"
+          ? "overflow-hidden rounded-md border border-ink-200 bg-white grid-cols-[minmax(0,1fr)_auto_3rem]"
           : "overflow-hidden rounded-md bg-white md:grid-cols-[11rem_minmax(0,1fr)_3rem]",
         className,
       )}
