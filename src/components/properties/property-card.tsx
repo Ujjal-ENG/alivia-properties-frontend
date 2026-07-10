@@ -21,8 +21,15 @@ export function PropertyCard({ property, layout = "grid" }: PropertyCardProps) {
 
   return (
     <article
-      className={`surface-card group overflow-hidden transition-transform duration-300 hover:-translate-y-1 ${
-        layout === "list" ? "md:grid md:grid-cols-[20rem_1fr]" : ""
+      className={`group overflow-hidden rounded-xl border-2 border-t-4 bg-white transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1 hover:border-brand-300 hover:shadow-(--shadow-elevated) ${
+        property.purpose === "rent"
+          ? "border-ink-900/10 border-t-gold-400"
+          : "border-ink-900/10 border-t-brand-700"
+      } ${
+        layout === "list"
+          ? "md:grid md:grid-cols-[20rem_1fr] md:border-t-2 md:border-l-4 " +
+            (property.purpose === "rent" ? "md:border-l-gold-400" : "md:border-l-brand-700")
+          : ""
       }`}
     >
       <div className="relative">
@@ -45,12 +52,16 @@ export function PropertyCard({ property, layout = "grid" }: PropertyCardProps) {
             <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">No image</div>
           )}
 
-          <div className="absolute left-4 top-4 flex gap-2">
-            {property.isFeatured && <VerifiedBadge type="featured" />}
-            {property.isVerified && !property.isFeatured && <VerifiedBadge type="verified" />}
+          <div className="absolute left-3 top-3 flex gap-1.5">
+            {property.isFeatured && (
+              <VerifiedBadge type="featured" className="rounded-md border-2 shadow-sm" />
+            )}
+            {property.isVerified && !property.isFeatured && (
+              <VerifiedBadge type="verified" className="rounded-md border-2 shadow-sm" />
+            )}
           </div>
 
-          <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-4">
+          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-4">
             <div className="max-w-[70%] text-white">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/70">
                 {property.purpose === "rent" ? "For rent" : "For sale"}
@@ -60,19 +71,19 @@ export function PropertyCard({ property, layout = "grid" }: PropertyCardProps) {
                 <p className="mt-1 text-xs text-white/70">Negotiable</p>
               )}
             </div>
-            <div className={`rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur-md ${
+            <div className={`rounded-md border-2 px-3 py-1 text-xs font-bold uppercase tracking-wide shadow-sm ${
               property.purpose === "rent"
-                ? "border-blue-200/70 bg-blue-50/90 text-blue-700"
-                : "border-emerald-200/70 bg-emerald-50/90 text-emerald-700"
+                ? "border-blue-700 bg-blue-50 text-blue-700"
+                : "border-emerald-700 bg-emerald-50 text-emerald-700"
             }`}>
               {property.purpose === "rent" ? "Rent" : "Sale"}
             </div>
           </div>
         </Link>
 
-        <div className="absolute right-4 top-4 z-10 flex flex-col gap-2">
-          <SaveButton propertyId={property.id} className="glass-clear glass-interactive h-11 w-11 text-ink-800" />
-          <CompareButton property={property} className="glass-clear glass-interactive h-11 w-11 text-ink-800" />
+        <div className="absolute right-3 top-3 z-10 flex flex-col gap-2">
+          <SaveButton propertyId={property.id} className="h-9 w-9 rounded-md border-2 border-white shadow-sm" />
+          <CompareButton property={property} className="h-9 w-9 rounded-md border-2 border-white shadow-sm" />
         </div>
       </div>
 
@@ -95,23 +106,23 @@ export function PropertyCard({ property, layout = "grid" }: PropertyCardProps) {
 
           <div className="flex flex-wrap gap-2 text-xs text-ink-600">
             {property.bedrooms !== undefined && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-ink-50 px-3 py-1.5">
+              <span className="inline-flex items-center gap-1 rounded-md border border-ink-100 bg-ink-50 px-3 py-1.5">
                 <BedDouble className="h-3.5 w-3.5 text-brand-600" />
                 {property.bedrooms} Bed
               </span>
             )}
             {property.bathrooms !== undefined && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-ink-50 px-3 py-1.5">
+              <span className="inline-flex items-center gap-1 rounded-md border border-ink-100 bg-ink-50 px-3 py-1.5">
                 <Bath className="h-3.5 w-3.5 text-brand-600" />
                 {property.bathrooms} Bath
               </span>
             )}
-            <span className="inline-flex items-center gap-1 rounded-full bg-ink-50 px-3 py-1.5">
+            <span className="inline-flex items-center gap-1 rounded-md border border-ink-100 bg-ink-50 px-3 py-1.5">
               <Maximize2 className="h-3.5 w-3.5 text-brand-600" />
               {property.size} {property.sizeUnit}
             </span>
             {layout === "list" && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1.5 text-brand-800">
+              <span className="inline-flex items-center gap-1 rounded-md border border-brand-100 bg-brand-50 px-3 py-1.5 text-brand-800">
                 <Eye className="h-3.5 w-3.5" />
                 {property.viewCount} views
               </span>
@@ -125,7 +136,7 @@ export function PropertyCard({ property, layout = "grid" }: PropertyCardProps) {
           )}
         </div>
 
-        <div className={`flex items-center justify-between gap-4 border-t border-border/80 pt-4 ${layout === "list" ? "md:pt-5" : ""}`}>
+        <div className={`flex items-center justify-between gap-4 border-t-2 border-ink-100 pt-4 ${layout === "list" ? "md:pt-5" : ""}`}>
           <div className="min-w-0">
             <p className="text-[0.68rem] uppercase tracking-[0.18em] text-ink-500">Seller</p>
             <div className="mt-2 flex items-center gap-2">
@@ -135,7 +146,7 @@ export function PropertyCard({ property, layout = "grid" }: PropertyCardProps) {
                   alt={property.sellerName}
                   width={28}
                   height={28}
-                  className="rounded-full"
+                  className="rounded-md"
                 />
               )}
               <div className="min-w-0">
@@ -146,7 +157,7 @@ export function PropertyCard({ property, layout = "grid" }: PropertyCardProps) {
           </div>
 
           {layout === "grid" ? (
-            <div className="rounded-full bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-800">
+            <div className="rounded-md border border-brand-100 bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-800">
               <span className="inline-flex items-center gap-1">
                 <Eye className="h-3.5 w-3.5" />
                 {property.viewCount}
@@ -157,7 +168,7 @@ export function PropertyCard({ property, layout = "grid" }: PropertyCardProps) {
               href={ROUTES.PROPERTY_DETAIL(property.slug)}
               className="inline-flex min-h-11 items-center"
             >
-              <span className="inline-flex rounded-full bg-ink-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-ink-800">
+              <span className="inline-flex rounded-md bg-ink-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-ink-800">
                 View Details
               </span>
             </Link>
