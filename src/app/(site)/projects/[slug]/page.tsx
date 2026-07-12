@@ -369,7 +369,7 @@ export default async function ProjectDetailPage({
             {hasUnits ? (
               <div>
                 <h2 className="text-h3 mb-4">Unit Types & Pricing</h2>
-                <div className="rounded-xl border border-border overflow-hidden">
+                <div className="overflow-x-auto rounded-xl border border-border scrollbar-thin [scrollbar-color:var(--color-brand-300)_transparent]">
                   <table className="w-full text-sm">
                     <thead className="bg-ink-50 text-xs uppercase text-muted-foreground">
                       <tr>
@@ -377,7 +377,7 @@ export default async function ProjectDetailPage({
                           (h) => (
                             <th
                               key={h}
-                              className="px-4 py-2.5 text-left font-semibold"
+                              className="whitespace-nowrap px-4 py-2.5 text-left font-semibold"
                             >
                               {h}
                             </th>
@@ -391,20 +391,20 @@ export default async function ProjectDetailPage({
                           key={unit.type ?? unit.name}
                           className="hover:bg-ink-50"
                         >
-                          <td className="px-4 py-3 font-medium">
+                          <td className="whitespace-nowrap px-4 py-3 font-medium">
                             {unit.type ?? unit.name}
                           </td>
-                          <td className="px-4 py-3 text-muted-foreground">
+                          <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
                             {unit.size}
                           </td>
-                          <td className="px-4 py-3 text-brand-700 font-semibold">
+                          <td className="whitespace-nowrap px-4 py-3 text-brand-700 font-semibold">
                             {unit.priceFrom != null && unit.priceTo != null
                               ? formatPriceRange(unit.priceFrom, unit.priceTo)
                               : unit.price != null
                                 ? formatPriceRange(unit.price, unit.price)
                                 : "—"}
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="whitespace-nowrap px-4 py-3">
                             {unit.available ?? "—"}/
                             {unit.total ?? unit.available ?? "—"}
                           </td>
