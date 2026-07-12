@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ArrowRight, Clock, Mail, MapPin, MessageCircle, Phone, ShieldCheck, Sparkles } from "lucide-react"
+import { Mail, MapPin, MessageCircle, Phone } from "lucide-react"
 import { siteConfig } from "@/config/site.config"
 import { ROUTES } from "@/config/routes.config"
 
@@ -44,32 +44,13 @@ function LinkedinIcon({ className }: { className?: string }) {
 
 /* ── Data ── */
 
-const STATS = [
-  { value: `${siteConfig.stats.projectsCompleted}+`, label: "Projects Delivered" },
-  { value: `${(siteConfig.stats.happyFamilies / 1000).toFixed(1)}K+`, label: "Families Served" },
-  { value: `${siteConfig.stats.yearsExperience}+`, label: "Years Trusted" },
-  { value: `${siteConfig.stats.totalListings}+`, label: "Active Listings" },
-] as const
-
 const QUICK_LINKS = [
   { label: "Home", href: ROUTES.HOME },
   { label: "Projects", href: ROUTES.PROJECTS },
   { label: "Properties", href: ROUTES.PROPERTIES },
-  { label: "Map Search", href: ROUTES.MAP_SEARCH },
+  { label: "Marketplace", href: ROUTES.MARKETPLACE },
   { label: "Consultation", href: ROUTES.CONSULTATION },
-  { label: "Blog", href: ROUTES.BLOG },
-  { label: "About Us", href: ROUTES.ABOUT },
-  { label: "Contact Us", href: ROUTES.CONTACT },
-]
-
-const SERVICES = [
-  { label: "Buy Property", href: `${ROUTES.PROPERTIES}?purpose=sale` },
-  { label: "Rent Property", href: `${ROUTES.PROPERTIES}?purpose=rent` },
-  { label: "List Your Property", href: ROUTES.REGISTER },
-  { label: "Book Consultation", href: ROUTES.CONSULTATION },
-  { label: "Our Projects", href: ROUTES.PROJECTS },
-  { label: "Compare Properties", href: ROUTES.COMPARE },
-  { label: "Seller Dashboard", href: ROUTES.SELLER_DASHBOARD },
+  { label: "Contact", href: ROUTES.CONTACT },
 ]
 
 const SOCIALS = [
@@ -79,126 +60,36 @@ const SOCIALS = [
   { href: siteConfig.social.linkedin, Icon: LinkedinIcon, label: "LinkedIn" },
 ] as const
 
-const TRUST_TAGS = ["Verified projects", "Local market insights", "Consultation-first", "RAJUK registered"]
-
 /* ── Component ── */
 
 export function SiteFooter() {
   const year = new Date().getFullYear()
 
   return (
-    <footer className="relative bg-ink-900 text-white">
-      {/* Subtle dot-grid texture */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.035]"
-        style={{
-          backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-        }}
-      />
-      {/* Top brand glow */}
-      <div aria-hidden className="pointer-events-none absolute left-0 right-0 top-0 h-64 bg-linear-to-b from-brand-900/40 to-transparent" />
-
-      {/* ── CTA Band ── */}
-      <div className="relative border-b border-white/10">
-        <div className="container-page py-14 md:py-18">
-          <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-start lg:gap-16">
-
-            {/* Left */}
-            <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 rounded-full border border-brand-600/40 bg-brand-800/30 px-3 py-1.5">
-                <ShieldCheck className="h-3.5 w-3.5 text-brand-400" />
-                <span className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand-300">
-                  Bangladesh&apos;s trusted real estate platform
-                </span>
-              </div>
-
-              <div>
-                <h2 className="max-w-2xl text-3xl font-bold leading-tight text-white sm:text-4xl md:text-5xl">
-                  Find your next property
-                  <span className="block text-gold-400">with confidence.</span>
-                </h2>
-                <p className="mt-4 max-w-xl text-base leading-relaxed text-ink-400">
-                  Verified listings, premium projects, and expert consultation — all across Bangladesh.
-                </p>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                {TRUST_TAGS.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-ink-400"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Right: CTAs */}
-            <div className="flex shrink-0 flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
-              <Link
-                href={ROUTES.PROPERTIES}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-brand-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-500"
-              >
-                Browse Properties
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                href={ROUTES.CONSULTATION}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-6 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/10"
-              >
-                Book Consultation
-              </Link>
-            </div>
-          </div>
-
-          {/* Stats row */}
-          <div className="mt-12 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {STATS.map((stat) => (
-              <div
-                key={stat.label}
-                className="rounded-2xl border border-white/8 bg-white/5 px-4 py-5 text-center transition-colors hover:bg-white/8"
-              >
-                <p className="font-heading text-3xl font-bold text-gold-400">{stat.value}</p>
-                <p className="mt-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-ink-500">
-                  {stat.label}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Main columns ── */}
-      <div className="relative container-page py-14 md:py-16">
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
-
-          {/* Brand column */}
-          <div className="space-y-5 sm:col-span-2 lg:col-span-1">
-            {/* Logo mark */}
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-brand-600 to-brand-800">
-                <Sparkles className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <span className="block font-heading text-base font-semibold tracking-tight text-white">
-                  {siteConfig.shortName}
-                  <span className="ml-1 text-gold-400">Properties</span>
-                </span>
-                <span className="text-[0.65rem] font-medium uppercase tracking-[0.16em] text-ink-500">
-                  Bangladesh real estate
-                </span>
-              </div>
-            </div>
-
-            <p className="text-sm leading-relaxed text-ink-400">
-              {siteConfig.tagline}. Built for buyers, investors, sellers, and families moving with confidence.
+    <footer className="border-t border-ink-200 bg-ink-950 text-white">
+      <div className="container-page py-8 md:py-10">
+        <div className="grid gap-8 lg:grid-cols-[1.1fr_0.8fr_1.1fr] lg:items-start">
+          <div>
+            <Link
+              href={ROUTES.HOME}
+              className="inline-flex min-h-11 items-center font-heading text-base font-semibold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+            >
+              {siteConfig.shortName}
+              <span className="ml-1 text-gold-400">Properties</span>
+            </Link>
+            <p className="mt-2 max-w-sm text-sm leading-relaxed text-ink-400">
+              {siteConfig.tagline}. Verified real estate support across Bangladesh.
             </p>
-
-            {/* Social icons */}
-            <div className="flex items-center gap-2.5">
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <a
+                href={`https://wa.me/${siteConfig.contact.whatsApp}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-brand-600/40 bg-brand-700/20 px-4 text-sm font-semibold text-brand-200 transition-colors duration-200 hover:bg-brand-700/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+              >
+                <MessageCircle aria-hidden="true" className="size-4" />
+                WhatsApp
+              </a>
               {SOCIALS.map(({ href, Icon, label }) => (
                 <a
                   key={href}
@@ -206,130 +97,79 @@ export function SiteFooter() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="group flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 transition-all hover:border-brand-500/60 hover:bg-brand-700"
+                  className="flex size-11 items-center justify-center rounded-full border border-white/10 text-ink-400 transition-colors duration-200 hover:border-brand-500 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
                 >
-                  <Icon className="h-4 w-4 text-ink-400 transition-colors group-hover:text-white" />
+                  <Icon className="size-4" />
                 </a>
               ))}
             </div>
-
-            {/* WhatsApp CTA */}
-            <a
-              href={`https://wa.me/${siteConfig.contact.whatsApp}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-11 items-center gap-2 rounded-full border border-emerald-700/50 bg-emerald-900/30 px-4 text-sm font-semibold text-emerald-400 transition-colors hover:bg-emerald-800/40"
-            >
-              <MessageCircle className="h-4 w-4" />
-              Chat on WhatsApp
-            </a>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h4 className="mb-5 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-ink-500">
+          <nav aria-label="Footer navigation">
+            <h2 className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-ink-500">
               Explore
-            </h4>
-            <ul className="space-y-3">
+            </h2>
+            <ul className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 sm:max-w-sm">
               {QUICK_LINKS.map(({ label, href }) => (
                 <li key={href}>
                   <Link
                     href={href}
-                    className="group inline-flex min-h-11 min-w-11 items-center gap-2 text-sm text-ink-400 transition-colors hover:text-white"
+                    className="inline-flex min-h-10 items-center text-sm text-ink-400 transition-colors duration-200 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
                   >
-                    <span className="inline-block h-px w-0 shrink-0 bg-brand-500 transition-all duration-200 group-hover:w-3" />
                     {label}
                   </Link>
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
 
-          {/* Services */}
-          <div>
-            <h4 className="mb-5 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-ink-500">
-              Services
-            </h4>
-            <ul className="space-y-3">
-              {SERVICES.map(({ label, href }) => (
-                <li key={href}>
-                  <Link
-                    href={href}
-                    className="group inline-flex min-h-11 min-w-11 items-center gap-2 text-sm text-ink-400 transition-colors hover:text-white"
-                  >
-                    <span className="inline-block h-px w-0 shrink-0 bg-brand-500 transition-all duration-200 group-hover:w-3" />
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Contact */}
-          <div>
-            <h4 className="mb-5 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-ink-500">
-              Contact Us
-            </h4>
-            <ul className="space-y-4">
+          <address className="not-italic">
+            <h2 className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-ink-500">
+              Contact
+            </h2>
+            <ul className="mt-3 space-y-1 text-sm text-ink-400">
               <li>
                 <a
                   href={`tel:${siteConfig.contact.phoneRaw}`}
-                  className="group flex min-h-11 items-start gap-3 text-sm text-ink-400 transition-colors hover:text-white"
+                  className="inline-flex min-h-10 items-center gap-2 transition-colors duration-200 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
                 >
-                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/5 text-brand-400 transition-colors group-hover:bg-brand-900/60">
-                    <Phone className="h-3.5 w-3.5" />
-                  </span>
-                  <span className="pt-1">{siteConfig.contact.phone}</span>
+                  <Phone aria-hidden="true" className="size-4 text-brand-400" />
+                  {siteConfig.contact.phone}
                 </a>
               </li>
               <li>
                 <a
                   href={`mailto:${siteConfig.contact.email}`}
-                  className="group flex min-h-11 items-start gap-3 text-sm text-ink-400 transition-colors hover:text-white"
+                  className="inline-flex min-h-10 items-center gap-2 break-all transition-colors duration-200 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
                 >
-                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/5 text-brand-400 transition-colors group-hover:bg-brand-900/60">
-                    <Mail className="h-3.5 w-3.5" />
-                  </span>
-                  <span className="break-all pt-1">{siteConfig.contact.email}</span>
+                  <Mail aria-hidden="true" className="size-4 shrink-0 text-brand-400" />
+                  {siteConfig.contact.email}
                 </a>
               </li>
-              <li className="flex items-start gap-3 text-sm text-ink-400">
-                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/5 text-brand-400">
-                  <MapPin className="h-3.5 w-3.5" />
-                </span>
-                <span className="pt-1 leading-relaxed">{siteConfig.contact.address}</span>
-              </li>
-              <li className="flex items-start gap-3 text-sm text-ink-500">
-                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/5 text-ink-600">
-                  <Clock className="h-3.5 w-3.5" />
-                </span>
-                <span className="pt-1">{siteConfig.contact.officeHours}</span>
+              <li className="flex min-h-10 items-start gap-2 pt-2">
+                <MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-brand-400" />
+                <span className="leading-relaxed">{siteConfig.contact.address}</span>
               </li>
             </ul>
-          </div>
+          </address>
         </div>
       </div>
 
-      {/* ── Bottom bar ── */}
-      <div className="relative border-t border-white/8">
-        <div className="container-page py-5">
-          <div className="flex flex-col items-center justify-between gap-3 text-xs text-ink-600 sm:flex-row">
-            <p>
-              © {year}{" "}
-              <span className="font-medium text-ink-400">{siteConfig.name}</span>
-              . All rights reserved.
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
-              <Link href="/privacy" className="inline-flex min-h-11 min-w-11 items-center transition-colors hover:text-ink-300">
-                Privacy Policy
-              </Link>
-              <Link href="/terms" className="inline-flex min-h-11 min-w-11 items-center transition-colors hover:text-ink-300">
-                Terms of Use
-              </Link>
-              <Link href={ROUTES.CONTACT} className="inline-flex min-h-11 min-w-11 items-center transition-colors hover:text-ink-300">
-                Support
-              </Link>
-            </div>
+      <div className="border-t border-white/8">
+        <div className="container-page flex flex-col gap-2 py-3 text-xs text-ink-500 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            © {year} <span className="text-ink-400">{siteConfig.name}</span>. All rights reserved.
+          </p>
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
+            <Link href="/privacy" className="inline-flex min-h-9 items-center transition-colors duration-200 hover:text-ink-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300">
+              Privacy
+            </Link>
+            <Link href="/terms" className="inline-flex min-h-9 items-center transition-colors duration-200 hover:text-ink-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300">
+              Terms
+            </Link>
+            <Link href={ROUTES.CONTACT} className="inline-flex min-h-9 items-center transition-colors duration-200 hover:text-ink-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300">
+              Support
+            </Link>
           </div>
         </div>
       </div>
