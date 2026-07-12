@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import { MessageSquare, Send, X } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 type ChatMessage = {
   id: string
@@ -56,9 +57,14 @@ export function LiveChatWidget() {
   }
 
   return (
-    <div className="fixed bottom-5 right-5 z-50">
+    <div
+      className={cn(
+        "fixed z-50",
+        open ? "inset-x-4 bottom-5 sm:inset-x-auto sm:right-5" : "bottom-5 right-5",
+      )}
+    >
       {open ? (
-        <div className="surface-panel w-[22rem] overflow-hidden p-0 shadow-pop">
+        <div className="surface-panel w-full overflow-hidden p-0 shadow-pop sm:w-[22rem]">
           <div className="flex items-center justify-between border-b border-border/70 bg-ink-900 px-4 py-3 text-white">
             <div>
               <p className="text-sm font-semibold">Alivia Live Chat</p>
