@@ -1,5 +1,4 @@
 import {
-  ArrowLeft,
   CheckCircle2,
   Clock3,
   FileText,
@@ -12,6 +11,8 @@ import {
   TrendingUp,
   Truck,
 } from "lucide-react";
+
+import { MarketplaceBreadcrumb, type Crumb } from "@/components/marketplace/MarketplaceBreadcrumb";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -114,19 +115,10 @@ export default async function SupplierProfilePage({ params }: PageProps) {
       ? formatCompactBd(supplier.itemsSold)
       : "New";
 
+  const breadcrumbTrail: Crumb[] = [{ label: supplier.name }];
+
   return (
     <main className="bg-white">
-      <div className="border-b border-border/60 bg-ink-50/70">
-        <div className="container-page py-3">
-          <Link
-            href={ROUTES.MARKETPLACE}
-            className="inline-flex items-center gap-1.5 text-xs text-ink-600 transition-colors hover:text-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-          >
-            <ArrowLeft aria-hidden="true" className="size-3" /> Back to
-            marketplace
-          </Link>
-        </div>
-      </div>
 
       <section className="relative overflow-hidden border-b border-border/60 bg-ink-950 text-white">
         {supplier.coverImage && (
@@ -297,6 +289,8 @@ export default async function SupplierProfilePage({ params }: PageProps) {
           </div>
         </div>
       </section>
+
+      <MarketplaceBreadcrumb trail={breadcrumbTrail} />
 
       <section className="container-page py-10 sm:py-14">
         <div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

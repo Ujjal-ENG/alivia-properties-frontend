@@ -1,8 +1,9 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, CheckCircle2, Clock3, FileText, Phone, Sparkles, Truck } from "lucide-react"
+import { CheckCircle2, Clock3, FileText, Phone, Sparkles, Truck } from "lucide-react"
 
+import { MarketplaceBreadcrumb, type Crumb } from "@/components/marketplace/MarketplaceBreadcrumb"
 import { MarketplaceSupplierShowcaseCard } from "@/components/marketplace/MarketplaceSupplierShowcaseCard"
 import { Button } from "@/components/ui/button"
 import { CategoryImageCard } from "@/components/marketplace/CategoryImageCard"
@@ -100,31 +101,21 @@ export default async function MarketplaceCategoryPage({ params }: PageProps) {
     { icon: Truck, label: "Area fit", text: "Matches consider delivery and visit coverage." },
   ]
 
+  const breadcrumbTrail: Crumb[] = [
+    ...(dept
+      ? [{ label: dept.name, href: ROUTES.MARKETPLACE_CATEGORY(dept.slug) }]
+      : []),
+    ...(cat
+      ? [{ label: cat.name, href: ROUTES.MARKETPLACE_CATEGORY(cat.slug) }]
+      : []),
+    { label: node.name },
+  ]
+
   return (
     <main className="bg-white">
-      <div className="border-b border-border/60 bg-ink-50/50">
-        <div className="container-page py-3">
-          <Link
-            href={ROUTES.MARKETPLACE}
-            className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs text-ink-600 transition-colors hover:text-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-          >
-            <ArrowLeft aria-hidden="true" className="size-3" /> Back to marketplace
-          </Link>
-        </div>
-      </div>
-
       <section className="relative overflow-hidden border-b border-border/60 bg-linear-to-r from-brand-950 via-brand-900 to-brand-700 text-white">
         <div className="container-page relative py-10 sm:py-14">
-          <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-brand-100">
-            {dept && <Link href={ROUTES.MARKETPLACE_CATEGORY(dept.slug)} className="rounded px-1 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300">{dept.name}</Link>}
-            {cat && (
-              <>
-                <span className="text-brand-300">›</span>
-                <Link href={ROUTES.MARKETPLACE_CATEGORY(cat.slug)} className="rounded px-1 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-300">{cat.name}</Link>
-              </>
-            )}
-          </div>
-          <h1 className="mt-3 font-heading text-3xl font-semibold sm:text-4xl">{node.name}</h1>
+          <h1 className="font-heading text-3xl font-semibold sm:text-4xl">{node.name}</h1>
           {node.description && (
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-brand-100">{node.description}</p>
           )}
@@ -159,6 +150,8 @@ export default async function MarketplaceCategoryPage({ params }: PageProps) {
           </div>
         </div>
       </section>
+
+      <MarketplaceBreadcrumb trail={breadcrumbTrail} />
 
       <section className="container-page py-10 sm:py-14">
         <div className="grid gap-8 lg:grid-cols-[1fr_320px]">

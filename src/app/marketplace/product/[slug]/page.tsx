@@ -2,8 +2,9 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import Image from "next/image"
 import { notFound } from "next/navigation"
+
+import { MarketplaceBreadcrumb, type Crumb } from "@/components/marketplace/MarketplaceBreadcrumb"
 import {
-  ArrowLeft,
   ArrowUpRight,
   CheckCircle2,
   Clock3,
@@ -67,18 +68,16 @@ export default async function MarketplaceProductPage({ params }: PageProps) {
   const serviceMode = isServiceKind(supplier?.kind)
   const providerText = providerLabel(supplier?.kind)
 
+  const breadcrumbTrail: Crumb[] = [
+    ...(supplier
+      ? [{ label: supplier.name, href: ROUTES.MARKETPLACE_SUPPLIER(supplier.slug) }]
+      : []),
+    { label: product.name },
+  ]
+
   return (
     <main className="bg-white">
-      <div className="border-b border-border/60 bg-ink-50/50">
-        <div className="container-page py-3">
-          <Link
-            href={ROUTES.MARKETPLACE}
-            className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs text-ink-600 transition-colors hover:text-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-          >
-            <ArrowLeft aria-hidden="true" className="size-3" /> Back to marketplace
-          </Link>
-        </div>
-      </div>
+      <MarketplaceBreadcrumb trail={breadcrumbTrail} />
 
       <section className="container-page py-10 sm:py-14">
         <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr]">
