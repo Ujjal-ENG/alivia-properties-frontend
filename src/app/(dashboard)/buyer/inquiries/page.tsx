@@ -68,7 +68,7 @@ export default async function BuyerInquiriesPage({
     <div>
       <DashboardPageHeader
         title="My Inquiries"
-        description="Track every property and project message you have sent."
+        description="Track every property and apartment message you have sent."
       />
       <DataTable columns={columns} data={inquiries.data} />
       <TablePagination meta={inquiries.meta} />

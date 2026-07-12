@@ -37,7 +37,7 @@ export function ProjectAtAGlance({ facts }: { facts: ProjectFact[] }) {
       </div>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-left text-sm">
-          <caption className="sr-only">Key facts about this project</caption>
+          <caption className="sr-only">Key facts about this apartment</caption>
           <thead>
             <tr className="border-b border-border bg-ink-100/60 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
               <th

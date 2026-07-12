@@ -29,7 +29,7 @@ export default async function AdminInquiriesPage({
         icon={MessageSquare}
         eyebrow="Activity"
         title="Inquiries"
-        description="Manage property, project, general leads, plus Be a Supplier / Be an Investor applications. Filter by Supplier or Investor to see partner requests."
+        description="Manage property, apartment, general leads, plus Be a Supplier / Be an Investor applications. Filter by Supplier or Investor to see partner requests."
       />
       <AdminInquiriesTable
         key={`${page}-${sp.status ?? "all"}-${sp.type ?? "all"}`}

@@ -191,7 +191,7 @@ function MarketplacePathfinder() {
     {
       icon: Headset,
       title: "I need someone to guide me",
-      body: "Book a consultation for property, supplier, investment, or project questions.",
+      body: "Book a consultation for property, supplier, investment, or apartment questions.",
       href: ROUTES.CONSULTATION,
       cta: "Talk to Advisor",
       accent: "bg-ink-900 text-white",

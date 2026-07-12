@@ -15,7 +15,7 @@ export default async function MapSearchPage() {
           <h1 className="font-bold text-base mb-2">Map Search</h1>
           <input
             type="text"
-            placeholder="Search area, project, address…"
+            placeholder="Search area, apartment, address…"
             className="w-full rounded-xl border border-border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-400"
           />
         </div>

@@ -65,7 +65,7 @@ const JOURNEYS = [
   },
   {
     title: "Talk before you decide",
-    body: "Get help choosing areas, budgets, suppliers, or project options.",
+    body: "Get help choosing areas, budgets, suppliers, or apartment options.",
     href: ROUTES.CONSULTATION,
     icon: Compass,
   },
@@ -74,7 +74,7 @@ const JOURNEYS = [
 function getPlaceholder(tab: Tab) {
   if (tab === "marketplace") return "Search cement, tiles, paint, contractor…";
   if (tab === "consultation") return "Tell us what you need help with…";
-  if (tab === "projects") return "Search Jolshiri, handover status, project…";
+  if (tab === "projects") return "Search Jolshiri, handover status, apartment…";
   return "Search by area, district, or keyword…";
 }
 

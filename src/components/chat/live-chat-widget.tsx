@@ -11,7 +11,7 @@ type ChatMessage = {
 }
 
 const BOT_REPLIES = [
-  "Thanks. Team can help with projects, listings, consultations, and site visits.",
+  "Thanks. Team can help with apartments, listings, consultations, and site visits.",
   "For now this is dummy chat. Reply still simulates quick support flow.",
   "Share area, budget, and purpose. That usually speeds shortlist quality.",
 ]
@@ -23,7 +23,7 @@ export function LiveChatWidget() {
     {
       id: "welcome",
       role: "bot",
-      text: "Hi. Need help with property search, project info, or consultation booking?",
+      text: "Hi. Need help with property search, apartment info, or consultation booking?",
     },
   ])
 

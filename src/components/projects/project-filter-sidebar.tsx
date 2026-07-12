@@ -90,7 +90,7 @@ export function ProjectFilterSidebar() {
               autoComplete="off"
               spellCheck={false}
               className="w-full bg-transparent text-sm text-ink-700 outline-none placeholder:text-ink-400"
-              aria-label="Search projects by name or location"
+              aria-label="Search apartments by name or location"
             />
           </div>
         </div>
@@ -153,7 +153,7 @@ export function ProjectFilterSidebar() {
             <span className="size-2 rounded-sm bg-white opacity-0 transition-opacity" />
           </span>
           <Star className="h-4 w-4 text-brand-600" />
-          <span className="text-sm font-medium">Flagship projects only</span>
+          <span className="text-sm font-medium">Flagship apartments only</span>
         </label>
       </div>
     </aside>

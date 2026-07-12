@@ -8,9 +8,9 @@ const MILESTONES = [
   { year: "2011", title: "Company Founded",     description: "Alivia Properties established in Dhaka with a vision to transform Bangladesh real estate." },
   { year: "2013", title: "First Apartment",        description: "Delivered Alivia Gardens — our first completed residential apartment in Uttara." },
   { year: "2016", title: "Marketplace Launch",   description: "Launched the online property marketplace connecting buyers, sellers, and renters across Bangladesh." },
-  { year: "2019", title: "1,000 Families",       description: "Reached the milestone of 1,000 happy families across our projects and marketplace." },
+  { year: "2019", title: "1,000 Families",       description: "Reached the milestone of 1,000 happy families across our apartments and marketplace." },
   { year: "2022", title: "Digital Expansion",    description: "Launched our fully digital property listing and verification platform." },
-  { year: "2025", title: "New Developments",     description: "Alivia Heights and Alivia Skyline announced as our most ambitious projects to date." },
+  { year: "2025", title: "New Developments",     description: "Alivia Heights and Alivia Skyline announced as our most ambitious apartments to date." },
 ]
 
 export default function AboutUsPage() {

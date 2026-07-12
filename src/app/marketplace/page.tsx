@@ -190,7 +190,7 @@ const FALLBACK_CATEGORIES: MarketplaceCategory[] = [
     id: "dept-services",
     slug: "services",
     name: "Services",
-    description: "Contractors, installers, repair teams, and project services.",
+    description: "Contractors, installers, repair teams, and apartment services.",
     level: "DEPARTMENT",
     order: 7,
   },

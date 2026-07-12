@@ -108,7 +108,7 @@ export function FlagshipProjects({ projects }: { projects: FlagshipProject[] }) 
             href={ROUTES.PROJECTS}
             className="inline-flex min-h-11 items-center gap-1.5 rounded-2xl bg-brand-700 px-4 text-xs font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
           >
-            View all projects
+            View all apartments
             <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />
           </Link>
         </div>

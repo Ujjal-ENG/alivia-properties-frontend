@@ -39,7 +39,7 @@ const COPY: Record<
   },
   investor: {
     purposeLabel: "Purpose of investment",
-    purposePlaceholder: "e.g. Apartment project, land, commercial space…",
+    purposePlaceholder: "e.g. Apartment building, land, commercial space…",
     detailsLabel: "Details of your investment interest",
     detailsPlaceholder:
       "Tell us about your budget range, preferred locations, expected timeline, and what you're looking for.",

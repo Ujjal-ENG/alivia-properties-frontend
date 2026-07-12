@@ -34,7 +34,7 @@ const TYPES: Record<
     lead: "Invest in Bangladesh real estate with Alivia. Tell us your interest and budget, and our team will share curated opportunities that fit.",
     bullets: [
       { icon: ShieldCheck, title: "RAJUK-registered developer", desc: "Invest alongside an established, compliant developer." },
-      { icon: Sparkles, title: "Curated opportunities", desc: "Get matched to projects and properties that fit your goals." },
+      { icon: Sparkles, title: "Curated opportunities", desc: "Get matched to apartments and properties that fit your goals." },
       { icon: Clock, title: "Personal follow-up", desc: "A specialist reaches out to understand your plans." },
     ],
   },

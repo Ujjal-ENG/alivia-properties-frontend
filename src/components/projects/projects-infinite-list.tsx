@@ -75,7 +75,7 @@ export function ProjectsInfiniteList({
           ref={sentinelRef}
           className="flex justify-center py-10 text-sm text-muted-foreground"
         >
-          {loading ? "Loading more projects…" : null}
+          {loading ? "Loading more apartments…" : null}
         </div>
       ) : null}
     </>

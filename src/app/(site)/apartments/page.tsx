@@ -87,7 +87,7 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
           </div>
 
           <p className="text-sm text-muted-foreground">
-            {res.meta.total === 0 ? "0 projects" : `${res.meta.total} projects`}
+            {res.meta.total === 0 ? "0 apartments" : `${res.meta.total} apartments`}
           </p>
         </div>
 
@@ -112,8 +112,8 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
             {res.data.length === 0 ? (
               <EmptyState
                 icon={Building2}
-                title="No projects found"
-                description="No projects match the selected filters."
+                title="No apartments found"
+                description="No apartments match the selected filters."
               />
             ) : (
               <ProjectsInfiniteList

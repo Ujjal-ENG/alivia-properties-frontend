@@ -1,28 +1,28 @@
 export const dynamic = "force-dynamic";
 
-import { after } from "next/server";
-import { notFound } from "next/navigation";
-import Link from "next/link";
-import {
-  MapPin,
-  Building2,
-  Phone,
-  MessageCircle,
-  ChevronRight,
-  Sparkles,
-} from "lucide-react";
-import { ProjectGallery } from "@/components/projects/project-gallery";
 import { ProjectAtAGlance } from "@/components/projects/project-at-a-glance";
 import { buildProjectFacts } from "@/components/projects/project-facts";
-import { getProject, recordProjectView } from "@/services/projects.service";
-import { formatPriceRange } from "@/utils/format-price";
-import { PROJECT_STATUS_STYLES } from "@/lib/constants";
-import { ROUTES } from "@/config/routes.config";
-import { Button } from "@/components/ui/button";
+import { ProjectGallery } from "@/components/projects/project-gallery";
 import { StructuredData } from "@/components/seo/structured-data";
+import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/config/routes.config";
 import { siteConfig } from "@/config/site.config";
+import { PROJECT_STATUS_STYLES } from "@/lib/constants";
 import { parseProjectDescription } from "@/lib/project-description";
+import { getProject, recordProjectView } from "@/services/projects.service";
 import type { Project } from "@/types/project.types";
+import { formatPriceRange } from "@/utils/format-price";
+import {
+  Building2,
+  ChevronRight,
+  MapPin,
+  MessageCircle,
+  Phone,
+  Sparkles,
+} from "lucide-react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { after } from "next/server";
 
 interface ProjectDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -369,7 +369,7 @@ export default async function ProjectDetailPage({
             {hasUnits ? (
               <div>
                 <h2 className="text-h3 mb-4">Unit Types & Pricing</h2>
-                <div className="overflow-x-auto rounded-xl border border-border [scrollbar-width:thin] [scrollbar-color:var(--color-brand-300)_transparent]">
+                <div className="overflow-x-auto rounded-xl border border-border scrollbar-thin [scrollbar-color:var(--color-brand-300)_transparent]">
                   <table className="w-full text-sm">
                     <thead className="bg-ink-50 text-xs uppercase text-muted-foreground">
                       <tr>
