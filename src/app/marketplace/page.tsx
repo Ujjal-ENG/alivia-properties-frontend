@@ -682,8 +682,8 @@ export default async function MarketplacePage({
                     </div>
                   </div>
 
-                  <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-                    {items.map((category) => {
+                  <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                    {items.slice(0, 5).map((category) => {
                       const count = category.productCount ?? 0;
                       const productLabel =
                         count > 0
@@ -731,6 +731,18 @@ export default async function MarketplacePage({
                       );
                     })}
                   </div>
+
+                  {items.length > 5 ? (
+                    <div className="mt-5 flex justify-center sm:justify-start">
+                      <Link
+                        href={ROUTES.MARKETPLACE_CATEGORY(group.slug)}
+                        className="inline-flex min-h-11 items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-5 text-sm font-semibold text-brand-700 transition-colors hover:border-brand-300 hover:bg-white hover:text-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                      >
+                        See all {group.name}
+                        <ArrowRight aria-hidden="true" className="size-4" />
+                      </Link>
+                    </div>
+                  ) : null}
                 </div>
               );
             })}
