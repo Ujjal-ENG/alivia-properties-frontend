@@ -1,48 +1,48 @@
-"use client"
+"use client";
 
-import { useMemo, useState } from "react"
-import { MessageSquare, Send, X } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
+import { MessageSquare, Send, X } from "lucide-react";
+import { useMemo, useState } from "react";
 
 type ChatMessage = {
-  id: string
-  role: "user" | "bot"
-  text: string
-}
+  id: string;
+  role: "user" | "bot";
+  text: string;
+};
 
 const BOT_REPLIES = [
   "Thanks. Team can help with apartments, listings, consultations, and site visits.",
   "For now this is dummy chat. Reply still simulates quick support flow.",
   "Share area, budget, and purpose. That usually speeds shortlist quality.",
-]
+];
 
 export function LiveChatWidget() {
-  const [open, setOpen] = useState(false)
-  const [input, setInput] = useState("")
+  const [open, setOpen] = useState(false);
+  const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "welcome",
       role: "bot",
       text: "Hi. Need help with property search, apartment info, or consultation booking?",
     },
-  ])
+  ]);
 
   const lastBotReply = useMemo(
     () => BOT_REPLIES[(messages.length - 1) % BOT_REPLIES.length],
     [messages.length],
-  )
+  );
 
   function sendMessage() {
-    if (!input.trim()) return
+    if (!input.trim()) return;
 
     const userMessage: ChatMessage = {
       id: `user-${Date.now()}`,
       role: "user",
       text: input.trim(),
-    }
+    };
 
-    setMessages((current) => [...current, userMessage])
-    setInput("")
+    setMessages((current) => [...current, userMessage]);
+    setInput("");
 
     window.setTimeout(() => {
       setMessages((current) => [
@@ -52,23 +52,27 @@ export function LiveChatWidget() {
           role: "bot",
           text: lastBotReply,
         },
-      ])
-    }, 500)
+      ]);
+    }, 500);
   }
 
   return (
     <div
       className={cn(
         "fixed z-50",
-        open ? "inset-x-4 bottom-5 sm:inset-x-auto sm:right-5" : "bottom-5 right-5",
+        open
+          ? "inset-x-4 bottom-5 sm:inset-x-auto sm:right-5"
+          : "bottom-5 right-5",
       )}
     >
       {open ? (
-        <div className="surface-panel w-full overflow-hidden p-0 shadow-pop sm:w-[22rem]">
+        <div className="surface-panel w-full overflow-hidden p-0 shadow-pop sm:w-88">
           <div className="flex items-center justify-between border-b border-border/70 bg-ink-900 px-4 py-3 text-white">
             <div>
               <p className="text-sm font-semibold">Alivia Live Chat</p>
-              <p className="text-xs text-white/70">Dummy auto-reply assistant</p>
+              <p className="text-xs text-white/70">
+                Dummy auto-reply assistant
+              </p>
             </div>
             <button
               type="button"
@@ -102,7 +106,7 @@ export function LiveChatWidget() {
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
                 onKeyDown={(event) => {
-                  if (event.key === "Enter") sendMessage()
+                  if (event.key === "Enter") sendMessage();
                 }}
                 placeholder="Ask about listings…"
                 autoComplete="off"
@@ -131,5 +135,5 @@ export function LiveChatWidget() {
         </button>
       )}
     </div>
-  )
+  );
 }
