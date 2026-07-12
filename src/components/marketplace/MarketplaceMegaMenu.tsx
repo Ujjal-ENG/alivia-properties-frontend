@@ -183,8 +183,9 @@ export function MarketplaceMegaMenu({ data }: { data: MegaMenuData }) {
           aria-label="Marketplace categories"
           className="absolute left-0 top-[calc(100%+0.5rem)] z-50 hidden w-208 max-w-[calc(100vw-2rem)] grid-cols-[16rem_minmax(0,1fr)] overflow-hidden rounded-2xl border border-border/70 bg-white shadow-(--shadow-pop) md:grid"
         >
-          {/* Left rail: departments */}
-          <ul className="max-h-120 overflow-y-auto border-r border-border/60 bg-ink-50/60 p-2">
+          {/* Left rail: departments (scroll) + browse button pinned to bottom */}
+          <div className="flex max-h-120 min-h-96 flex-col border-r border-border/60 bg-ink-50/60">
+            <ul className="flex-1 overflow-y-auto p-2">
             {departments.map((dept) => {
               const isActive = dept.slug === activeDept?.slug;
               return (
@@ -211,8 +212,9 @@ export function MarketplaceMegaMenu({ data }: { data: MegaMenuData }) {
                 </li>
               );
             })}
-            <li className="p-2 pt-3">{browseAllBtn}</li>
-          </ul>
+            </ul>
+            <div className="border-t border-border/60 p-3">{browseAllBtn}</div>
+          </div>
 
           {/* Right panel: categories (with thumbnails) + their subcategories */}
           <div className="max-h-120 overflow-y-auto p-5">
