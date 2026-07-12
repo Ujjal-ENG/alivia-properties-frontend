@@ -346,7 +346,7 @@ export default async function MarketplacePage({
 
   const [categoriesRes, projectsRes] = await Promise.allSettled([
     marketplaceService.listCategories(),
-    projectsService.list({ limit: 6 }),
+    projectsService.list({ limit: 3 }),
   ]);
 
   const flagship: FlagshipProject[] = (
