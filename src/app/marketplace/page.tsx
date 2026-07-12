@@ -190,7 +190,7 @@ const FALLBACK_CATEGORIES: MarketplaceCategory[] = [
     id: "dept-services",
     slug: "services",
     name: "Services",
-    description: "Contractors, installers, repair teams, and apartment services.",
+    description: "Contractors, installers, repair teams, and construction services.",
     level: "DEPARTMENT",
     order: 7,
   },
@@ -881,7 +881,7 @@ export default async function MarketplacePage({
             </span>
             <div>
               <h3 className="font-sans text-base font-extrabold text-ink-900">
-                Apartment Solutions
+                Construction Solutions
               </h3>
               <p className="mt-1 text-sm leading-5 text-ink-600">
                 End-to-end solutions for your construction needs.
