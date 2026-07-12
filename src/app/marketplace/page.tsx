@@ -33,6 +33,7 @@ import {
 } from "@/services/marketplace.service";
 import { projectsService } from "@/services/projects.service";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { MarketplaceMegaMenu } from "@/components/marketplace/MarketplaceMegaMenu";
 import {
   FlagshipProjects,
   type FlagshipProject,
@@ -511,26 +512,13 @@ export default async function MarketplacePage({
             </div>
 
             <div className="flex items-center gap-2 xl:contents">
-              <Link
-                href={ROUTES.PROJECTS}
-                aria-label="Browse projects"
-                className="cta-browse-projects flex size-11 shrink-0 touch-manipulation cursor-pointer items-center justify-center rounded-md bg-gold-400 text-brand-950 shadow-md shadow-gold-200/70 transition-[transform,background-color,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:bg-gold-300 hover:shadow-lg hover:shadow-gold-200/90 active:translate-y-0 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-900 focus-visible:ring-offset-2 motion-reduce:transition-none motion-reduce:hover:translate-y-0 xl:hidden"
-              >
-                <Building2 aria-hidden="true" className="cta-browse-icon size-5" />
-              </Link>
-              <Link href={ROUTES.PROJECTS} className="hidden xl:block">
-                <Button
-                  size="lg"
-                  className="cta-browse-projects group h-11 w-full touch-manipulation cursor-pointer justify-start gap-2 rounded-md bg-gold-400 px-4 font-bold text-brand-950 shadow-md shadow-gold-200/70 transition-[transform,background-color,box-shadow] duration-200 ease-out hover:-translate-y-0.5 hover:bg-gold-300 hover:shadow-lg hover:shadow-gold-200/90 active:translate-y-0 active:scale-[0.98] focus-visible:ring-brand-900 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-                >
-                  <Building2 aria-hidden="true" className="cta-browse-icon size-5" />
-                  Browse Projects
-                  <ArrowRight
-                    aria-hidden="true"
-                    className="ml-auto size-4 transition-transform duration-300 ease-out group-hover:translate-x-1.5 group-hover:scale-110 group-active:translate-x-0 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0 motion-reduce:group-hover:scale-100"
-                  />
-                </Button>
-              </Link>
+              <MarketplaceMegaMenu
+                data={{
+                  departments: groups,
+                  categoriesByDepartment: childrenByGroup,
+                  subcategoriesByCategory,
+                }}
+              />
 
               <div className="min-w-0 flex-1 xl:contents">
                 <MarketplaceSearchForm
