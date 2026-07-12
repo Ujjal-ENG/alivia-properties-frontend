@@ -2,7 +2,7 @@ import { Building2, Users, Clock, Home } from "lucide-react"
 import { siteConfig } from "@/config/site.config"
 
 const STATS = [
-  { icon: Building2, value: `${siteConfig.stats.projectsCompleted}+`, label: "Projects Delivered" },
+  { icon: Building2, value: `${siteConfig.stats.projectsCompleted}+`, label: "Apartments Delivered" },
   { icon: Users,     value: `${siteConfig.stats.happyFamilies.toLocaleString()}+`, label: "Happy Families" },
   { icon: Clock,     value: `${siteConfig.stats.yearsExperience}+`, label: "Years Experience" },
   { icon: Home,      value: `${siteConfig.stats.totalListings}+`, label: "Active Listings" },

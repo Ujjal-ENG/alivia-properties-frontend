@@ -120,7 +120,7 @@ export function FlagshipProjects({ projects }: { projects: FlagshipProject[] }) 
             <Building2 aria-hidden="true" className="size-5" />
           </div>
           <h3 className="mt-4 font-heading text-xl font-semibold text-brand-950">
-            Projects are being prepared
+            Apartments are being prepared
           </h3>
           <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-ink-600">
             We are updating this gallery with current Alivia developments. Open

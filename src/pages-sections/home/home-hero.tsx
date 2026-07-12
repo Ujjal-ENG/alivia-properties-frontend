@@ -36,7 +36,7 @@ type Tab = "marketplace" | "properties" | "projects" | "consultation";
 const TABS: { id: Tab; label: string }[] = [
   { id: "marketplace", label: "Find Suppliers" },
   { id: "properties", label: "Buy or Rent" },
-  { id: "projects", label: "Alivia Projects" },
+  { id: "projects", label: "Alivia Apartments" },
   { id: "consultation", label: "Get Advice" },
 ];
 

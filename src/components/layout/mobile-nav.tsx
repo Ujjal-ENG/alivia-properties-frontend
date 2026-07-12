@@ -41,7 +41,7 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   Home,
   Marketplace: ShoppingBag,
   Properties: Building2,
-  Projects: Landmark,
+  Apartments: Landmark,
   Agents: Users,
   Guides: Compass,
   Company: Info,
@@ -50,7 +50,7 @@ const NAV_ICONS: Record<string, LucideIcon> = {
 const QUICK_ACTIONS: { label: string; caption: string; href: string; icon: LucideIcon }[] = [
   { label: "Properties", caption: "Buy & rent", href: ROUTES.PROPERTIES, icon: Building2 },
   { label: "Marketplace", caption: "Suppliers & quotes", href: ROUTES.MARKETPLACE, icon: ShoppingBag },
-  { label: "Projects", caption: "Our developments", href: ROUTES.PROJECTS, icon: Landmark },
+  { label: "Apartments", caption: "Our developments", href: ROUTES.PROJECTS, icon: Landmark },
   { label: "Consult", caption: "Talk to an expert", href: ROUTES.CONSULTATION, icon: Headset },
 ]
 

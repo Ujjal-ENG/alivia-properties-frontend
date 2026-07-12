@@ -33,7 +33,7 @@ export function ProjectAtAGlance({ facts }: { facts: ProjectFact[] }) {
         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-700">
           Essential details
         </p>
-        <h2 className="mt-1 text-xl font-bold text-ink-900">Project at a glance</h2>
+        <h2 className="mt-1 text-xl font-bold text-ink-900">Apartment at a glance</h2>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-left text-sm">

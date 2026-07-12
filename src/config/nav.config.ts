@@ -32,12 +32,12 @@ export const publicNav: NavItem[] = [
     ],
   },
   {
-    label: "Projects",
+    label: "Apartments",
     href: ROUTES.PROJECTS,
     children: [
-      { label: "Ongoing Projects", href: `${ROUTES.PROJECTS}?status=ongoing` },
-      { label: "Upcoming Projects", href: `${ROUTES.PROJECTS}?status=upcoming` },
-      { label: "Completed Projects", href: `${ROUTES.PROJECTS}?status=completed` },
+      { label: "Ongoing Apartments", href: `${ROUTES.PROJECTS}?status=ongoing` },
+      { label: "Upcoming Apartments", href: `${ROUTES.PROJECTS}?status=upcoming` },
+      { label: "Completed Apartments", href: `${ROUTES.PROJECTS}?status=completed` },
     ],
   },
   { label: "Agents", href: ROUTES.AGENTS },

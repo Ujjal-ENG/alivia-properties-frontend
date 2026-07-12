@@ -6,7 +6,7 @@ import { StatsSection } from "@/pages-sections/home/stats-section"
 
 const MILESTONES = [
   { year: "2011", title: "Company Founded",     description: "Alivia Properties established in Dhaka with a vision to transform Bangladesh real estate." },
-  { year: "2013", title: "First Project",        description: "Delivered Alivia Gardens — our first completed residential project in Uttara." },
+  { year: "2013", title: "First Apartment",        description: "Delivered Alivia Gardens — our first completed residential apartment in Uttara." },
   { year: "2016", title: "Marketplace Launch",   description: "Launched the online property marketplace connecting buyers, sellers, and renters across Bangladesh." },
   { year: "2019", title: "1,000 Families",       description: "Reached the milestone of 1,000 happy families across our projects and marketplace." },
   { year: "2022", title: "Digital Expansion",    description: "Launched our fully digital property listing and verification platform." },
@@ -107,7 +107,7 @@ export default function AboutUsPage() {
               { icon: ShieldCheck, label: "RAJUK Registered",  sub: "Fully compliant" },
               { icon: Building2,   label: "14+ Years",          sub: "In real estate" },
               { icon: Users,       label: "1,800+ Families",    sub: "Served with pride" },
-              { icon: Clock,       label: "12 Projects",        sub: "Delivered on time" },
+              { icon: Clock,       label: "12 Apartments",        sub: "Delivered on time" },
             ].map(({ icon: Icon, label, sub }) => (
               <div key={label} className="space-y-2">
                 <div className="h-10 w-10 rounded-xl bg-brand-50 flex items-center justify-center mx-auto">

@@ -893,7 +893,7 @@ export default async function MarketplacePage({
             </span>
             <div>
               <h3 className="font-sans text-base font-extrabold text-ink-900">
-                Project Solutions
+                Apartment Solutions
               </h3>
               <p className="mt-1 text-sm leading-5 text-ink-600">
                 End-to-end solutions for your construction needs.

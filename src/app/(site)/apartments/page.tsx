@@ -58,7 +58,7 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
       <div className="container-page">
         <SectionHeader
           eyebrow="Our Portfolio"
-          title="Alivia Projects"
+          title="Alivia Apartments"
           subtitle="Explore our premium residential and commercial developments across Bangladesh."
           align="left"
         />

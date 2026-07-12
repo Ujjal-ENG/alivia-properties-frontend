@@ -99,7 +99,7 @@ function projectLocationText(project: Project): string {
   return (
     [project.address, project.location, project.area, project.division].find(
       (value) => value && !toMapEmbedUrl(value),
-    ) ?? "Project location"
+    ) ?? "Apartment location"
   );
 }
 
@@ -209,7 +209,7 @@ export default async function ProjectDetailPage({
           </Link>
           <ChevronRight className="h-3 w-3" />
           <Link href={ROUTES.PROJECTS} className="hover:text-foreground">
-            Projects
+            Apartments
           </Link>
           <ChevronRight className="h-3 w-3" />
           <span className="text-foreground font-medium">{project.name}</span>
@@ -253,7 +253,7 @@ export default async function ProjectDetailPage({
             {hasAboutProjectContent ? (
               <div>
                 <div className="mb-4">
-                  <h2 className="text-h3 mb-2">About This Project</h2>
+                  <h2 className="text-h3 mb-2">About This Apartment</h2>
                   <p className="text-sm text-muted-foreground">
                     A cleaner overview of the key details, layout, and standout
                     project points.
@@ -527,7 +527,7 @@ export default async function ProjectDetailPage({
 
               {/* Contact card */}
               <div className="bg-white rounded-2xl p-5 border border-border space-y-4">
-                <h3 className="font-bold">Enquire About This Project</h3>
+                <h3 className="font-bold">Enquire About This Apartment</h3>
                 <div className="space-y-2">
                   <a
                     href={`tel:${siteConfig.contact.phoneRaw}`}

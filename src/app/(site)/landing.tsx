@@ -81,7 +81,7 @@ export default async function HomePage() {
 
   const heroProjects: HeroProjectCard[] = projects.slice(0, 2).map((p) => ({
     slug: pick<string>(p, "slug", ""),
-    name: pick<string>(p, "name", "Alivia Project"),
+    name: pick<string>(p, "name", "Alivia Apartment"),
     location: pickLocationText(
       [
         pick<string | null>(p, "location", null),
@@ -99,7 +99,7 @@ export default async function HomePage() {
     const total = pick<number | null>(p, "totalUnits", null);
     return {
       slug: pick<string>(p, "slug", ""),
-      name: pick<string>(p, "name", "Alivia Project"),
+      name: pick<string>(p, "name", "Alivia Apartment"),
       location: pickLocationText(
         [
           pick<string | null>(p, "location", null),
@@ -248,7 +248,7 @@ function VerifiedNumbers() {
   const items = [
     {
       value: `${siteConfig.stats.projectsCompleted}+`,
-      label: "Projects completed",
+      label: "Apartments completed",
     },
     {
       value: `${siteConfig.stats.happyFamilies.toLocaleString("en-US")}+`,
@@ -803,7 +803,7 @@ function ExpertCta() {
                 d: "Match the right area to your real budget.",
               },
               {
-                t: "Project comparison",
+                t: "Apartment comparison",
                 d: "Weigh options with clear, honest data.",
               },
               {
