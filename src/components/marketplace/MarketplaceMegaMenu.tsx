@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Boxes, ChevronRight, LayoutGrid, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Boxes, ChevronRight, LayoutGrid, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 import { ROUTES } from "@/config/routes.config";
 import { cn } from "@/lib/utils";
@@ -17,18 +17,68 @@ export type MegaMenuData = {
 
 const HOVER_CLOSE_DELAY = 140;
 
-function DeptThumb({ dept }: { dept: MarketplaceCategory }) {
-  const src = dept.image?.url ?? dept.iconUrl ?? null;
-  if (!src) {
+/**
+ * Departments carry no image in the taxonomy, so map the 5 known departments to
+ * the curated marketplace art in /public. Unknown slugs fall back to an icon.
+ */
+const DEPT_IMAGE: Record<string, string> = {
+  "raw-materials": "/marketplace-reference/cat-materials.png",
+  finishing: "/marketplace-reference/cat-interior.png",
+  utilities: "/marketplace-reference/cat-plumbing.png",
+  "safety-electronics": "/marketplace-reference/cat-safety.png",
+  services: "/marketplace-reference/cat-services.png",
+};
+
+function imageFor(
+  node: MarketplaceCategory,
+  fallbackDeptSlug?: string,
+): string | null {
+  return (
+    node.image?.url ??
+    node.iconUrl ??
+    (node.level === "DEPARTMENT" ? DEPT_IMAGE[node.slug] : null) ??
+    (fallbackDeptSlug ? DEPT_IMAGE[fallbackDeptSlug] : null) ??
+    null
+  );
+}
+
+/** Rounded thumbnail that degrades to a tinted icon on missing/broken image. */
+function Thumb({
+  src,
+  className = "size-9",
+}: {
+  src: string | null;
+  className?: string;
+}) {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) {
     return (
-      <span className="flex size-8 items-center justify-center rounded-md bg-brand-50 text-brand-700">
+      <span
+        className={cn(
+          className,
+          "flex shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600",
+        )}
+      >
         <Boxes aria-hidden="true" className="size-4" />
       </span>
     );
   }
   return (
-    <span className="relative size-8 shrink-0 overflow-hidden rounded-md bg-brand-50">
-      <Image src={src} alt="" fill sizes="32px" className="object-cover" unoptimized />
+    <span
+      className={cn(
+        className,
+        "relative shrink-0 overflow-hidden rounded-lg bg-ink-100 ring-1 ring-border/50",
+      )}
+    >
+      <Image
+        src={src}
+        alt=""
+        fill
+        sizes="44px"
+        className="object-cover"
+        unoptimized
+        onError={() => setFailed(true)}
+      />
     </span>
   );
 }
@@ -82,7 +132,7 @@ export function MarketplaceMegaMenu({ data }: { data: MegaMenuData }) {
   const activeDept =
     departments.find((d) => d.slug === activeSlug) ?? departments[0];
   const activeCategories = activeDept
-    ? categoriesByDepartment[activeDept.slug] ?? []
+    ? (categoriesByDepartment[activeDept.slug] ?? [])
     : [];
 
   const browseAllBtn = (
@@ -98,7 +148,11 @@ export function MarketplaceMegaMenu({ data }: { data: MegaMenuData }) {
   if (departments.length === 0) return null;
 
   return (
-    <div className="relative" onMouseEnter={openPanel} onMouseLeave={scheduleClose}>
+    <div
+      className="relative"
+      onMouseEnter={openPanel}
+      onMouseLeave={scheduleClose}
+    >
       {/* Trigger */}
       <button
         ref={triggerRef}
@@ -127,10 +181,10 @@ export function MarketplaceMegaMenu({ data }: { data: MegaMenuData }) {
         <div
           role="menu"
           aria-label="Marketplace categories"
-          className="absolute left-0 top-[calc(100%+0.5rem)] z-50 hidden w-[46rem] max-w-[calc(100vw-2rem)] grid-cols-[15rem_minmax(0,1fr)] overflow-hidden rounded-2xl border border-border/70 bg-white shadow-[var(--shadow-pop)] md:grid"
+          className="absolute left-0 top-[calc(100%+0.5rem)] z-50 hidden w-208 max-w-[calc(100vw-2rem)] grid-cols-[16rem_minmax(0,1fr)] overflow-hidden rounded-2xl border border-border/70 bg-white shadow-(--shadow-pop) md:grid"
         >
           {/* Left rail: departments */}
-          <ul className="max-h-[28rem] overflow-y-auto border-r border-border/60 bg-ink-50/60 p-2">
+          <ul className="max-h-120 overflow-y-auto border-r border-border/60 bg-ink-50/60 p-2">
             {departments.map((dept) => {
               const isActive = dept.slug === activeDept?.slug;
               return (
@@ -141,13 +195,13 @@ export function MarketplaceMegaMenu({ data }: { data: MegaMenuData }) {
                     onMouseEnter={() => setActiveSlug(dept.slug)}
                     onFocus={() => setActiveSlug(dept.slug)}
                     className={cn(
-                      "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-semibold transition-colors",
+                      "flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-sm font-semibold transition-colors",
                       isActive
                         ? "bg-white text-brand-800 shadow-sm"
                         : "text-ink-700 hover:bg-white/70",
                     )}
                   >
-                    <DeptThumb dept={dept} />
+                    <Thumb src={imageFor(dept)} className="size-9" />
                     <span className="min-w-0 flex-1 truncate">{dept.name}</span>
                     <ChevronRight
                       aria-hidden="true"
@@ -160,9 +214,9 @@ export function MarketplaceMegaMenu({ data }: { data: MegaMenuData }) {
             <li className="p-2 pt-3">{browseAllBtn}</li>
           </ul>
 
-          {/* Right panel: categories + their subcategories */}
-          <div className="max-h-[28rem] overflow-y-auto p-5">
-            <div className="mb-3 flex items-center justify-between gap-3">
+          {/* Right panel: categories (with thumbnails) + their subcategories */}
+          <div className="max-h-120 overflow-y-auto p-5">
+            <div className="mb-4 flex items-center justify-between gap-3">
               <h3 className="text-base font-bold text-ink-900">
                 {activeDept?.name}
               </h3>
@@ -180,29 +234,37 @@ export function MarketplaceMegaMenu({ data }: { data: MegaMenuData }) {
                 Browse {activeDept?.name} suppliers and products.
               </p>
             ) : (
-              <div className="grid grid-cols-2 gap-x-6 gap-y-4 lg:grid-cols-3">
+              <div className="grid grid-cols-2 gap-x-6 gap-y-5 lg:grid-cols-3">
                 {activeCategories.map((cat) => {
                   const subs = subcategoriesByCategory[cat.slug] ?? [];
                   return (
                     <div key={cat.slug} className="min-w-0">
                       <Link
                         href={ROUTES.MARKETPLACE_CATEGORY(cat.slug)}
-                        className="block truncate text-sm font-bold text-ink-900 hover:text-brand-700"
+                        className="group flex items-center gap-2.5"
                       >
-                        {cat.name}
+                        <Thumb
+                          src={imageFor(cat, activeDept?.slug)}
+                          className="size-11"
+                        />
+                        <span className="min-w-0 flex-1 truncate text-sm font-bold text-ink-900 transition-colors group-hover:text-brand-700">
+                          {cat.name}
+                        </span>
                       </Link>
-                      <ul className="mt-1.5 space-y-1">
-                        {subs.slice(0, 6).map((sub) => (
-                          <li key={sub.slug}>
-                            <Link
-                              href={ROUTES.MARKETPLACE_CATEGORY(sub.slug)}
-                              className="block truncate text-[13px] text-ink-600 hover:text-brand-700"
-                            >
-                              {sub.name}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
+                      {subs.length > 0 && (
+                        <ul className="mt-2 space-y-1">
+                          {subs.slice(0, 5).map((sub) => (
+                            <li key={sub.slug}>
+                              <Link
+                                href={ROUTES.MARKETPLACE_CATEGORY(sub.slug)}
+                                className="block truncate text-[13px] text-ink-600 hover:text-brand-700"
+                              >
+                                {sub.name}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
                   );
                 })}
@@ -214,7 +276,7 @@ export function MarketplaceMegaMenu({ data }: { data: MegaMenuData }) {
 
       {/* Mobile drawer (below md) */}
       {drawerOpen && (
-        <div className="fixed inset-0 z-[60] md:hidden">
+        <div className="fixed inset-0 z-60 md:hidden">
           <div
             className="absolute inset-0 bg-black/50"
             onClick={() => {
@@ -253,7 +315,7 @@ export function MarketplaceMegaMenu({ data }: { data: MegaMenuData }) {
                         onClick={() => setDrilled(dept.slug)}
                         className="flex min-h-12 w-full items-center gap-3 rounded-lg px-3 text-left text-sm font-semibold text-ink-800 hover:bg-ink-50"
                       >
-                        <DeptThumb dept={dept} />
+                        <Thumb src={imageFor(dept)} className="size-10" />
                         <span className="min-w-0 flex-1 truncate">
                           {dept.name}
                         </span>
@@ -272,23 +334,33 @@ export function MarketplaceMegaMenu({ data }: { data: MegaMenuData }) {
                       <Link
                         href={ROUTES.MARKETPLACE_CATEGORY(cat.slug)}
                         onClick={() => setDrawerOpen(false)}
-                        className="block py-1 text-sm font-bold text-ink-900"
+                        className="flex items-center gap-2.5 py-1"
                       >
-                        {cat.name}
+                        <Thumb
+                          src={imageFor(cat, drilled)}
+                          className="size-10"
+                        />
+                        <span className="min-w-0 flex-1 truncate text-sm font-bold text-ink-900">
+                          {cat.name}
+                        </span>
                       </Link>
-                      <ul className="mt-1 space-y-1 pl-1">
-                        {(subcategoriesByCategory[cat.slug] ?? []).map((sub) => (
-                          <li key={sub.slug}>
-                            <Link
-                              href={ROUTES.MARKETPLACE_CATEGORY(sub.slug)}
-                              onClick={() => setDrawerOpen(false)}
-                              className="block min-h-9 py-1 text-[13px] text-ink-600"
-                            >
-                              {sub.name}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
+                      {(subcategoriesByCategory[cat.slug] ?? []).length > 0 && (
+                        <ul className="mt-1 space-y-1 pl-12.5">
+                          {(subcategoriesByCategory[cat.slug] ?? []).map(
+                            (sub) => (
+                              <li key={sub.slug}>
+                                <Link
+                                  href={ROUTES.MARKETPLACE_CATEGORY(sub.slug)}
+                                  onClick={() => setDrawerOpen(false)}
+                                  className="block min-h-9 py-1 text-[13px] text-ink-600"
+                                >
+                                  {sub.name}
+                                </Link>
+                              </li>
+                            ),
+                          )}
+                        </ul>
+                      )}
                     </div>
                   ))}
                 </div>
