@@ -357,6 +357,35 @@
     @apply text-xs text-muted-foreground;
   }
 
+  /* ============================================================
+     Storefront type scale — larger, e-commerce-grade rhythm.
+     Scoped to .storefront (applied on public storefront + marketplace
+     surfaces only) so dense dashboards keep their compact scale.
+     Fluid clamp() keeps headings from overflowing on phones.
+     ============================================================ */
+  .storefront {
+    font-size: 1.0625rem; /* 17px comfortable base */
+  }
+  .storefront p {
+    line-height: 1.7;
+  }
+  .storefront .text-h1 {
+    font-size: clamp(2.25rem, 4.5vw, 3.75rem);
+    line-height: 1.08;
+  }
+  .storefront .text-h2 {
+    font-size: clamp(1.875rem, 3.6vw, 3rem);
+    line-height: 1.12;
+  }
+  .storefront .text-h3 {
+    font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+    line-height: 1.18;
+  }
+  .storefront .text-lead {
+    font-size: clamp(1.0625rem, 1.6vw, 1.375rem);
+    line-height: 1.6;
+  }
+
   /* Page container — consistent horizontal gutters across all routes */
   .container-page {
     @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
