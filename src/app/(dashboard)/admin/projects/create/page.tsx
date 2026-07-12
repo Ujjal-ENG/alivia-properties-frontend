@@ -12,13 +12,13 @@ export default function AdminCreateProjectPage() {
     <div className="space-y-6">
       <DashboardPageHeader
         eyebrow="Inventory"
-        title="Add Project"
-        description="Create a new Alivia development project for the showcase."
+        title="Add Apartment"
+        description="Create a new Alivia development apartment for the showcase."
         actions={(
           <Link href={ROUTES.ADMIN_PROJECTS}>
             <Button variant="outline" className="rounded-full">
               <ChevronLeft className="h-4 w-4" />
-              Back to Projects
+              Back to Apartments
             </Button>
           </Link>
         )}

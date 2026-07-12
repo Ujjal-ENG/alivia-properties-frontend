@@ -25,13 +25,13 @@ export default async function AdminEditProjectPage({ params }: AdminEditProjectP
     <div className="space-y-6">
       <DashboardPageHeader
         eyebrow="Inventory"
-        title="Edit Project"
+        title="Edit Apartment"
         description={`Update details for ${project.name}.`}
         actions={(
           <Link href={ROUTES.ADMIN_PROJECTS}>
             <Button variant="outline" className="rounded-full">
               <ChevronLeft className="h-4 w-4" />
-              Back to Projects
+              Back to Apartments
             </Button>
           </Link>
         )}

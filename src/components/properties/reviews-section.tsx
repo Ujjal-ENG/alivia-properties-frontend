@@ -61,7 +61,7 @@ export function ReviewsSection({
     }
 
     if (targetType === "project") {
-      setSubmitError("Project reviews are not enabled on the API yet.")
+      setSubmitError("Apartment reviews are not enabled on the API yet.")
       return
     }
 

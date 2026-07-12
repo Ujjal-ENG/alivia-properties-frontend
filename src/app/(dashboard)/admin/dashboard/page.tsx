@@ -36,7 +36,7 @@ const QUICK_ACTIONS = [
     tone: "from-amber-100 to-amber-50 text-amber-800",
   },
   {
-    label: "Add Project",
+    label: "Add Apartment",
     description: "Showcase a new Alivia development.",
     href: ROUTES.ADMIN_PROJECTS,
     icon: PlusCircle,

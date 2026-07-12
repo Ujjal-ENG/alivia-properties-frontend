@@ -971,7 +971,7 @@ export function AdminProjectsTable({
     return runAction(
       p.id,
       () => projectsService.setStatus(p.id, "completed", token),
-      "Could not mark this project complete.",
+      "Could not mark this apartment complete.",
     )
   }
 
@@ -993,7 +993,7 @@ export function AdminProjectsTable({
       setRows((current) => current.filter((p) => p.id !== target.id))
       setDeleteTarget(null)
     } catch (err) {
-      reportError(err, "Could not delete this project.")
+      reportError(err, "Could not delete this apartment.")
     } finally {
       setBusyId(null)
     }
@@ -1002,7 +1002,7 @@ export function AdminProjectsTable({
   const columns: DataTableColumn<Project>[] = [
     {
       key: "project",
-      header: "Project",
+      header: "Apartment",
       primaryOnMobile: true,
       className: "w-[24rem] max-w-[24rem]",
       render: (p) => (
@@ -1083,14 +1083,14 @@ export function AdminProjectsTable({
         const isCompleted = p.status === "completed"
         return (
           <div className="flex items-center justify-end gap-1">
-            <Link href={ROUTES.PROJECT_DETAIL(p.slug)} title="View project">
-              <Button size="icon" variant="outline" className="size-8 rounded-full" aria-label="View project">
+            <Link href={ROUTES.PROJECT_DETAIL(p.slug)} title="View apartment">
+              <Button size="icon" variant="outline" className="size-8 rounded-full" aria-label="View apartment">
                 <Eye className="size-3.5" />
               </Button>
             </Link>
 
-            <Link href={ROUTES.ADMIN_PROJECT_EDIT(p.id)} title="Edit project">
-              <Button size="icon" variant="outline" className="size-8 rounded-full" aria-label="Edit project">
+            <Link href={ROUTES.ADMIN_PROJECT_EDIT(p.id)} title="Edit apartment">
+              <Button size="icon" variant="outline" className="size-8 rounded-full" aria-label="Edit apartment">
                 <Pencil className="size-3.5" />
               </Button>
             </Link>
@@ -1102,7 +1102,7 @@ export function AdminProjectsTable({
                 disabled={busy}
                 onClick={() => markComplete(p)}
                 title="Mark complete"
-                aria-label="Mark project complete"
+                aria-label="Mark apartment complete"
                 className="size-8 rounded-full border-emerald-200 text-emerald-700 hover:bg-emerald-50"
               >
                 {busy ? <Loader2 className="size-3.5 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
@@ -1115,7 +1115,7 @@ export function AdminProjectsTable({
               disabled={busy}
               onClick={() => toggleFeature(p)}
               title={isFeatured ? "Unfeature" : "Feature"}
-              aria-label={isFeatured ? "Unfeature project" : "Feature project"}
+              aria-label={isFeatured ? "Unfeature apartment" : "Feature apartment"}
               className={cn(
                 "size-8 rounded-full",
                 isFeatured
@@ -1139,7 +1139,7 @@ export function AdminProjectsTable({
                 setError(null)
               }}
               title="Delete"
-              aria-label="Delete project"
+              aria-label="Delete apartment"
               className="size-8 rounded-full border-red-200 text-red-600 hover:bg-red-50"
             >
               <Trash2 className="size-3.5" />
@@ -1181,7 +1181,7 @@ export function AdminProjectsTable({
         columns={columns}
         data={rows}
         rowKey={(p) => p.id}
-        emptyMessage="No projects match this filter."
+        emptyMessage="No apartments match this filter."
       />
 
       {/* Delete confirmation dialog */}
@@ -1193,7 +1193,7 @@ export function AdminProjectsTable({
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Delete project</DialogTitle>
+            <DialogTitle>Delete apartment</DialogTitle>
             <DialogDescription>
               {deleteTarget
                 ? `"${deleteTarget.name}" and its uploaded media will be permanently removed. This cannot be undone.`
@@ -1221,7 +1221,7 @@ export function AdminProjectsTable({
                 </>
               ) : (
                 <>
-                  <Trash2 className="size-4" /> Delete project
+                  <Trash2 className="size-4" /> Delete apartment
                 </>
               )}
             </Button>
@@ -1245,7 +1245,7 @@ const INQUIRY_STATUS_FILTERS: { value: InquiryStatus | "all"; label: string }[] 
 const INQUIRY_TYPE_FILTERS: { value: InquiryType | "all"; label: string }[] = [
   { value: "all", label: "All types" },
   { value: "property", label: "Property" },
-  { value: "project", label: "Project" },
+  { value: "project", label: "Apartment" },
   { value: "general", label: "General" },
   { value: "report", label: "Report" },
   { value: "supplier", label: "Supplier" },

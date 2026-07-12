@@ -11,7 +11,7 @@ export type DashboardNavItem = {
 export const adminNav: DashboardNavItem[] = [
   { label: "Dashboard", href: ROUTES.ADMIN_DASHBOARD, icon: "LayoutDashboard", section: "Overview" },
 
-  { label: "Projects", href: ROUTES.ADMIN_PROJECTS, icon: "Building2", section: "Inventory" },
+  { label: "Apartments", href: ROUTES.ADMIN_PROJECTS, icon: "Building2", section: "Inventory" },
   { label: "Properties", href: ROUTES.ADMIN_PROPERTIES, icon: "Home", section: "Inventory" },
   { label: "Pending Listings", href: ROUTES.ADMIN_PENDING, icon: "Clock", badge: "pending", section: "Inventory" },
 

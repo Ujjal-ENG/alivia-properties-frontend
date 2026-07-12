@@ -25,13 +25,13 @@ export default async function AdminProjectsPage({
       <DashboardPageHeader
         icon={Building2}
         eyebrow="Inventory"
-        title="Projects"
-        description="Manage Alivia’s own project showcase — create, edit, publish status, and feature."
+        title="Apartments"
+        description="Manage Alivia’s own apartment showcase — create, edit, publish status, and feature."
         actions={(
           <Link href={ROUTES.ADMIN_PROJECT_CREATE}>
             <Button className="rounded-full bg-brand-700 text-white hover:bg-brand-800">
               <Plus className="h-4 w-4" />
-              Add Project
+              Add Apartment
             </Button>
           </Link>
         )}

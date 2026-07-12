@@ -105,7 +105,7 @@ export function ProjectForm({ mode, initialProject }: ProjectFormProps) {
   async function onSubmit(values: ProjectSubmit) {
     setSubmitError(null)
     if (!session?.accessToken) {
-      setSubmitError("Please sign in again to save this project.")
+      setSubmitError("Please sign in again to save this apartment.")
       return
     }
     try {
@@ -117,7 +117,7 @@ export function ProjectForm({ mode, initialProject }: ProjectFormProps) {
       router.push(ROUTES.ADMIN_PROJECTS)
       router.refresh()
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "Failed to save project")
+      setSubmitError(error instanceof Error ? error.message : "Failed to save apartment")
     }
   }
 
@@ -139,7 +139,7 @@ export function ProjectForm({ mode, initialProject }: ProjectFormProps) {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Project Name</FormLabel>
+                    <FormLabel>Apartment Name</FormLabel>
                     <FormControl>
                       <Input placeholder="Alivia Skyline Residences" {...field} />
                     </FormControl>
@@ -173,7 +173,7 @@ export function ProjectForm({ mode, initialProject }: ProjectFormProps) {
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Textarea rows={6} placeholder="Describe the project vision, location advantages, and what makes it stand out…" {...field} />
+                      <Textarea rows={6} placeholder="Describe the apartment vision, location advantages, and what makes it stand out…" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -353,7 +353,7 @@ export function ProjectForm({ mode, initialProject }: ProjectFormProps) {
                 onChange={(urls) =>
                   form.setValue("coverImageUrl", urls[0] ?? "", { shouldDirty: true })
                 }
-                hint="Shown on cards and the project hero · max 10 MB"
+                hint="Shown on cards and the apartment hero · max 10 MB"
               />
             </div>
             <div className="space-y-2">
@@ -379,7 +379,7 @@ export function ProjectForm({ mode, initialProject }: ProjectFormProps) {
                   kind="project-video"
                   multiple
                   maxFiles={3}
-                  label="Project videos (optional)"
+                  label="Apartment videos (optional)"
                   hint="Up to 3 clips · max 125 MB each (mp4, webm, mov)"
                   value={videoValues}
                   onChange={(urls) =>
@@ -598,7 +598,7 @@ export function ProjectForm({ mode, initialProject }: ProjectFormProps) {
                       onChange={(e) => field.onChange(e.target.checked)}
                       className="h-4 w-4 accent-brand-600"
                     />
-                    <span className="text-sm text-ink-700">Feature this project on the homepage and listings</span>
+                    <span className="text-sm text-ink-700">Feature this apartment on the homepage and listings</span>
                   </label>
                   <FormMessage />
                 </FormItem>
@@ -613,7 +613,7 @@ export function ProjectForm({ mode, initialProject }: ProjectFormProps) {
                   <Loader2 className="h-4 w-4 animate-spin" /> Saving…
                 </>
               ) : (
-                mode === "edit" ? "Update Project" : "Create Project"
+                mode === "edit" ? "Update Apartment" : "Create Apartment"
               )}
             </Button>
             <Button type="button" variant="outline" className="rounded-full" onClick={() => router.push(ROUTES.ADMIN_PROJECTS)}>

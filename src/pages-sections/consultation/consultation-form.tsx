@@ -11,7 +11,7 @@ import { ApiError } from "@/services/http-client"
 const CONSULTATION_TYPES = [
   { value: "BUYING", label: "Buying a property" },
   { value: "INVESTMENT", label: "Investment advice" },
-  { value: "PROJECT_SPECIFIC", label: "Project inquiry" },
+  { value: "PROJECT_SPECIFIC", label: "Apartment inquiry" },
   { value: "SITE_VISIT", label: "Site visit request" },
 ] as const
 
@@ -133,7 +133,7 @@ export function ConsultationForm() {
 
       <div className="space-y-1">
         <label htmlFor="consult-message" className="text-xs font-medium text-ink-700">Message</label>
-        <textarea id="consult-message" name="message" rows={3} className="w-full rounded-xl border border-border px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500" placeholder="Any specific projects, areas, or requirements…" />
+        <textarea id="consult-message" name="message" rows={3} className="w-full rounded-xl border border-border px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500" placeholder="Any specific apartments, areas, or requirements…" />
       </div>
 
       <Button type="submit" className="w-full rounded-full" disabled={submitting}>
