@@ -369,7 +369,7 @@ export default async function ProjectDetailPage({
             {hasUnits ? (
               <div>
                 <h2 className="text-h3 mb-4">Unit Types & Pricing</h2>
-                <div className="overflow-x-auto rounded-xl border border-border scrollbar-thin [scrollbar-color:var(--color-brand-300)_transparent]">
+                <div className="overflow-x-auto rounded-xl border border-border [scrollbar-width:thin] [scrollbar-color:var(--color-brand-300)_transparent]">
                   <table className="w-full text-sm">
                     <thead className="bg-ink-50 text-xs uppercase text-muted-foreground">
                       <tr>
