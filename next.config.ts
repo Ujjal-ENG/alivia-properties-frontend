@@ -33,6 +33,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    // Public "projects" section was rebranded to "apartments". Keep old links
+    // (bookmarks, search index, inbound) working.
+    return [
+      { source: "/projects", destination: "/apartments", permanent: true },
+      { source: "/projects/:slug", destination: "/apartments/:slug", permanent: true },
+    ]
+  },
 }
 
 export default nextConfig

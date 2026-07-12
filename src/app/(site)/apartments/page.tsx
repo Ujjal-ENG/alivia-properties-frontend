@@ -73,7 +73,7 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
               return (
                 <Link
                   key={tab.value}
-                  href={tab.value ? `/projects?${href.toString()}` : "/projects"}
+                  href={tab.value ? `/apartments?${href.toString()}` : "/apartments"}
                   className={`inline-flex min-h-11 items-center rounded-full px-5 text-sm font-medium transition-colors ${
                     isActive
                       ? "bg-brand-600 text-white"

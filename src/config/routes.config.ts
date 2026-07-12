@@ -1,8 +1,8 @@
 export const ROUTES = {
   // Public
   HOME: "/",
-  PROJECTS: "/projects",
-  PROJECT_DETAIL: (slug: string) => `/projects/${slug}`,
+  PROJECTS: "/apartments",
+  PROJECT_DETAIL: (slug: string) => `/apartments/${slug}`,
   PROPERTIES: "/properties",
   PROPERTY_DETAIL: (slug: string) => `/properties/${slug}`,
   MAP_SEARCH: "/map-search",
