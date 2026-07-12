@@ -429,7 +429,7 @@ export default async function MarketplacePage({
 
   return (
     <>
-    <main id="main-content" className="bg-ink-50 text-ink-900">
+    <main id="main-content" className="storefront bg-ink-50 text-ink-900">
       <section className="bg-brand-950 text-white">
         <div className="container-page max-w-373! flex h-9 flex-wrap items-center justify-end gap-3 text-xs font-semibold">
           <div className="flex flex-wrap items-center gap-4 text-brand-100/90">
