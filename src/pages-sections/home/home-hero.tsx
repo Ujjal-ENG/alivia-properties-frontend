@@ -320,8 +320,9 @@ export function HomeHero({ projects }: { projects: HeroProjectCard[] }) {
                   <p className="mt-1.5 truncate font-heading text-base font-semibold text-ink-900 group-hover:text-brand-700">
                     {secondProject.name}
                   </p>
-                  <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-ink-500">
-                    <MapPin aria-hidden="true" className="h-3 w-3" /> {secondProject.location}
+                  <p className="mt-0.5 flex items-center gap-1 text-xs text-ink-500">
+                    <MapPin aria-hidden="true" className="h-3 w-3 shrink-0" />
+                    <span className="truncate">{secondProject.location}</span>
                   </p>
                   <p className="mt-1.5 font-heading text-lg font-bold text-gold-600">
                     {secondProject.price}

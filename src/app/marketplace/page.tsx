@@ -38,6 +38,7 @@ import {
   type FlagshipProject,
 } from "@/pages-sections/home/flagship-projects";
 import { formatPrice } from "@/utils/format-price";
+import { pickLocationText } from "@/utils/project-location";
 
 export const dynamic = "force-dynamic";
 
@@ -352,7 +353,10 @@ export default async function MarketplacePage({
   ).map((p) => ({
     slug: p.slug,
     name: p.name,
-    location: p.location,
+    location: pickLocationText(
+      [p.location, p.area, p.division],
+      "Location available on request",
+    ),
     status: p.status,
     price:
       p.priceFrom && p.priceFrom > 0 ? formatPrice(p.priceFrom, true) : null,

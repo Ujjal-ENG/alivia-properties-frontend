@@ -140,7 +140,7 @@ export function FlagshipProjects({ projects }: { projects: FlagshipProject[] }) 
             const merch = merchBadge(p)
             const MerchIcon = merch ? MERCH_ICON[merch.kind] : null
             return (
-            <li key={p.slug || p.name}>
+            <li key={p.slug || p.name} className="min-w-0">
               <Link
                 href={p.slug ? ROUTES.PROJECT_DETAIL(p.slug) : ROUTES.PROJECTS}
                 className="group block overflow-hidden rounded-3xl border border-black/5 bg-white shadow-(--shadow-card) transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-(--shadow-elevated) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
@@ -185,8 +185,9 @@ export function FlagshipProjects({ projects }: { projects: FlagshipProject[] }) 
                   <p className="font-heading text-lg font-semibold text-ink-900 group-hover:text-brand-700">
                     {p.name}
                   </p>
-                  <p className="mt-1 inline-flex items-center gap-1 text-xs text-ink-500">
-                    <MapPin aria-hidden="true" className="h-3 w-3" /> {p.location}
+                  <p className="mt-1 flex items-center gap-1 text-xs text-ink-500">
+                    <MapPin aria-hidden="true" className="h-3 w-3 shrink-0" />
+                    <span className="truncate">{p.location}</span>
                   </p>
                   <div className="mt-4 flex items-center justify-between border-t border-border/60 pt-3">
                     <div>

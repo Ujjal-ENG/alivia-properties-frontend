@@ -4,6 +4,7 @@ import { MapPin, Calendar, Building2, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { formatPriceRange } from "@/utils/format-price"
 import { PROJECT_STATUS_STYLES } from "@/lib/constants"
+import { pickLocationText } from "@/utils/project-location"
 import { ROUTES } from "@/config/routes.config"
 import type { Project, ProjectStatus } from "@/types/project.types"
 
@@ -76,7 +77,12 @@ export function ProjectCard({ project }: ProjectCardProps) {
             <p className="text-[0.68rem] uppercase tracking-[0.18em] text-ink-500">Location</p>
             <p className="mt-2 flex items-center gap-2 text-sm font-medium text-ink-800">
               <MapPin className="h-4 w-4 text-brand-600" />
-              <span className="truncate">{project.location}</span>
+              <span className="truncate">
+                {pickLocationText(
+                  [project.location, project.area, project.division],
+                  "Location available on request",
+                )}
+              </span>
             </p>
           </div>
           <div className="rounded-[1.1rem] bg-ink-50 p-3">

@@ -42,6 +42,7 @@ import {
 } from "@/pages-sections/home/home-hero";
 import { blogService } from "@/services/blog.service";
 import { projectsService } from "@/services/projects.service";
+import { pickLocationText } from "@/utils/project-location";
 import { formatPrice } from "@/utils/format-price";
 
 export const dynamic = "force-dynamic";
@@ -81,7 +82,14 @@ export default async function HomePage() {
   const heroProjects: HeroProjectCard[] = projects.slice(0, 2).map((p) => ({
     slug: pick<string>(p, "slug", ""),
     name: pick<string>(p, "name", "Alivia Project"),
-    location: pick<string>(p, "location", "Jolshiri Abashon, Rupganj"),
+    location: pickLocationText(
+      [
+        pick<string | null>(p, "location", null),
+        pick<string | null>(p, "area", null),
+        pick<string | null>(p, "division", null),
+      ],
+      "Jolshiri Abashon, Rupganj",
+    ),
     status: pick<string>(p, "status", "ongoing"),
     price: projectPrice(p) ?? "Price on request",
     cover: projectCover(p),
@@ -92,7 +100,14 @@ export default async function HomePage() {
     return {
       slug: pick<string>(p, "slug", ""),
       name: pick<string>(p, "name", "Alivia Project"),
-      location: pick<string>(p, "location", "Jolshiri Abashon, Rupganj"),
+      location: pickLocationText(
+        [
+          pick<string | null>(p, "location", null),
+          pick<string | null>(p, "area", null),
+          pick<string | null>(p, "division", null),
+        ],
+        "Jolshiri Abashon, Rupganj",
+      ),
       status: pick<string>(p, "status", "ongoing"),
       price: projectPrice(p),
       units: total ? `${total} units` : null,
