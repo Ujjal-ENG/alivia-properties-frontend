@@ -306,6 +306,327 @@ git commit -m "fix: keep live-chat panel within viewport bounds on narrow phones
 
 ---
 
+### Task 3: Stop rendering raw map-link URLs as a project's "location" text
+
+**Problem (verified via a real production screenshot on aliviaproperties.com, mobile):** The card for project "JBS Hasiba Garden In Uttara" on `/marketplace` (its `FlagshipProjects` section) shows the raw text `https://maps.google.com/?cid=17991559348273614309&g_mp=...&source=embed` where the location should be — some project records have a pasted Google Maps share link sitting in their `location` field instead of a plain-text address. With no line-clamp on that text, the long URL wraps across 3+ lines and breaks the card's layout on narrow phones (this is what the user saw as "responsive breaking").
+
+This exact problem was already solved once, for the project **detail** page only: `src/app/(site)/projects/[slug]/page.tsx` has local `toMapEmbedUrl()` and `projectLocationText()` helpers that detect a Google-Maps-shaped URL and fall back to `project.area`/`project.division` instead. That logic was never extracted or reused, so four other places that render a project's location still show the raw field unguarded:
+
+1. `src/app/marketplace/page.tsx` — builds the `FlagshipProject[]` passed to the marketplace page's flagship-projects section (this is the exact call site behind the reported screenshot).
+2. `src/app/(site)/landing.tsx` — builds `HeroProjectCard[]` for the homepage hero (top 2 projects).
+3. `src/app/(site)/landing.tsx` — builds `FlagshipProject[]` for the homepage's own flagship-projects section (same component, second usage).
+4. `src/components/projects/project-card.tsx` — the `/projects` listing card already has `truncate` on the location `<span>` so it doesn't visually break, but it still shows a truncated URL instead of a real location, which is wrong.
+
+Two display components render whatever `location` string they're given with **no line-clamp at all** (relying entirely on the data being clean), which is also worth hardening independently of the URL bug — a long real-world address (not a URL) could wrap the same way:
+
+5. `src/pages-sections/home/flagship-projects.tsx` (line ~188) — the location line inside each project card.
+6. `src/pages-sections/home/home-hero.tsx` (line ~323) — the location line in the second hero project.
+
+**Files:**
+- Create: `src/utils/project-location.ts`
+- Modify: `src/app/marketplace/page.tsx` (import + the `flagship` mapping, ~lines 40, 350-361)
+- Modify: `src/app/(site)/landing.tsx` (import + the `heroProjects` mapping ~lines 81-88, + the `flagship` mapping ~lines 90-105)
+- Modify: `src/components/projects/project-card.tsx` (import + the location `<span>`, ~line 79)
+- Modify: `src/pages-sections/home/flagship-projects.tsx` (the `<li>` and the location `<p>`, ~lines 143, 188-190)
+- Modify: `src/pages-sections/home/home-hero.tsx` (the location `<p>`, ~lines 323-325)
+
+**Interfaces:**
+- Produces: `pickLocationText(candidates: Array<string | null | undefined>, fallback: string): string` — exported from `src/utils/project-location.ts`. Returns the first candidate that is non-empty and does not look like an `http(s)://` URL; returns `fallback` if every candidate is missing or URL-shaped.
+- Consumes: nothing from Tasks 1-2 (different files entirely; safe to implement independently of them).
+
+- [ ] **Step 1: Confirm the current (broken) rendering**
+
+With the frontend dev server running and `pnpm dev` pointed at real API data (or by temporarily checking a project record with a URL-shaped `location`/`address` field via `pnpm -C ../alivia-properties-backend` / Mongo Express at `:8081`), open `/marketplace` and look at the flagship projects section for a card whose location line shows a `maps.google.com` URL instead of an address. If no current record reproduces it locally, that's fine — the fix does not depend on reproducing the exact record, only on the code path being correct; skip ahead to Step 2 but note in your report that reproduction wasn't possible locally.
+
+- [ ] **Step 2: Create the shared utility**
+
+Create `src/utils/project-location.ts`:
+
+```ts
+const URL_PATTERN = /^https?:\/\//i
+
+function looksLikeUrl(value: string): boolean {
+  return URL_PATTERN.test(value.trim())
+}
+
+// Some project records have a pasted Google Maps link sitting in the
+// location/address field instead of a plain-text address — never show
+// that to visitors.
+export function pickLocationText(
+  candidates: Array<string | null | undefined>,
+  fallback: string,
+): string {
+  return candidates.find((value) => value && !looksLikeUrl(value)) ?? fallback
+}
+```
+
+- [ ] **Step 3: Fix `src/app/marketplace/page.tsx`**
+
+Add the import. Find:
+
+```tsx
+import { formatPrice } from "@/utils/format-price";
+```
+
+Change to:
+
+```tsx
+import { formatPrice } from "@/utils/format-price";
+import { pickLocationText } from "@/utils/project-location";
+```
+
+Then find the `flagship` mapping:
+
+```tsx
+  const flagship: FlagshipProject[] = (
+    projectsRes.status === "fulfilled" ? projectsRes.value.data : []
+  ).map((p) => ({
+    slug: p.slug,
+    name: p.name,
+    location: p.location,
+    status: p.status,
+    price:
+      p.priceFrom && p.priceFrom > 0 ? formatPrice(p.priceFrom, true) : null,
+    units: p.totalUnits ? `${p.totalUnits} units` : null,
+    cover: p.coverImage ?? p.coverImageUrl ?? p.galleryImages?.[0] ?? null,
+  }));
+```
+
+Replace with:
+
+```tsx
+  const flagship: FlagshipProject[] = (
+    projectsRes.status === "fulfilled" ? projectsRes.value.data : []
+  ).map((p) => ({
+    slug: p.slug,
+    name: p.name,
+    location: pickLocationText(
+      [p.location, p.area, p.division],
+      "Location available on request",
+    ),
+    status: p.status,
+    price:
+      p.priceFrom && p.priceFrom > 0 ? formatPrice(p.priceFrom, true) : null,
+    units: p.totalUnits ? `${p.totalUnits} units` : null,
+    cover: p.coverImage ?? p.coverImageUrl ?? p.galleryImages?.[0] ?? null,
+  }));
+```
+
+(`p` here is typed `Project`, which has optional `area` and `division` fields — same fields the detail page's existing fallback already uses.)
+
+- [ ] **Step 4: Fix `src/app/(site)/landing.tsx`**
+
+Add the import. Find:
+
+```tsx
+import { projectsService } from "@/services/projects.service";
+```
+
+Change to:
+
+```tsx
+import { projectsService } from "@/services/projects.service";
+import { pickLocationText } from "@/utils/project-location";
+```
+
+Then find the `heroProjects` mapping:
+
+```tsx
+  const heroProjects: HeroProjectCard[] = projects.slice(0, 2).map((p) => ({
+    slug: pick<string>(p, "slug", ""),
+    name: pick<string>(p, "name", "Alivia Project"),
+    location: pick<string>(p, "location", "Jolshiri Abashon, Rupganj"),
+    status: pick<string>(p, "status", "ongoing"),
+    price: projectPrice(p) ?? "Price on request",
+    cover: projectCover(p),
+  }));
+```
+
+Replace with:
+
+```tsx
+  const heroProjects: HeroProjectCard[] = projects.slice(0, 2).map((p) => ({
+    slug: pick<string>(p, "slug", ""),
+    name: pick<string>(p, "name", "Alivia Project"),
+    location: pickLocationText(
+      [
+        pick<string | null>(p, "location", null),
+        pick<string | null>(p, "area", null),
+        pick<string | null>(p, "division", null),
+      ],
+      "Jolshiri Abashon, Rupganj",
+    ),
+    status: pick<string>(p, "status", "ongoing"),
+    price: projectPrice(p) ?? "Price on request",
+    cover: projectCover(p),
+  }));
+```
+
+Then find the `flagship` mapping directly below it:
+
+```tsx
+  const flagship: FlagshipProject[] = projects.map((p) => {
+    const total = pick<number | null>(p, "totalUnits", null);
+    return {
+      slug: pick<string>(p, "slug", ""),
+      name: pick<string>(p, "name", "Alivia Project"),
+      location: pick<string>(p, "location", "Jolshiri Abashon, Rupganj"),
+      status: pick<string>(p, "status", "ongoing"),
+      price: projectPrice(p),
+      units: total ? `${total} units` : null,
+      cover: projectCover(p),
+      availableUnits: pick<number | null>(p, "availableUnits", null),
+      totalUnits: total,
+      isFeatured: pick<boolean>(p, "isFeatured", false),
+      createdAt: pick<string | undefined>(p, "createdAt", undefined),
+    };
+  });
+```
+
+Replace with:
+
+```tsx
+  const flagship: FlagshipProject[] = projects.map((p) => {
+    const total = pick<number | null>(p, "totalUnits", null);
+    return {
+      slug: pick<string>(p, "slug", ""),
+      name: pick<string>(p, "name", "Alivia Project"),
+      location: pickLocationText(
+        [
+          pick<string | null>(p, "location", null),
+          pick<string | null>(p, "area", null),
+          pick<string | null>(p, "division", null),
+        ],
+        "Jolshiri Abashon, Rupganj",
+      ),
+      status: pick<string>(p, "status", "ongoing"),
+      price: projectPrice(p),
+      units: total ? `${total} units` : null,
+      cover: projectCover(p),
+      availableUnits: pick<number | null>(p, "availableUnits", null),
+      totalUnits: total,
+      isFeatured: pick<boolean>(p, "isFeatured", false),
+      createdAt: pick<string | undefined>(p, "createdAt", undefined),
+    };
+  });
+```
+
+- [ ] **Step 5: Fix `src/components/projects/project-card.tsx`**
+
+Add the import. Find:
+
+```tsx
+import { PROJECT_STATUS_STYLES } from "@/lib/constants"
+```
+
+Change to:
+
+```tsx
+import { PROJECT_STATUS_STYLES } from "@/lib/constants"
+import { pickLocationText } from "@/utils/project-location"
+```
+
+Then find:
+
+```tsx
+              <MapPin className="h-4 w-4 text-brand-600" />
+              <span className="truncate">{project.location}</span>
+```
+
+Replace with:
+
+```tsx
+              <MapPin className="h-4 w-4 text-brand-600" />
+              <span className="truncate">
+                {pickLocationText(
+                  [project.location, project.area, project.division],
+                  "Location available on request",
+                )}
+              </span>
+```
+
+- [ ] **Step 6: Harden `src/pages-sections/home/flagship-projects.tsx` against long location text**
+
+Find:
+
+```tsx
+            <li key={p.slug || p.name}>
+```
+
+Replace with:
+
+```tsx
+            <li key={p.slug || p.name} className="min-w-0">
+```
+
+(A `<li>` inside a CSS grid defaults to `min-width: auto`, which lets an unbroken long string force the grid track wider than its column — `min-w-0` lets the card actually shrink to the column width so `truncate` below can take effect.)
+
+Then find:
+
+```tsx
+                  <p className="mt-1 inline-flex items-center gap-1 text-xs text-ink-500">
+                    <MapPin aria-hidden="true" className="h-3 w-3" /> {p.location}
+                  </p>
+```
+
+Replace with:
+
+```tsx
+                  <p className="mt-1 flex items-center gap-1 text-xs text-ink-500">
+                    <MapPin aria-hidden="true" className="h-3 w-3 shrink-0" />
+                    <span className="truncate">{p.location}</span>
+                  </p>
+```
+
+- [ ] **Step 7: Harden `src/pages-sections/home/home-hero.tsx` against long location text**
+
+Find:
+
+```tsx
+                  <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-ink-500">
+                    <MapPin aria-hidden="true" className="h-3 w-3" /> {secondProject.location}
+                  </p>
+```
+
+Replace with:
+
+```tsx
+                  <p className="mt-0.5 flex items-center gap-1 text-xs text-ink-500">
+                    <MapPin aria-hidden="true" className="h-3 w-3 shrink-0" />
+                    <span className="truncate">{secondProject.location}</span>
+                  </p>
+```
+
+(The parent `<div className="min-w-0 flex-1 py-1">` two lines above already constrains width, so `truncate` on the inner `<span>` will work correctly here without further changes.)
+
+- [ ] **Step 8: Run build and lint**
+
+Run: `pnpm build && pnpm lint`
+Expected: both exit 0, no new errors or warnings. Pay attention to any TypeScript error about `Project["area"]`/`Project["division"]` — both are optional (`area?: string`, `division?: string` in `src/types/project.types.ts`), which `pickLocationText`'s `Array<string | null | undefined>` parameter type already accommodates.
+
+- [ ] **Step 9: Verify visually**
+
+```bash
+agent-browser set device "Galaxy S25"
+agent-browser open http://localhost:3000/marketplace
+agent-browser wait --load networkidle
+agent-browser screenshot /tmp/task3-marketplace-galaxy.png
+agent-browser open http://localhost:3000/
+agent-browser wait --load networkidle
+agent-browser screenshot /tmp/task3-home-galaxy.png
+```
+
+Expected: every project card's location line is a single line (ellipsized if long), never a wrapped multi-line URL. If no current record has a URL-shaped location, confirm instead that a normal address renders correctly and stays single-line, and note in the report that the URL-specific case couldn't be reproduced against current data.
+
+- [ ] **Step 10: Commit**
+
+```bash
+git add src/utils/project-location.ts src/app/marketplace/page.tsx "src/app/(site)/landing.tsx" src/components/projects/project-card.tsx src/pages-sections/home/flagship-projects.tsx src/pages-sections/home/home-hero.tsx
+git commit -m "fix: stop showing raw map-link URLs as project location text"
+```
+
+---
+
 ## Final Verification
 
 - [ ] Run `pnpm build && pnpm lint` one more time from a clean state — both must pass.
