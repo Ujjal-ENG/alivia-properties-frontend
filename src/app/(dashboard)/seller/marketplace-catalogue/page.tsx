@@ -18,9 +18,9 @@ export default async function SellerMarketplaceCataloguePage() {
     marketplaceService.listCategories().catch(() => []),
   ])
 
-  // Products attach to the quote-able leaf nodes (subcategories); fall back to
-  // the flat list if the tree isn't nested yet.
-  const subCategories = categories.filter((category) => category.parentSlug != null)
+  // Products attach to categories — the quote-able leaf nodes (they sit under a
+  // department); fall back to the flat list if the tree isn't nested yet.
+  const leafCategories = categories.filter((category) => category.parentSlug != null)
 
   return (
     <div>
@@ -28,12 +28,12 @@ export default async function SellerMarketplaceCataloguePage() {
         icon={PackageSearch}
         eyebrow="Marketplace"
         title="My Catalogue"
-        description="Add the products and services buyers see on your supplier profile. Pick a sub-category, upload a photo, and list size/spec variants so buyers can request a quote."
+        description="Add the products and services buyers see on your supplier profile. Pick a category, upload a photo, and list size/spec variants so buyers can request a quote."
       />
       <SellerCataloguePanel
         token={token}
         initialSuppliers={suppliers}
-        categories={subCategories.length ? subCategories : categories}
+        categories={leafCategories.length ? leafCategories : categories}
       />
     </div>
   )
