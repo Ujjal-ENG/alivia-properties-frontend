@@ -22,7 +22,7 @@ export default async function AdminMarketplaceCategoriesPage() {
         icon={LayoutGrid}
         eyebrow="Marketplace"
         title="Taxonomy"
-        description="Manage the Department → Category → Subcategory tree. Subcategories carry the image tile and quote configuration shown in the customer wizard. Images are stored in MinIO."
+        description="Manage the Department → Category tree. Categories are the leaf buyers browse to reach suppliers — they carry the image tile and quote configuration shown in the customer wizard. Images are stored in MinIO."
       />
       <AdminMarketplaceCategoriesPanel initialCategories={categories} />
     </div>
