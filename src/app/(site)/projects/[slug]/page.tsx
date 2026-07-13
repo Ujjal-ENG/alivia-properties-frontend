@@ -1,79 +1,87 @@
-export const dynamic = "force-dynamic"
+export const dynamic = "force-dynamic";
 
-import { after } from "next/server"
-import { notFound } from "next/navigation"
-import Image from "next/image"
-import Link from "next/link"
-import { MapPin, Calendar, Building2, Layers, Home, Phone, MessageCircle, ChevronRight } from "lucide-react"
-import { ProjectImageLightboxButton } from "@/components/projects/project-image-lightbox-button"
-import { getProject, recordProjectView } from "@/services/projects.service"
-import { formatPriceRange } from "@/utils/format-price"
-import { PROJECT_STATUS_STYLES } from "@/lib/constants"
-import { ROUTES } from "@/config/routes.config"
-import { Button } from "@/components/ui/button"
-import { StructuredData } from "@/components/seo/structured-data"
-import { siteConfig } from "@/config/site.config"
-import { parseProjectDescription } from "@/lib/project-description"
-import type { Project } from "@/types/project.types"
+import { after } from "next/server";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import {
+  MapPin,
+  Building2,
+  Phone,
+  MessageCircle,
+  ChevronRight,
+  Sparkles,
+} from "lucide-react";
+import { ProjectGallery } from "@/components/projects/project-gallery";
+import { ProjectAtAGlance } from "@/components/projects/project-at-a-glance";
+import { buildProjectFacts } from "@/components/projects/project-facts";
+import { getProject, recordProjectView } from "@/services/projects.service";
+import { formatPriceRange } from "@/utils/format-price";
+import { PROJECT_STATUS_STYLES } from "@/lib/constants";
+import { ROUTES } from "@/config/routes.config";
+import { Button } from "@/components/ui/button";
+import { StructuredData } from "@/components/seo/structured-data";
+import { siteConfig } from "@/config/site.config";
+import { parseProjectDescription } from "@/lib/project-description";
+import type { Project } from "@/types/project.types";
 
 interface ProjectDetailPageProps {
-  params: Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
 }
 
 /** Convert a YouTube/Vimeo watch link to an embeddable iframe URL, else null. */
 function toEmbedUrl(url: string): string | null {
   try {
-    const u = new URL(url)
-    const host = u.hostname.replace(/^www\.|^m\./, "")
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\.|^m\./, "");
     if (host === "youtube.com") {
-      const id = u.searchParams.get("v")
-      return id ? `https://www.youtube.com/embed/${id}` : null
+      const id = u.searchParams.get("v");
+      return id ? `https://www.youtube.com/embed/${id}` : null;
     }
     if (host === "youtu.be") {
-      const id = u.pathname.slice(1)
-      return id ? `https://www.youtube.com/embed/${id}` : null
+      const id = u.pathname.slice(1);
+      return id ? `https://www.youtube.com/embed/${id}` : null;
     }
     if (host === "vimeo.com") {
-      const id = u.pathname.split("/").filter(Boolean)[0]
-      return id ? `https://player.vimeo.com/video/${id}` : null
+      const id = u.pathname.split("/").filter(Boolean)[0];
+      return id ? `https://player.vimeo.com/video/${id}` : null;
     }
-    return null
+    return null;
   } catch {
-    return null
+    return null;
   }
 }
 
 type ProjectWithMaybeMap = Project & {
-  mapEmbedUrl?: string | null
-  mapUrl?: string | null
-  mapPin?: string | null
-}
+  mapEmbedUrl?: string | null;
+  mapUrl?: string | null;
+  mapPin?: string | null;
+};
 
 function toMapEmbedUrl(value?: string | null): string | null {
-  const raw = value?.trim()
-  if (!raw || !/^https?:\/\//i.test(raw)) return null
+  const raw = value?.trim();
+  if (!raw || !/^https?:\/\//i.test(raw)) return null;
 
   try {
-    const url = new URL(raw)
-    const host = url.hostname.replace(/^www\./, "")
+    const url = new URL(raw);
+    const host = url.hostname.replace(/^www\./, "");
     const isGoogleMap =
       host === "maps.google.com" ||
       host === "maps.app.goo.gl" ||
       host === "goo.gl" ||
-      (host.endsWith("google.com") && url.pathname.startsWith("/maps"))
+      (host.endsWith("google.com") && url.pathname.startsWith("/maps"));
 
-    if (!isGoogleMap) return null
-    if (url.pathname.includes("/embed")) return url.toString()
+    if (!isGoogleMap) return null;
+    if (url.pathname.includes("/embed")) return url.toString();
 
-    url.searchParams.set("output", "embed")
-    return url.toString()
+    url.searchParams.set("output", "embed");
+    return url.toString();
   } catch {
-    return null
+    return null;
   }
 }
 
 function projectMapEmbedUrl(project: Project): string | null {
-  const maybe = project as ProjectWithMaybeMap
+  const maybe = project as ProjectWithMaybeMap;
   for (const value of [
     maybe.mapEmbedUrl,
     maybe.mapUrl,
@@ -81,10 +89,10 @@ function projectMapEmbedUrl(project: Project): string | null {
     project.address,
     project.location,
   ]) {
-    const embed = toMapEmbedUrl(value)
-    if (embed) return embed
+    const embed = toMapEmbedUrl(value);
+    if (embed) return embed;
   }
-  return null
+  return null;
 }
 
 function projectLocationText(project: Project): string {
@@ -92,71 +100,87 @@ function projectLocationText(project: Project): string {
     [project.address, project.location, project.area, project.division].find(
       (value) => value && !toMapEmbedUrl(value),
     ) ?? "Project location"
-  )
+  );
 }
 
 /** Group landmarks by their drive-time bucket, preserving first-seen order. */
 function groupLandmarks(
   landmarks: { name: string; group: string }[],
 ): { group: string; names: string[] }[] {
-  const order: string[] = []
-  const buckets = new Map<string, string[]>()
+  const order: string[] = [];
+  const buckets = new Map<string, string[]>();
   for (const { name, group } of landmarks) {
     if (!buckets.has(group)) {
-      buckets.set(group, [])
-      order.push(group)
+      buckets.set(group, []);
+      order.push(group);
     }
-    buckets.get(group)!.push(name)
+    buckets.get(group)!.push(name);
   }
-  return order.map((group) => ({ group, names: buckets.get(group)! }))
+  return order.map((group) => ({ group, names: buckets.get(group)! }));
 }
 
-export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
-  const { slug } = await params
-  const res = await getProject(slug)
-  if (!res.success) notFound()
-  const project = res.data
+export default async function ProjectDetailPage({
+  params,
+}: ProjectDetailPageProps) {
+  const { slug } = await params;
+  const res = await getProject(slug);
+  if (!res.success) notFound();
+  const project = res.data;
 
   // Count this view *after* the response is sent, so the view-count write never
   // adds latency to the page render. Errors are swallowed — a failed analytics
   // ping must not surface to the visitor.
   after(() => {
-    void recordProjectView(slug).catch(() => {})
-  })
+    void recordProjectView(slug).catch(() => {});
+  });
 
-  const status = PROJECT_STATUS_STYLES[project.status]
+  const status = PROJECT_STATUS_STYLES[project.status];
   const handover = project.handoverDate
-    ? new Date(project.handoverDate).toLocaleDateString("en-BD", { month: "long", year: "numeric" })
-    : "TBA"
+    ? new Date(project.handoverDate).toLocaleDateString("en-BD", {
+        month: "long",
+        year: "numeric",
+      })
+    : "TBA";
 
   // Video tour: external link → iframe embed when it's YouTube/Vimeo, otherwise a
   // direct <video>. Uploaded clips always render as <video>.
-  const videoEmbed = project.videoUrl ? toEmbedUrl(project.videoUrl) : null
+  const videoEmbed = project.videoUrl ? toEmbedUrl(project.videoUrl) : null;
   const directVideos = [
     ...(project.videos ?? []),
     ...(project.videoUrl && !videoEmbed ? [project.videoUrl] : []),
-  ]
-  const hasVideo = Boolean(videoEmbed) || directVideos.length > 0
+  ];
+  const hasVideo = Boolean(videoEmbed) || directVideos.length > 0;
   const galleryImages = Array.from(
     new Set(
       [project.coverImage, ...project.galleryImages].filter(
         (image): image is string => Boolean(image),
       ),
     ),
-  )
-  const mapEmbedUrl = projectMapEmbedUrl(project)
-  const locationText = projectLocationText(project)
-  const landmarkGroups = groupLandmarks(project.nearbyLandmarks ?? [])
-  const aboutProject = parseProjectDescription(project.description)
-  const specificationEntries = Object.entries(project.specifications ?? {})
+  );
+  const mapEmbedUrl = projectMapEmbedUrl(project);
+  const locationText = projectLocationText(project);
+  const projectFacts = buildProjectFacts({
+    address: project.address,
+    locationText,
+    landSize: project.landSize,
+    landSizeUnit: project.landSizeUnit,
+    totalFloors: project.totalFloors,
+    totalUnits: project.totalUnits,
+    availableUnits: project.availableUnits,
+    handover: project.handoverDate ? handover : undefined,
+    units: project.units,
+  });
+  const landmarkGroups = groupLandmarks(project.nearbyLandmarks ?? []);
+  const aboutProject = parseProjectDescription(project.description);
+  const specificationEntries = Object.entries(project.specifications ?? {});
   const hasAboutProjectContent =
     aboutProject.specs.length > 0 ||
     aboutProject.highlights.length > 0 ||
-    aboutProject.paragraphs.length > 0
-  const hasUnits = (project.units ?? []).length > 0
-  const hasAmenities = (project.amenities ?? []).length > 0
-  const hasSpecifications = specificationEntries.length > 0
-  const hasNearbyLandmarks = (project.nearbyLandmarks ?? []).length > 0
+    aboutProject.paragraphs.length > 0;
+  const hasUnits = (project.units ?? []).length > 0;
+  const hasAmenities = (project.amenities ?? []).length > 0;
+  const hasSpecifications = specificationEntries.length > 0;
+  const hasNearbyLandmarks = (project.nearbyLandmarks ?? []).length > 0;
 
   const schema = {
     "@context": "https://schema.org",
@@ -165,8 +189,13 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
     description: project.description,
     url: `${siteConfig.url}${ROUTES.PROJECT_DETAIL(project.slug)}`,
     image: project.coverImage,
-    address: { "@type": "PostalAddress", addressLocality: project.area, addressRegion: project.division, addressCountry: "BD" },
-  }
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: project.area,
+      addressRegion: project.division,
+      addressCountry: "BD",
+    },
+  };
 
   return (
     <>
@@ -175,9 +204,13 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
       {/* Breadcrumb */}
       <div className="bg-ink-50 border-b border-border">
         <div className="container-page py-3 flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Link href={ROUTES.HOME} className="hover:text-foreground">Home</Link>
+          <Link href={ROUTES.HOME} className="hover:text-foreground">
+            Home
+          </Link>
           <ChevronRight className="h-3 w-3" />
-          <Link href={ROUTES.PROJECTS} className="hover:text-foreground">Projects</Link>
+          <Link href={ROUTES.PROJECTS} className="hover:text-foreground">
+            Projects
+          </Link>
           <ChevronRight className="h-3 w-3" />
           <span className="text-foreground font-medium">{project.name}</span>
         </div>
@@ -186,18 +219,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
       <div className="container-page section-y">
         {/* Gallery */}
         {galleryImages.length > 0 ? (
-          <div className="mb-8 grid h-72 grid-cols-2 gap-2 overflow-hidden rounded-2xl md:h-96 md:grid-cols-4">
-            <div className="relative col-span-2 row-span-2">
-              <Image src={galleryImages[0]} alt={project.name} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
-              <ProjectImageLightboxButton images={galleryImages} index={0} label={project.name} />
-            </div>
-            {galleryImages.slice(1, 5).map((img, i) => (
-              <div key={img} className="relative hidden md:block">
-                <Image src={img} alt={`${project.name} ${i + 2}`} fill sizes="25vw" className="object-cover" />
-                <ProjectImageLightboxButton images={galleryImages} index={i + 1} label={project.name} />
-              </div>
-            ))}
-          </div>
+          <ProjectGallery images={galleryImages} label={project.name} />
         ) : null}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
@@ -206,37 +228,25 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
             {/* Header */}
             <div>
               <div className="flex flex-wrap items-center gap-2 mb-2">
-                <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${status.classes}`}>{status.label}</span>
-                {project.featured && <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-gold-100 text-gold-700 border border-gold-200">Featured</span>}
+                <span
+                  className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${status.classes}`}
+                >
+                  {status.label}
+                </span>
+                {project.featured && (
+                  <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-gold-100 text-gold-700 border border-gold-200">
+                    Featured
+                  </span>
+                )}
               </div>
               <h1 className="text-h1 mb-1">{project.name}</h1>
-              <p className="text-lead italic text-muted-foreground">{project.tagline}</p>
-              {project.developerName && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  Developed by{" "}
-                  <span className="font-medium text-foreground">{project.developerName}</span>
-                </p>
-              )}
+              <p className="text-lead italic text-muted-foreground">
+                {project.tagline}
+              </p>
               <div className="flex items-center gap-1.5 mt-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4 text-brand-600" />
                 {locationText}
               </div>
-            </div>
-
-            {/* Overview grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {[
-                { icon: Calendar,  label: "Handover",  value: handover },
-                { icon: Building2, label: "Floors",    value: project.totalFloors != null ? `${project.totalFloors} Floors` : "—" },
-                { icon: Home,      label: "Total Units", value: project.totalUnits != null ? `${project.totalUnits} Units` : "—" },
-                { icon: Layers,    label: "Land Size",  value: project.landSize != null ? `${project.landSize} ${project.landSizeUnit ?? "katha"}` : "—" },
-              ].map(({ icon: Icon, label, value }) => (
-                <div key={label} className="bg-ink-50 rounded-xl p-4 text-center">
-                  <Icon className="h-4 w-4 text-brand-600 mx-auto mb-1.5" />
-                  <p className="text-xs text-muted-foreground">{label}</p>
-                  <p className="text-sm font-semibold mt-0.5">{value}</p>
-                </div>
-              ))}
             </div>
 
             {/* Description */}
@@ -245,7 +255,8 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                 <div className="mb-4">
                   <h2 className="text-h3 mb-2">About This Project</h2>
                   <p className="text-sm text-muted-foreground">
-                    A cleaner overview of the key details, layout, and standout project points.
+                    A cleaner overview of the key details, layout, and standout
+                    project points.
                   </p>
                 </div>
 
@@ -269,7 +280,9 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                   ) : null}
 
                   {aboutProject.highlights.length > 0 ? (
-                    <div className={aboutProject.specs.length > 0 ? "mt-5" : ""}>
+                    <div
+                      className={aboutProject.specs.length > 0 ? "mt-5" : ""}
+                    >
                       <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                         Highlights
                       </p>
@@ -287,7 +300,14 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                   ) : null}
 
                   {aboutProject.paragraphs.length > 0 ? (
-                    <div className={aboutProject.specs.length > 0 || aboutProject.highlights.length > 0 ? "mt-5 space-y-3" : "space-y-3"}>
+                    <div
+                      className={
+                        aboutProject.specs.length > 0 ||
+                        aboutProject.highlights.length > 0
+                          ? "mt-5 space-y-3"
+                          : "space-y-3"
+                      }
+                    >
                       {aboutProject.paragraphs.map((paragraph) => (
                         <p
                           key={paragraph}
@@ -348,64 +368,86 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
             {/* Unit price table */}
             {hasUnits ? (
               <div>
-              <h2 className="text-h3 mb-4">Unit Types & Pricing</h2>
-              <div className="rounded-xl border border-border overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead className="bg-ink-50 text-xs uppercase text-muted-foreground">
-                    <tr>
-                      {["Type", "Size", "Price Range", "Available"].map((h) => (
-                        <th key={h} className="px-4 py-2.5 text-left font-semibold">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {(project.units ?? []).map((unit) => (
-                      <tr key={unit.type ?? unit.name} className="hover:bg-ink-50">
-                        <td className="px-4 py-3 font-medium">{unit.type ?? unit.name}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{unit.size}</td>
-                        <td className="px-4 py-3 text-brand-700 font-semibold">
-                          {unit.priceFrom != null && unit.priceTo != null
-                            ? formatPriceRange(unit.priceFrom, unit.priceTo)
-                            : unit.price != null
-                              ? formatPriceRange(unit.price, unit.price)
-                              : "—"}
-                        </td>
-                        <td className="px-4 py-3">{unit.available ?? "—"}/{unit.total ?? unit.available ?? "—"}</td>
+                <h2 className="text-h3 mb-4">Unit Types & Pricing</h2>
+                <div className="rounded-xl border border-border overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead className="bg-ink-50 text-xs uppercase text-muted-foreground">
+                      <tr>
+                        {["Type", "Size", "Price Range", "Available"].map(
+                          (h) => (
+                            <th
+                              key={h}
+                              className="px-4 py-2.5 text-left font-semibold"
+                            >
+                              {h}
+                            </th>
+                          ),
+                        )}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {(project.units ?? []).map((unit) => (
+                        <tr
+                          key={unit.type ?? unit.name}
+                          className="hover:bg-ink-50"
+                        >
+                          <td className="px-4 py-3 font-medium">
+                            {unit.type ?? unit.name}
+                          </td>
+                          <td className="px-4 py-3 text-muted-foreground">
+                            {unit.size}
+                          </td>
+                          <td className="px-4 py-3 text-brand-700 font-semibold">
+                            {unit.priceFrom != null && unit.priceTo != null
+                              ? formatPriceRange(unit.priceFrom, unit.priceTo)
+                              : unit.price != null
+                                ? formatPriceRange(unit.price, unit.price)
+                                : "—"}
+                          </td>
+                          <td className="px-4 py-3">
+                            {unit.available ?? "—"}/
+                            {unit.total ?? unit.available ?? "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             ) : null}
 
             {/* Amenities */}
             {hasAmenities ? (
               <div>
-              <h2 className="text-h3 mb-4">Amenities</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {(project.amenities ?? []).map((a) => (
-                  <div key={a} className="flex items-center gap-2 text-sm">
-                    <span className="h-1.5 w-1.5 rounded-full bg-brand-500 shrink-0" />
-                    {a}
-                  </div>
-                ))}
-              </div>
+                <h2 className="text-h3 mb-4">Amenities</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {(project.amenities ?? []).map((a) => (
+                    <div key={a} className="flex items-center gap-2 text-sm">
+                      <span className="h-1.5 w-1.5 rounded-full bg-brand-500 shrink-0" />
+                      {a}
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : null}
 
             {/* Specifications */}
             {hasSpecifications ? (
               <div>
-              <h2 className="text-h3 mb-4">Specifications</h2>
-              <div className="rounded-xl border border-border overflow-hidden">
-                {specificationEntries.map(([key, value], i) => (
-                  <div key={key} className={`grid grid-cols-2 px-4 py-3 text-sm ${i % 2 === 0 ? "bg-ink-50" : "bg-white"}`}>
-                    <span className="font-medium text-muted-foreground">{key}</span>
-                    <span>{value}</span>
-                  </div>
-                ))}
-              </div>
+                <h2 className="text-h3 mb-4">Specifications</h2>
+                <div className="rounded-xl border border-border overflow-hidden">
+                  {specificationEntries.map(([key, value], i) => (
+                    <div
+                      key={key}
+                      className={`grid grid-cols-2 px-4 py-3 text-sm ${i % 2 === 0 ? "bg-ink-50" : "bg-white"}`}
+                    >
+                      <span className="font-medium text-muted-foreground">
+                        {key}
+                      </span>
+                      <span>{value}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : null}
 
@@ -416,10 +458,15 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
                 <div className="space-y-6">
                   {landmarkGroups.map(({ group, names }) => (
                     <div key={group}>
-                      <p className="text-eyebrow mb-2 text-brand-700">{group}</p>
+                      <p className="text-eyebrow mb-2 text-brand-700">
+                        {group}
+                      </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
                         {names.map((name, i) => (
-                          <div key={`${name}-${i}`} className="flex items-center gap-2 text-sm">
+                          <div
+                            key={`${name}-${i}`}
+                            className="flex items-center gap-2 text-sm"
+                          >
                             <MapPin className="h-4 w-4 text-brand-600 shrink-0" />
                             <span className="font-medium">{name}</span>
                           </div>
@@ -433,37 +480,84 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-5">
-            {/* Price card */}
-            <div className="bg-brand-700 text-white rounded-2xl p-5 space-y-2">
-              <p className="text-brand-200 text-sm">Price Range</p>
-              <p className="text-2xl font-bold">{formatPriceRange(project.priceFrom ?? 0, project.priceTo ?? project.priceFrom ?? 0)}</p>
-              <p className="text-brand-300 text-xs">Prices may vary per unit type and floor</p>
-            </div>
+          <aside>
+            <div className="space-y-5 lg:sticky lg:top-24">
+              {project.developerName ? (
+                <section className="relative isolate overflow-hidden rounded-2xl border border-brand-200 bg-linear-to-br from-brand-50 via-white to-gold-50 p-5 shadow-[0_0_0_1px_rgba(5,150,105,0.04),0_18px_60px_rgba(5,150,105,0.16),0_0_45px_rgba(212,175,55,0.12)]">
+                  <div className="absolute -right-12 -top-12 -z-10 size-36 rounded-full bg-gold-300/25 blur-3xl" />
+                  <div className="absolute -bottom-16 -left-10 -z-10 size-40 rounded-full bg-brand-300/25 blur-3xl" />
+                  <div className="flex items-start gap-3">
+                    <div className="relative inline-flex size-11 shrink-0 items-center justify-center rounded-xl bg-brand-700 text-white shadow-[0_8px_24px_rgba(5,150,105,0.28)]">
+                      <Building2 aria-hidden="true" className="size-5" />
+                      <Sparkles
+                        aria-hidden="true"
+                        className="absolute -right-1.5 -top-1.5 size-4 text-gold-500"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand-700">
+                        Developed by
+                      </p>
+                      <p className="mt-1 wrap-break-word text-lg font-bold leading-snug text-ink-950">
+                        {project.developerName}
+                      </p>
+                      <p className="mt-1.5 text-xs leading-5 text-muted-foreground">
+                        The team responsible for bringing this project to life.
+                      </p>
+                    </div>
+                  </div>
+                </section>
+              ) : null}
 
-            {/* Contact card */}
-            <div className="bg-white rounded-2xl p-5 border border-border space-y-4">
-              <h3 className="font-bold">Enquire About This Project</h3>
-              <div className="space-y-2">
-                <a href={`tel:${siteConfig.contact.phoneRaw}`} className="flex items-center gap-3 w-full px-4 py-2.5 rounded-xl bg-brand-600 text-white hover:bg-brand-700 transition-colors text-sm font-semibold">
-                  <Phone className="h-4 w-4" /> {siteConfig.contact.phone}
-                </a>
-                <a
-                  href={`https://wa.me/${siteConfig.contact.whatsApp}?text=I'm interested in ${project.name}`}
-                  target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-3 w-full px-4 py-2.5 rounded-xl border border-border hover:bg-muted transition-colors text-sm font-semibold"
-                >
-                  <MessageCircle className="h-4 w-4 text-green-600" /> WhatsApp
-                </a>
-                <Link href={`${ROUTES.CONSULTATION}?project=${project.slug}`}>
-                  <Button className="w-full mt-1" variant="outline">Book Site Visit</Button>
-                </Link>
+              <ProjectAtAGlance facts={projectFacts} />
+
+              {/* Price card */}
+              <div className="bg-brand-700 text-white rounded-2xl p-5 space-y-2">
+                <p className="text-brand-200 text-sm">Price Range</p>
+                <p className="text-2xl font-bold">
+                  {formatPriceRange(
+                    project.priceFrom ?? 0,
+                    project.priceTo ?? project.priceFrom ?? 0,
+                  )}
+                </p>
+                <p className="text-brand-300 text-xs">
+                  Prices may vary per unit type and floor
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground text-center">{siteConfig.contact.officeHours}</p>
+
+              {/* Contact card */}
+              <div className="bg-white rounded-2xl p-5 border border-border space-y-4">
+                <h3 className="font-bold">Enquire About This Project</h3>
+                <div className="space-y-2">
+                  <a
+                    href={`tel:${siteConfig.contact.phoneRaw}`}
+                    className="flex items-center gap-3 w-full px-4 py-2.5 rounded-xl bg-brand-600 text-white hover:bg-brand-700 transition-colors text-sm font-semibold"
+                  >
+                    <Phone className="h-4 w-4" /> {siteConfig.contact.phone}
+                  </a>
+                  <a
+                    href={`https://wa.me/${siteConfig.contact.whatsApp}?text=I'm interested in ${project.name}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 w-full px-4 py-2.5 rounded-xl border border-border hover:bg-muted transition-colors text-sm font-semibold"
+                  >
+                    <MessageCircle className="h-4 w-4 text-green-600" />{" "}
+                    WhatsApp
+                  </a>
+                  <Link href={`${ROUTES.CONSULTATION}?project=${project.slug}`}>
+                    <Button className="w-full mt-1" variant="outline">
+                      Book Site Visit
+                    </Button>
+                  </Link>
+                </div>
+                <p className="text-xs text-muted-foreground text-center">
+                  {siteConfig.contact.officeHours}
+                </p>
+              </div>
             </div>
-          </div>
+          </aside>
         </div>
       </div>
     </>
-  )
+  );
 }
