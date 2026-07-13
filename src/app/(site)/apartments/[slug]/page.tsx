@@ -526,7 +526,10 @@ export default async function ProjectDetailPage({
               </div>
 
               {/* Contact card */}
-              <div className="bg-white rounded-2xl p-5 border border-border space-y-4">
+              <div
+                id="enquire"
+                className="scroll-mt-24 bg-white rounded-2xl p-5 border border-border space-y-4"
+              >
                 <h3 className="font-bold">Enquire About This Apartment</h3>
                 <div className="space-y-2">
                   <a
