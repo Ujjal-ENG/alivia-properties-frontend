@@ -21,27 +21,24 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { GetQuoteForm } from "@/components/marketplace/GetQuoteForm"
 import {
   marketplaceService,
-  type MarketplaceCategory,
   type TreeCategory,
   type TreeDepartment,
-  type TreeSubcategory,
 } from "@/services/marketplace.service"
 import type { Supplier } from "@/types/marketplace.types"
 import { cn } from "@/lib/utils"
 
-type Step = 1 | 2 | 3 | 4 | 5
+type Step = 1 | 2 | 3 | 4
 
 const STEP_LABELS: Record<Step, string> = {
   1: "What",
   2: "Type",
-  3: "Exact match",
-  4: "Sellers",
-  5: "Details",
+  3: "Sellers",
+  4: "Details",
 }
 
 type Props = {
   tree: TreeDepartment[]
-  initial?: { dept?: string; cat?: string; sub?: string }
+  initial?: { dept?: string; cat?: string }
 }
 
 function initials(name: string) {
@@ -58,25 +55,17 @@ export function QuoteWizard({ tree, initial }: Props) {
   const start = React.useMemo(() => {
     const dept = tree.find((d) => d.slug === initial?.dept)
     const cat = dept?.categories.find((c) => c.slug === initial?.cat)
-    const sub =
-      cat?.subcategories.find((s) => s.slug === initial?.sub) ??
-      dept?.categories.flatMap((c) => c.subcategories).find((s) => s.slug === initial?.sub)
-    const catOfSub = sub
-      ? dept?.categories.find((c) => c.subcategories.some((s) => s.slug === sub.slug))
-      : cat
-    if (sub) return { step: 4 as Step, dept, cat: catOfSub ?? cat, sub }
-    if (cat) return { step: 3 as Step, dept, cat, sub: undefined }
-    if (dept) return { step: 2 as Step, dept, cat: undefined, sub: undefined }
-    return { step: 1 as Step, dept: undefined, cat: undefined, sub: undefined }
-  }, [tree, initial?.dept, initial?.cat, initial?.sub])
+    if (cat) return { step: 3 as Step, dept, cat }
+    if (dept) return { step: 2 as Step, dept, cat: undefined }
+    return { step: 1 as Step, dept: undefined, cat: undefined }
+  }, [tree, initial?.dept, initial?.cat])
 
   const [step, setStep] = React.useState<Step>(start.step)
   const [prev, setPrev] = React.useState<Step[]>(
-    start.step === 1 ? [] : ([1, 2, 3, 4] as Step[]).filter((s) => s < start.step),
+    start.step === 1 ? [] : ([1, 2, 3] as Step[]).filter((s) => s < start.step),
   )
   const [dept, setDept] = React.useState<TreeDepartment | undefined>(start.dept)
   const [cat, setCat] = React.useState<TreeCategory | undefined>(start.cat)
-  const [sub, setSub] = React.useState<TreeSubcategory | undefined>(start.sub)
   const [selectedSupplierIds, setSelectedSupplierIds] = React.useState<string[]>([])
 
   const [suppliers, setSuppliers] = React.useState<Supplier[]>([])
@@ -96,29 +85,15 @@ export function QuoteWizard({ tree, initial }: Props) {
   function selectDepartment(d: TreeDepartment) {
     setDept(d)
     setCat(undefined)
-    setSub(undefined)
     if (d.categories.length === 1) {
-      const onlyCat = d.categories[0]
-      setCat(onlyCat)
-      if (onlyCat.subcategories.length === 1) {
-        setSub(onlyCat.subcategories[0])
-        advanceTo(4)
-      } else advanceTo(3)
+      setCat(d.categories[0])
+      advanceTo(3)
     } else advanceTo(2)
   }
 
   function selectCategory(c: TreeCategory) {
     setCat(c)
-    setSub(undefined)
-    if (c.subcategories.length === 1) {
-      setSub(c.subcategories[0])
-      advanceTo(4)
-    } else advanceTo(3)
-  }
-
-  function selectSubcategory(s: TreeSubcategory) {
-    setSub(s)
-    advanceTo(4)
+    advanceTo(3)
   }
 
   function back() {
@@ -136,11 +111,11 @@ export function QuoteWizard({ tree, initial }: Props) {
     setStep(target)
   }
 
-  // ── Load suppliers when a subcategory is chosen ──────────────────────────────
-  const subSlug = sub?.slug
+  // ── Load suppliers when a category is chosen ─────────────────────────────────
+  const catSlug = cat?.slug
   React.useEffect(() => {
-    if (!subSlug) return
-    const slug = subSlug
+    if (!catSlug) return
+    const slug = catSlug
     let cancelled = false
     async function load() {
       setSuppliersState("loading")
@@ -160,7 +135,7 @@ export function QuoteWizard({ tree, initial }: Props) {
     return () => {
       cancelled = true
     }
-  }, [subSlug])
+  }, [catSlug])
 
   function toggleSupplier(id: string) {
     setSelectedSupplierIds((ids) =>
@@ -177,7 +152,7 @@ export function QuoteWizard({ tree, initial }: Props) {
       <WizardProgress step={step} onJump={jumpTo} />
 
       {/* Breadcrumb of choices */}
-      {(dept || cat || sub) && (
+      {(dept || cat) && (
         <div className="mb-5 flex flex-wrap items-center gap-1.5 text-xs text-ink-600">
           {dept && <Crumb label={dept.name} onClick={() => jumpTo(1)} />}
           {cat && (
@@ -186,19 +161,13 @@ export function QuoteWizard({ tree, initial }: Props) {
               <Crumb label={cat.name} onClick={() => jumpTo(2)} />
             </>
           )}
-          {sub && (
-            <>
-              <ChevronRight className="size-3 text-ink-400" />
-              <Crumb label={sub.name} onClick={() => jumpTo(3)} />
-            </>
-          )}
         </div>
       )}
 
       {/* ── Step 1: Department ─────────────────────────────────────────────── */}
       {step === 1 && (
         <StepShell
-          eyebrow="Step 1 of 5"
+          eyebrow="Step 1 of 4"
           title="What are you looking for?"
           lead="Tap one to get started."
         >
@@ -221,7 +190,7 @@ export function QuoteWizard({ tree, initial }: Props) {
       {/* ── Step 2: Category ───────────────────────────────────────────────── */}
       {step === 2 && dept && (
         <StepShell
-          eyebrow="Step 2 of 5"
+          eyebrow="Step 2 of 4"
           title={`Pick a type in ${dept.name}`}
           lead="Narrow down to the product group you need."
         >
@@ -231,7 +200,6 @@ export function QuoteWizard({ tree, initial }: Props) {
                 key={c.slug}
                 title={c.name}
                 description={c.description}
-                meta={`${c.subcategories.length} options`}
                 iconUrl={c.iconUrl}
                 fallbackIcon={<Package className="size-5" />}
                 onClick={() => selectCategory(c)}
@@ -241,30 +209,11 @@ export function QuoteWizard({ tree, initial }: Props) {
         </StepShell>
       )}
 
-      {/* ── Step 3: Subcategory (image-led) ────────────────────────────────── */}
+      {/* ── Step 3: Suppliers (multi-select) ───────────────────────────────── */}
       {step === 3 && cat && (
         <StepShell
-          eyebrow="Step 3 of 5"
-          title={`Select a ${cat.name.toLowerCase()} type`}
-          lead="Tap the option that matches what you need."
-        >
-          {cat.subcategories.length === 0 ? (
-            <EmptyNote text="No options configured yet — go back and pick another category, or request a quote and we'll match you." />
-          ) : (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-              {cat.subcategories.map((s) => (
-                <SubcategoryCard key={s.slug} node={s} onClick={() => selectSubcategory(s)} />
-              ))}
-            </div>
-          )}
-        </StepShell>
-      )}
-
-      {/* ── Step 4: Suppliers (multi-select) ───────────────────────────────── */}
-      {step === 4 && sub && (
-        <StepShell
-          eyebrow="Step 4 of 5"
-          title={`Choose sellers for ${sub.name}`}
+          eyebrow="Step 3 of 4"
+          title={`Choose sellers for ${cat.name}`}
           lead="Select one or more — or skip and let Alivia match you."
         >
           <SupplierStep
@@ -282,7 +231,7 @@ export function QuoteWizard({ tree, initial }: Props) {
                 ? `${selectedSupplierIds.length} seller${selectedSupplierIds.length === 1 ? "" : "s"} selected`
                 : "No sellers selected — we'll route your request to verified matches."}
             </p>
-            <Button onClick={() => advanceTo(5)} className="gap-1.5">
+            <Button onClick={() => advanceTo(4)} className="gap-1.5">
               {selectedSupplierIds.length > 0 ? "Continue" : "Skip — match me"}
               <ChevronRight className="size-4" />
             </Button>
@@ -290,15 +239,15 @@ export function QuoteWizard({ tree, initial }: Props) {
         </StepShell>
       )}
 
-      {/* ── Step 5: Request form ───────────────────────────────────────────── */}
-      {step === 5 && sub && (
+      {/* ── Step 4: Request form ───────────────────────────────────────────── */}
+      {step === 4 && cat && (
         <StepShell
-          eyebrow="Step 5 of 5"
+          eyebrow="Step 4 of 4"
           title="Tell us what you need"
           lead="Fill in the details and submit — verified suppliers usually reply within 24 hours."
         >
           <div className="mb-5 rounded-xl border border-brand-100 bg-brand-50/60 px-4 py-3 text-sm text-brand-900">
-            <span className="font-medium">Requesting:</span> {sub.name}
+            <span className="font-medium">Requesting:</span> {cat.name}
             {selectedSupplierNames.length > 0 ? (
               <>
                 {" "}
@@ -317,8 +266,8 @@ export function QuoteWizard({ tree, initial }: Props) {
             supplierIds={selectedSupplierIds}
             redirectOnSuccess
             context={{
-              categorySlug: sub.slug,
-              categoryName: sub.name,
+              categorySlug: cat.slug,
+              categoryName: cat.name,
               supplierName: selectedSupplierNames.join(", ") || undefined,
             }}
           />
@@ -344,7 +293,7 @@ export function QuoteWizard({ tree, initial }: Props) {
 // ─── Pieces ────────────────────────────────────────────────────────────────────
 
 function WizardProgress({ step, onJump }: { step: Step; onJump: (s: Step) => void }) {
-  const steps: Step[] = [1, 2, 3, 4, 5]
+  const steps: Step[] = [1, 2, 3, 4]
   return (
     <ol className="mb-6 flex items-center gap-1.5 sm:gap-2">
       {steps.map((s, i) => {
@@ -453,36 +402,6 @@ function TileButton({
       <span className="mt-3 font-semibold text-ink-900 group-hover:text-brand-700">{title}</span>
       {description && <span className="mt-1 line-clamp-2 text-xs text-ink-600">{description}</span>}
       {meta && <span className="mt-auto pt-2 text-[11px] font-medium text-ink-500">{meta}</span>}
-    </button>
-  )
-}
-
-function SubcategoryCard({ node, onClick }: { node: MarketplaceCategory; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="mobile-liquid-glass group overflow-hidden rounded-2xl border border-border/70 bg-white text-left shadow-(--shadow-card) transition-all hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-(--shadow-elevated)"
-    >
-      <div className="relative aspect-[4/3] overflow-hidden bg-brand-50">
-        {node.image?.url ? (
-          <Image
-            src={node.image.url}
-            alt={node.image.alt ?? node.name}
-            fill
-            unoptimized
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-        ) : (
-          <div className="flex size-full items-center justify-center text-brand-700">
-            <Package className="size-8 opacity-50" />
-          </div>
-        )}
-        <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/55 to-transparent p-2.5">
-          <span className="line-clamp-2 text-sm font-semibold text-white">{node.name}</span>
-        </div>
-      </div>
     </button>
   )
 }
