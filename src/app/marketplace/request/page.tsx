@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 }
 
 type Props = {
-  searchParams: Promise<{ dept?: string; cat?: string; sub?: string }>
+  searchParams: Promise<{ dept?: string; cat?: string }>
 }
 
 export default async function MarketplaceRequestPage({ searchParams }: Props) {
@@ -68,7 +68,7 @@ export default async function MarketplaceRequestPage({ searchParams }: Props) {
             ) : (
               <QuoteWizard
                 tree={tree}
-                initial={{ dept: params.dept, cat: params.cat, sub: params.sub }}
+                initial={{ dept: params.dept, cat: params.cat }}
               />
             )}
           </section>
