@@ -18,7 +18,6 @@ import {
   MessageCircle,
   Phone,
   ShoppingBag,
-  Users,
   X,
   type LucideIcon,
 } from "lucide-react"
@@ -40,15 +39,12 @@ interface MobileNavProps {
 const NAV_ICONS: Record<string, LucideIcon> = {
   Home,
   Marketplace: ShoppingBag,
-  Properties: Building2,
   Apartments: Landmark,
-  Agents: Users,
   Guides: Compass,
   Company: Info,
 }
 
 const QUICK_ACTIONS: { label: string; caption: string; href: string; icon: LucideIcon }[] = [
-  { label: "Properties", caption: "Buy & rent", href: ROUTES.PROPERTIES, icon: Building2 },
   { label: "Marketplace", caption: "Suppliers & quotes", href: ROUTES.MARKETPLACE, icon: ShoppingBag },
   { label: "Apartments", caption: "Our developments", href: ROUTES.PROJECTS, icon: Landmark },
   { label: "Consult", caption: "Talk to an expert", href: ROUTES.CONSULTATION, icon: Headset },
