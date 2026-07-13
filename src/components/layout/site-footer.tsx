@@ -47,7 +47,6 @@ function LinkedinIcon({ className }: { className?: string }) {
 const QUICK_LINKS = [
   { label: "Home", href: ROUTES.HOME },
   { label: "Apartments", href: ROUTES.PROJECTS },
-  { label: "Properties", href: ROUTES.PROPERTIES },
   { label: "Marketplace", href: ROUTES.MARKETPLACE },
   { label: "Consultation", href: ROUTES.CONSULTATION },
   { label: "Contact", href: ROUTES.CONTACT },
