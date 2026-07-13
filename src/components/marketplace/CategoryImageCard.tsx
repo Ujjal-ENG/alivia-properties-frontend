@@ -6,9 +6,9 @@ import { ROUTES } from "@/config/routes.config"
 import type { MarketplaceCategory } from "@/services/marketplace.service"
 
 export function CategoryImageCard({ cat }: { cat: MarketplaceCategory }) {
-  // Subcategories store their picture in `image.url`; departments/categories use
-  // `iconUrl`. Prefer the richer `image` ref so admin edits to subcategory tiles
-  // show up here, then fall back to `iconUrl`.
+  // Categories store their tile picture in `image.url`; departments use `iconUrl`.
+  // Prefer the richer `image` ref so admin edits to category tiles show up here,
+  // then fall back to `iconUrl`.
   const imageSrc = cat.image?.url ?? cat.iconUrl
 
   return (
