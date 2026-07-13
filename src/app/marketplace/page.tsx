@@ -33,6 +33,7 @@ import {
 } from "@/services/marketplace.service";
 import { projectsService } from "@/services/projects.service";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { HeroCarousel } from "@/components/home/hero-carousel";
 import { MarketplaceMegaMenu } from "@/components/marketplace/MarketplaceMegaMenu";
 import {
   FlagshipProjects,
@@ -320,16 +321,10 @@ function categoryMatches(
   category: MarketplaceCategory,
   query: string,
   parentName: string | undefined,
-  subcategoryNames: string[],
 ) {
   if (!query) return true;
 
-  const haystack = [
-    category.name,
-    category.description ?? "",
-    parentName ?? "",
-    subcategoryNames.join(" "),
-  ]
+  const haystack = [category.name, category.description ?? "", parentName ?? ""]
     .join(" ")
     .toLowerCase();
 
@@ -387,19 +382,7 @@ export default async function MarketplacePage({
       return acc;
     }, {});
 
-  const subcategoriesByCategory = categories
-    .filter((category) => levelOf(category) === "SUBCATEGORY")
-    .reduce<Record<string, MarketplaceCategory[]>>((acc, category) => {
-      const key = category.parentSlug;
-      if (!key) return acc;
-      (acc[key] ??= []).push(category);
-      return acc;
-    }, {});
-
   Object.values(childrenByGroup).forEach((items) =>
-    items.sort((a, b) => a.order - b.order),
-  );
-  Object.values(subcategoriesByCategory).forEach((items) =>
     items.sort((a, b) => a.order - b.order),
   );
 
@@ -409,15 +392,10 @@ export default async function MarketplacePage({
         if (selectedDepartment && group.slug !== selectedDepartment)
           return false;
 
-        const subcategoryNames = (
-          subcategoriesByCategory[category.slug] ?? []
-        ).map((item) => item.name);
-
         return categoryMatches(
           category,
           query,
           parentNameBySlug.get(category.parentSlug ?? ""),
-          subcategoryNames,
         );
       });
 
@@ -516,7 +494,6 @@ export default async function MarketplacePage({
                 data={{
                   departments: groups,
                   categoriesByDepartment: childrenByGroup,
-                  subcategoriesByCategory,
                 }}
               />
 
@@ -578,6 +555,8 @@ export default async function MarketplacePage({
 
       {clearingSearch && (
         <>
+          <HeroCarousel />
+
           <section className="border-y border-border/60 bg-linear-to-r from-brand-50/70 via-white to-gold-50/50">
             <div className="container-page max-w-373! flex snap-x gap-x-8 gap-y-3 overflow-x-auto py-4 scrollbar-none sm:overflow-visible">
               {BENEFITS.map(({ icon: Icon, title, body, accent }) => (
@@ -666,20 +645,35 @@ export default async function MarketplacePage({
                   aria-label={group.name}
                   className="scroll-mt-40"
                 >
-                  <div className="mb-4 flex items-center gap-3">
-                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-800">
-                      <GroupIcon aria-hidden="true" className="size-5" />
-                    </span>
-                    <div className="min-w-0">
-                      <h3 className="font-sans text-xl font-extrabold leading-6 text-ink-900">
-                        {group.name}
-                      </h3>
-                      {group.description ? (
-                        <p className="line-clamp-1 text-sm text-ink-600">
-                          {group.description}
-                        </p>
-                      ) : null}
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-800">
+                        <GroupIcon aria-hidden="true" className="size-5" />
+                      </span>
+                      <div className="min-w-0">
+                        <h3 className="font-sans text-xl font-extrabold leading-6 text-ink-900">
+                          {group.name}
+                        </h3>
+                        {group.description ? (
+                          <p className="line-clamp-1 text-sm text-ink-600">
+                            {group.description}
+                          </p>
+                        ) : null}
+                      </div>
                     </div>
+
+                    {items.length > 5 ? (
+                      <Link
+                        href={ROUTES.MARKETPLACE_CATEGORY(group.slug)}
+                        className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-5 text-sm font-semibold text-brand-700 transition-colors hover:border-brand-300 hover:bg-white hover:text-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                      >
+                        <span className="hidden sm:inline">
+                          See all {group.name}
+                        </span>
+                        <span className="sm:hidden">See all</span>
+                        <ArrowRight aria-hidden="true" className="size-4" />
+                      </Link>
+                    ) : null}
                   </div>
 
                   <div className="grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
@@ -731,18 +725,6 @@ export default async function MarketplacePage({
                       );
                     })}
                   </div>
-
-                  {items.length > 5 ? (
-                    <div className="mt-5 flex justify-center sm:justify-start">
-                      <Link
-                        href={ROUTES.MARKETPLACE_CATEGORY(group.slug)}
-                        className="inline-flex min-h-11 items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-5 text-sm font-semibold text-brand-700 transition-colors hover:border-brand-300 hover:bg-white hover:text-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-                      >
-                        See all {group.name}
-                        <ArrowRight aria-hidden="true" className="size-4" />
-                      </Link>
-                    </div>
-                  ) : null}
                 </div>
               );
             })}
