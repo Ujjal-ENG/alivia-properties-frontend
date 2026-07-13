@@ -17,8 +17,7 @@ type PageProps = { params: Promise<{ slug: string }> }
 type Found = {
   node: MarketplaceCategory
   dept?: MarketplaceCategory
-  cat?: MarketplaceCategory
-  level: "DEPARTMENT" | "CATEGORY" | "SUBCATEGORY"
+  level: "DEPARTMENT" | "CATEGORY"
   children: MarketplaceCategory[]
 }
 
@@ -26,12 +25,7 @@ function findNode(tree: TreeDepartment[], slug: string): Found | null {
   for (const dept of tree) {
     if (dept.slug === slug) return { node: dept, level: "DEPARTMENT", children: dept.categories }
     for (const cat of dept.categories) {
-      if (cat.slug === slug)
-        return { node: cat, dept, level: "CATEGORY", children: cat.subcategories }
-      for (const sub of cat.subcategories) {
-        if (sub.slug === slug)
-          return { node: sub, dept, cat, level: "SUBCATEGORY", children: [] }
-      }
+      if (cat.slug === slug) return { node: cat, dept, level: "CATEGORY", children: [] }
     }
   }
   return null
@@ -77,24 +71,22 @@ export default async function MarketplaceCategoryPage({ params }: PageProps) {
     )
   }
 
-  const { node, dept, cat, level, children } = found
-  const isSubcategory = level === "SUBCATEGORY"
+  const { node, dept, level, children } = found
+  const isCategory = level === "CATEGORY"
 
   // Quote link prefills the wizard at the right depth.
-  const quoteHref = isSubcategory
-    ? `${ROUTES.MARKETPLACE_REQUEST}?dept=${dept?.slug ?? ""}&cat=${cat?.slug ?? ""}&sub=${node.slug}`
-    : level === "CATEGORY"
-      ? `${ROUTES.MARKETPLACE_REQUEST}?dept=${dept?.slug ?? ""}&cat=${node.slug}`
-      : `${ROUTES.MARKETPLACE_REQUEST}?dept=${node.slug}`
+  const quoteHref = isCategory
+    ? `${ROUTES.MARKETPLACE_REQUEST}?dept=${dept?.slug ?? ""}&cat=${node.slug}`
+    : `${ROUTES.MARKETPLACE_REQUEST}?dept=${node.slug}`
 
-  const suppliers = isSubcategory
+  const suppliers = isCategory
     ? await marketplaceService
         .listSuppliers({ category: node.slug, limit: 24 })
         .then((r) => r.data)
         .catch(() => [])
     : []
 
-  const childLabel = level === "DEPARTMENT" ? "categories" : "options"
+  const childLabel = "categories"
   const confidenceItems = [
     { icon: CheckCircle2, label: "Verified desk", text: "Requests route to checked suppliers only." },
     { icon: Clock3, label: "24h target", text: "Useful price replies, not cold calls." },
@@ -104,9 +96,6 @@ export default async function MarketplaceCategoryPage({ params }: PageProps) {
   const breadcrumbTrail: Crumb[] = [
     ...(dept
       ? [{ label: dept.name, href: ROUTES.MARKETPLACE_CATEGORY(dept.slug) }]
-      : []),
-    ...(cat
-      ? [{ label: cat.name, href: ROUTES.MARKETPLACE_CATEGORY(cat.slug) }]
       : []),
     { label: node.name },
   ]
@@ -156,8 +145,8 @@ export default async function MarketplaceCategoryPage({ params }: PageProps) {
       <section className="container-page py-10 sm:py-14">
         <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
           <div>
-            {/* ── Drill-down: department/category show child tiles ───────────── */}
-            {!isSubcategory && (
+            {/* ── Department: show its categories as tiles ───────────────────── */}
+            {!isCategory && (
               <>
                 <header className="mb-4">
                   <p className="text-eyebrow mb-1">Browse {childLabel}</p>
@@ -177,8 +166,8 @@ export default async function MarketplaceCategoryPage({ params }: PageProps) {
               </>
             )}
 
-            {/* ── Subcategory: show suppliers ────────────────────────────────── */}
-            {isSubcategory && (
+            {/* ── Category: show suppliers directly ──────────────────────────── */}
+            {isCategory && (
               <>
                 <header className="mb-4 flex items-end justify-between gap-3">
                   <div>
