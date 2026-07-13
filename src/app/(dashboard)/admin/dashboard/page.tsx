@@ -29,13 +29,6 @@ function getGreeting() {
 
 const QUICK_ACTIONS = [
   {
-    label: "Pending Listings",
-    description: "Review the seller submissions queue.",
-    href: ROUTES.ADMIN_PENDING,
-    icon: Clock3,
-    tone: "from-amber-100 to-amber-50 text-amber-800",
-  },
-  {
     label: "Add Apartment",
     description: "Showcase a new Alivia development.",
     href: ROUTES.ADMIN_PROJECTS,
@@ -96,17 +89,11 @@ export default async function AdminDashboardPage() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Link
-              href={ROUTES.ADMIN_PENDING}
+              href={ROUTES.ADMIN_PROJECTS}
               className="inline-flex h-10 items-center gap-2 rounded-full bg-ink-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-ink-800"
             >
-              Review pending
+              Manage apartments
               <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href={ROUTES.ADMIN_PROPERTIES}
-              className="inline-flex h-10 items-center gap-2 rounded-full border border-border/80 bg-white px-4 text-sm font-semibold text-ink-800 transition-colors hover:bg-brand-50"
-            >
-              Manage properties
             </Link>
           </div>
         </div>
