@@ -12,7 +12,6 @@ import type { MarketplaceCategory } from "@/services/marketplace.service";
 export type MegaMenuData = {
   departments: MarketplaceCategory[]; // DEPARTMENT level, pre-sorted
   categoriesByDepartment: Record<string, MarketplaceCategory[]>; // deptSlug -> CATEGORY[]
-  subcategoriesByCategory: Record<string, MarketplaceCategory[]>; // catSlug -> SUBCATEGORY[]
 };
 
 const HOVER_CLOSE_DELAY = 140;
@@ -84,7 +83,7 @@ function Thumb({
 }
 
 export function MarketplaceMegaMenu({ data }: { data: MegaMenuData }) {
-  const { departments, categoriesByDepartment, subcategoriesByCategory } = data;
+  const { departments, categoriesByDepartment } = data;
 
   const [open, setOpen] = useState(false); // desktop panel
   const [drawerOpen, setDrawerOpen] = useState(false); // mobile drawer
@@ -216,7 +215,7 @@ export function MarketplaceMegaMenu({ data }: { data: MegaMenuData }) {
             <div className="border-t border-border/60 p-3">{browseAllBtn}</div>
           </div>
 
-          {/* Right panel: categories (with thumbnails) + their subcategories */}
+          {/* Right panel: categories (with thumbnails) */}
           <div className="max-h-120 overflow-y-auto p-5">
             <div className="mb-4 flex items-center justify-between gap-3">
               <h3 className="text-base font-bold text-ink-900">
@@ -237,39 +236,22 @@ export function MarketplaceMegaMenu({ data }: { data: MegaMenuData }) {
               </p>
             ) : (
               <div className="grid grid-cols-2 gap-x-6 gap-y-5 lg:grid-cols-3">
-                {activeCategories.map((cat) => {
-                  const subs = subcategoriesByCategory[cat.slug] ?? [];
-                  return (
-                    <div key={cat.slug} className="min-w-0">
-                      <Link
-                        href={ROUTES.MARKETPLACE_CATEGORY(cat.slug)}
-                        className="group flex items-center gap-2.5"
-                      >
-                        <Thumb
-                          src={imageFor(cat, activeDept?.slug)}
-                          className="size-11"
-                        />
-                        <span className="min-w-0 flex-1 truncate text-sm font-bold text-ink-900 transition-colors group-hover:text-brand-700">
-                          {cat.name}
-                        </span>
-                      </Link>
-                      {subs.length > 0 && (
-                        <ul className="mt-2 space-y-1">
-                          {subs.slice(0, 5).map((sub) => (
-                            <li key={sub.slug}>
-                              <Link
-                                href={ROUTES.MARKETPLACE_CATEGORY(sub.slug)}
-                                className="block truncate text-[13px] text-ink-600 hover:text-brand-700"
-                              >
-                                {sub.name}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  );
-                })}
+                {activeCategories.map((cat) => (
+                  <div key={cat.slug} className="min-w-0">
+                    <Link
+                      href={ROUTES.MARKETPLACE_CATEGORY(cat.slug)}
+                      className="group flex items-center gap-2.5"
+                    >
+                      <Thumb
+                        src={imageFor(cat, activeDept?.slug)}
+                        className="size-11"
+                      />
+                      <span className="min-w-0 flex-1 truncate text-sm font-bold text-ink-900 transition-colors group-hover:text-brand-700">
+                        {cat.name}
+                      </span>
+                    </Link>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -346,23 +328,6 @@ export function MarketplaceMegaMenu({ data }: { data: MegaMenuData }) {
                           {cat.name}
                         </span>
                       </Link>
-                      {(subcategoriesByCategory[cat.slug] ?? []).length > 0 && (
-                        <ul className="mt-1 space-y-1 pl-12.5">
-                          {(subcategoriesByCategory[cat.slug] ?? []).map(
-                            (sub) => (
-                              <li key={sub.slug}>
-                                <Link
-                                  href={ROUTES.MARKETPLACE_CATEGORY(sub.slug)}
-                                  onClick={() => setDrawerOpen(false)}
-                                  className="block min-h-9 py-1 text-[13px] text-ink-600"
-                                >
-                                  {sub.name}
-                                </Link>
-                              </li>
-                            ),
-                          )}
-                        </ul>
-                      )}
                     </div>
                   ))}
                 </div>
