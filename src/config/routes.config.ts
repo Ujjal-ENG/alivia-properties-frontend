@@ -60,6 +60,9 @@ export const ROUTES = {
   ADMIN_BLOG: "/admin/blog",
   ADMIN_BLOG_CREATE: "/admin/blog/create",
   ADMIN_BLOG_EDIT: (id: string) => `/admin/blog/${id}/edit`,
+  ADMIN_HERO_SLIDES: "/admin/hero-slides",
+  ADMIN_HERO_SLIDE_CREATE: "/admin/hero-slides/create",
+  ADMIN_HERO_SLIDE_EDIT: (id: string) => `/admin/hero-slides/${id}/edit`,
   ADMIN_SETTINGS: "/admin/settings",
 
   // Seller dashboard
@@ -113,5 +116,7 @@ export const ROUTES = {
     MARKETPLACE_QUOTES: "/marketplace/quotes",
     MARKETPLACE_ADMIN_CATEGORIES: "/marketplace/admin/categories",
     MARKETPLACE_ADMIN_CATEGORY: (slug: string) => `/marketplace/admin/categories/${slug}`,
+    HERO_SLIDES: "/hero-slides",
+    HERO_SLIDE: (id: string) => `/hero-slides/${id}`,
   },
 } as const

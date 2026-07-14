@@ -28,6 +28,7 @@ export const adminNav: DashboardNavItem[] = [
   { label: "Reports", href: ROUTES.ADMIN_REPORTS, icon: "Flag", section: "Activity" },
 
   { label: "Blog", href: ROUTES.ADMIN_BLOG, icon: "FileText", section: "Content" },
+  { label: "Hero Carousel", href: ROUTES.ADMIN_HERO_SLIDES, icon: "GalleryHorizontal", section: "Content" },
   { label: "Settings", href: ROUTES.ADMIN_SETTINGS, icon: "Settings", section: "Content" },
 ]
 
