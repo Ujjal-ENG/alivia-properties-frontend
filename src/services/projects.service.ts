@@ -10,6 +10,7 @@ export type ProjectQueryParams = {
   sort?: string
   minPrice?: number
   maxPrice?: number
+  view?: string
 }
 
 const BASE = "/projects"

@@ -11,10 +11,11 @@ import { PROJECT_STATUS_STYLES } from "@/lib/constants";
 import { parseProjectDescription } from "@/lib/project-description";
 import { getProject, recordProjectView } from "@/services/projects.service";
 import type { Project } from "@/types/project.types";
-import { formatPriceRange } from "@/utils/format-price";
+import { formatPrice, formatPriceRange } from "@/utils/format-price";
 import {
   Building2,
   ChevronRight,
+  Eye,
   MapPin,
   MessageCircle,
   Phone,
@@ -167,6 +168,7 @@ export default async function ProjectDetailPage({
     totalFloors: project.totalFloors,
     totalUnits: project.totalUnits,
     availableUnits: project.availableUnits,
+    soldUnits: project.soldUnits,
     handover: project.handoverDate ? handover : undefined,
     units: project.units,
   });
@@ -178,6 +180,7 @@ export default async function ProjectDetailPage({
     aboutProject.highlights.length > 0 ||
     aboutProject.paragraphs.length > 0;
   const hasUnits = (project.units ?? []).length > 0;
+  const hasViews = (project.views ?? []).length > 0;
   const hasAmenities = (project.amenities ?? []).length > 0;
   const hasSpecifications = specificationEntries.length > 0;
   const hasNearbyLandmarks = (project.nearbyLandmarks ?? []).length > 0;
@@ -412,6 +415,43 @@ export default async function ProjectDetailPage({
                       ))}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            ) : null}
+
+            {/* Views & pricing — premium outlooks that lift the plot price */}
+            {hasViews ? (
+              <div>
+                <div className="mb-4">
+                  <h2 className="text-h3 mb-2">Views &amp; Pricing</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Premium outlooks that influence the final price — pick the
+                    view that fits your budget.
+                  </p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {(project.views ?? []).map((view) => (
+                    <div
+                      key={view.name}
+                      className="flex items-center justify-between gap-3 rounded-2xl border border-gold-200 bg-linear-to-br from-gold-50 via-white to-brand-50/40 px-4 py-3.5 shadow-[0_12px_32px_rgba(212,175,55,0.12)]"
+                    >
+                      <span className="flex items-center gap-2.5 font-semibold text-ink-900">
+                        <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-700 text-white">
+                          <Eye aria-hidden="true" className="size-4.5" />
+                        </span>
+                        {view.name}
+                      </span>
+                      {view.pricePremium != null && view.pricePremium > 0 ? (
+                        <span className="shrink-0 rounded-full bg-gold-400 px-3 py-1 text-sm font-bold text-brand-950">
+                          +{formatPrice(view.pricePremium, true)}
+                        </span>
+                      ) : (
+                        <span className="shrink-0 rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">
+                          Included
+                        </span>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             ) : null}

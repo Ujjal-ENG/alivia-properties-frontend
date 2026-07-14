@@ -21,6 +21,7 @@ export function useProjectFilters(): {
     maxPrice: searchParams.has("maxPrice") ? Number(searchParams.get("maxPrice")) : undefined,
     featured: searchParams.get("featured") === "true" ? true : undefined,
     sort:     searchParams.get("sort")     ?? undefined,
+    view:     searchParams.get("view")     ?? undefined,
     page:     searchParams.has("page")    ? Number(searchParams.get("page"))    : 1,
   }
 

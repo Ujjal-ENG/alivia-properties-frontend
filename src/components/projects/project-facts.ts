@@ -6,6 +6,7 @@ export type ProjectFactKey =
   | "floors"
   | "totalUnits"
   | "availableUnits"
+  | "soldUnits"
   | "unitSize"
   | "bedrooms"
   | "bathrooms"
@@ -25,6 +26,7 @@ type ProjectFactsInput = {
   totalFloors?: number
   totalUnits?: number
   availableUnits?: number
+  soldUnits?: number
   handover?: string
   units?: ProjectUnit[]
 }
@@ -69,7 +71,10 @@ export function buildProjectFacts(input: ProjectFactsInput): ProjectFact[] {
     facts.push({ key: "totalUnits", label: "Total units", value: `${input.totalUnits} Units` })
   }
   if (input.availableUnits != null) {
-    facts.push({ key: "availableUnits", label: "Available", value: `${input.availableUnits} Units` })
+    facts.push({ key: "availableUnits", label: "Available apartments", value: `${input.availableUnits} Units` })
+  }
+  if (input.soldUnits != null) {
+    facts.push({ key: "soldUnits", label: "Sold apartments", value: `${input.soldUnits} Units` })
   }
   if (sizeRange) {
     facts.push({ key: "unitSize", label: "Unit size", value: `${sizeRange} ${sizeUnit}` })

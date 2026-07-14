@@ -26,11 +26,12 @@ interface ProjectsPageProps {
     maxPrice?: string
     featured?: string
     sort?: string
+    view?: string
   }>
 }
 
 export default async function ProjectsPage({ searchParams }: ProjectsPageProps) {
-  const { status, page: rawPage, search, minPrice, maxPrice, featured, sort } = await searchParams
+  const { status, page: rawPage, search, minPrice, maxPrice, featured, sort, view } = await searchParams
   const page = Math.max(1, Number(rawPage) || 1)
 
   const filters = {
@@ -40,12 +41,14 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
     maxPrice: maxPrice ? Number(maxPrice) : undefined,
     featured: featured === "true" || undefined,
     sort: sort || undefined,
+    view: view || undefined,
   }
 
   const res = await getProjects({ ...filters, page, limit: 12 })
 
   const activeTags = [
     search && `Search: ${search}`,
+    view && `View: ${view}`,
     minPrice && `Min: ৳${(Number(minPrice) / 100000).toFixed(0)}L`,
     maxPrice && `Max: ৳${(Number(maxPrice) / 100000).toFixed(0)}L`,
     featured === "true" && "Flagship only",

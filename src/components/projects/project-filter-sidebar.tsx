@@ -1,9 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { SlidersHorizontal, RotateCcw, Search, Star, ChevronDown } from "lucide-react"
+import { SlidersHorizontal, RotateCcw, Search, Star, ChevronDown, Eye } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useProjectFilters } from "@/hooks/use-project-filters"
+import { PROJECT_VIEW_OPTIONS } from "@/lib/project-views"
 
 const PRICE_PRESETS = [
   { label: "Any", min: undefined, max: undefined },
@@ -27,6 +28,7 @@ export function ProjectFilterSidebar() {
     filters.maxPrice,
     filters.featured,
     filters.sort,
+    filters.view,
   ].filter(Boolean).length
 
   const [open, setOpen] = useState(false)
@@ -119,6 +121,25 @@ export function ProjectFilterSidebar() {
               )
             })}
           </div>
+        </div>
+
+        <div>
+          <label htmlFor="project-view" className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <Eye className="h-3.5 w-3.5 text-brand-600" />
+            View
+          </label>
+          <select
+            id="project-view"
+            name="view"
+            value={filters.view ?? ""}
+            onChange={(e) => setFilter("view", e.target.value || undefined)}
+            className="w-full rounded-[1rem] border border-border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand-400"
+          >
+            <option value="">Any view</option>
+            {PROJECT_VIEW_OPTIONS.map((view) => (
+              <option key={view} value={view}>{view}</option>
+            ))}
+          </select>
         </div>
 
         <div>

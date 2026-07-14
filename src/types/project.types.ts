@@ -21,6 +21,11 @@ export type NearbyLandmark = {
   group: string
 }
 
+export type ProjectView = {
+  name: string
+  pricePremium?: number
+}
+
 export type Project = {
   id: string
   slug: string
@@ -48,12 +53,14 @@ export type Project = {
   totalFloors?: number
   totalUnits?: number
   availableUnits?: number
+  soldUnits?: number
   priceFrom?: number
   priceTo?: number
   amenities?: string[]
   units?: ProjectUnit[]
   specifications?: Record<string, string | number>
   nearbyLandmarks?: NearbyLandmark[]
+  views?: ProjectView[]
   developerName?: string
   isFeatured?: boolean
   featured?: boolean            // alias for pages that use featured

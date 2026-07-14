@@ -3,11 +3,12 @@ import {
   BedDouble,
   Building2,
   CalendarCheck2,
-  Grid3X3,
+  CircleCheck,
   Home,
   Layers3,
   MapPin,
   Ruler,
+  Tag,
   type LucideIcon,
 } from "lucide-react"
 import type { ProjectFact, ProjectFactKey } from "./project-facts"
@@ -17,7 +18,8 @@ const FACT_ICONS: Record<ProjectFactKey, LucideIcon> = {
   landArea: Layers3,
   floors: Building2,
   totalUnits: Home,
-  availableUnits: Grid3X3,
+  availableUnits: CircleCheck,
+  soldUnits: Tag,
   unitSize: Ruler,
   bedrooms: BedDouble,
   bathrooms: Bath,

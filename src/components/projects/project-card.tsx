@@ -1,6 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
-import { MapPin, Calendar, Building2, ArrowRight } from "lucide-react"
+import { MapPin, Calendar, Building2, ArrowRight, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { formatPriceRange } from "@/utils/format-price"
 import { PROJECT_STATUS_STYLES } from "@/lib/constants"
@@ -60,6 +60,25 @@ export function ProjectCard({ project }: ProjectCardProps) {
               </span>
             )}
           </div>
+
+          {(project.views ?? []).length > 0 && (
+            <div className="absolute right-4 top-4 flex max-w-[60%] flex-wrap justify-end gap-1.5">
+              {(project.views ?? []).slice(0, 2).map((view) => (
+                <span
+                  key={view.name}
+                  className="inline-flex items-center gap-1 rounded-full bg-gold-400/95 px-2.5 py-1 text-xs font-semibold text-brand-950 shadow-sm"
+                >
+                  <Eye className="h-3 w-3" />
+                  {view.name}
+                </span>
+              ))}
+              {(project.views ?? []).length > 2 && (
+                <span className="inline-flex items-center rounded-full bg-brand-950/80 px-2 py-1 text-xs font-semibold text-white">
+                  +{(project.views ?? []).length - 2}
+                </span>
+              )}
+            </div>
+          )}
 
           <div className="absolute inset-x-4 bottom-4 text-white">
             <p className="line-clamp-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-white/70">{project.area}</p>

@@ -16,6 +16,12 @@ function containsLink(value: string): boolean {
   })
 }
 
+/** A sellable view/orientation (e.g. Golf View) with an optional price premium. */
+export const projectViewSchema = z.object({
+  name: z.string().min(1, "View name is required"),
+  pricePremium: z.coerce.number().min(0).optional(),
+})
+
 /** A single unit/floor type within a project. */
 export const projectUnitSchema = z.object({
   name: z.string().min(1, "Unit name is required"),
@@ -53,12 +59,14 @@ export const projectSchema = z.object({
   totalFloors: z.coerce.number().min(0).optional(),
   totalUnits: z.coerce.number().min(0).optional(),
   availableUnits: z.coerce.number().min(0).optional(),
+  soldUnits: z.coerce.number().min(0).optional(),
 
   priceFrom: z.coerce.number().min(0).optional(),
   priceTo: z.coerce.number().min(0).optional(),
 
   amenities: z.array(z.string()).optional().default([]),
   units: z.array(projectUnitSchema).optional().default([]),
+  views: z.array(projectViewSchema).optional().default([]),
 
   developerName: z.string().optional().default(""),
   nearbyLandmarks: z

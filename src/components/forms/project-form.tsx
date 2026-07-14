@@ -15,6 +15,7 @@ import { PropertyImagesUploader } from "@/components/forms/property-images-uploa
 import { projectSchema, type ProjectInput, type ProjectSubmit } from "@/schemas/project.schema"
 import { createProject, updateProject } from "@/services/projects.service"
 import { AMENITIES } from "@/data/amenities"
+import { PROJECT_VIEW_OPTIONS } from "@/lib/project-views"
 import { ROUTES } from "@/config/routes.config"
 import type { Project } from "@/types/project.types"
 
@@ -34,7 +35,8 @@ const numInputValue = (v: unknown): string | number =>
 const NUMERIC_FIELDS = [
   { name: "totalFloors", label: "Total Floors" },
   { name: "totalUnits", label: "Total Units" },
-  { name: "availableUnits", label: "Available Units" },
+  { name: "availableUnits", label: "Available Apartments" },
+  { name: "soldUnits", label: "Sold Apartments" },
 ] as const
 
 interface ProjectFormProps {
@@ -60,6 +62,7 @@ function getDefaults(initial?: Project): ProjectInput {
     totalFloors: initial?.totalFloors,
     totalUnits: initial?.totalUnits,
     availableUnits: initial?.availableUnits,
+    soldUnits: initial?.soldUnits,
     priceFrom: initial?.priceFrom,
     priceTo: initial?.priceTo,
     amenities: initial?.amenities ?? [],
@@ -71,6 +74,10 @@ function getDefaults(initial?: Project): ProjectInput {
       sizeUnit: u.sizeUnit ?? "sqft",
       price: u.price ?? u.priceFrom ?? 0,
       available: u.available ?? u.total ?? 0,
+    })),
+    views: (initial?.views ?? []).map((v) => ({
+      name: v.name ?? "",
+      pricePremium: v.pricePremium,
     })),
     developerName: initial?.developerName ?? "",
     nearbyLandmarks: (initial?.nearbyLandmarks ?? []).map((l) => ({
@@ -92,6 +99,11 @@ export function ProjectForm({ mode, initialProject }: ProjectFormProps) {
   })
 
   const { fields, append, remove } = useFieldArray({ control: form.control, name: "units" })
+  const {
+    fields: viewFields,
+    append: appendView,
+    remove: removeView,
+  } = useFieldArray({ control: form.control, name: "views" })
   const {
     fields: landmarkFields,
     append: appendLandmark,
@@ -509,6 +521,76 @@ export function ProjectForm({ mode, initialProject }: ProjectFormProps) {
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Views & pricing — a premium view (golf, corner, lake…) lifts the price */}
+          <div className="surface-card p-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-ink-900">Views &amp; Pricing</h2>
+                <p className="text-sm text-ink-500">
+                  Highlight sellable views like golf, corner, or lake. Add the extra price each view carries — buyers see this on the apartment page.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-full"
+                onClick={() => appendView({ name: "", pricePremium: undefined })}
+              >
+                <Plus className="h-4 w-4" /> Add view
+              </Button>
+            </div>
+
+            <datalist id="view-suggestions">
+              {PROJECT_VIEW_OPTIONS.map((v) => (
+                <option key={v} value={v} />
+              ))}
+            </datalist>
+
+            {viewFields.length === 0 ? (
+              <p className="mt-4 rounded-[1rem] border border-dashed border-border bg-ink-50/60 px-4 py-6 text-center text-sm text-ink-500">
+                No views added yet.
+              </p>
+            ) : (
+              <div className="mt-4 space-y-3">
+                {viewFields.map((view, index) => (
+                  <div
+                    key={view.id}
+                    className="grid items-end gap-3 rounded-[1.25rem] border border-border p-4 sm:grid-cols-[1fr_1fr_auto]"
+                  >
+                    <div>
+                      <label className="text-xs font-medium text-ink-700">View</label>
+                      <Input
+                        list="view-suggestions"
+                        placeholder="Golf View"
+                        {...form.register(`views.${index}.name`)}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-ink-700">Extra price (BDT)</label>
+                      <Input
+                        type="number"
+                        inputMode="numeric"
+                        placeholder="500000"
+                        {...form.register(`views.${index}.pricePremium`)}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      aria-label={`Remove view ${index + 1}`}
+                      className="size-9 shrink-0 rounded-full border-red-200 text-red-600 hover:bg-red-50"
+                      onClick={() => removeView(index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 ))}
               </div>
