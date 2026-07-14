@@ -16,6 +16,7 @@ import Link from "next/link";
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -23,33 +24,40 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/config/routes.config";
+import { resolveHeroIcon } from "@/lib/hero-icons";
 import { cn } from "@/lib/utils";
+import type { HeroSlide } from "@/types/hero.types";
 
 type Cta = { label: string; href: string };
 
 type Slide = {
-  eyebrow: string;
+  id: string;
+  eyebrow?: string;
   eyebrowIcon: LucideIcon;
   title: string;
-  subtitle: string;
-  image: string;
-  primary: Cta;
-  secondary: Cta;
+  subtitle?: string;
+  image?: string;
+  primary?: Cta;
+  secondary?: Cta;
 };
 
-const SLIDES: Slide[] = [
+// Shown only when the admin hasn't created any slides yet, so the marketplace
+// hero is never empty. Once slides exist in the CMS, those replace these.
+const DEFAULT_SLIDES: Slide[] = [
   {
+    id: "default-1",
     eyebrow: "Trusted property partner since 2011",
     eyebrowIcon: ShieldCheck,
-    title: "Find a property that matches your future",
+    title: "Explore apartments across Bangladesh",
     subtitle:
-      "Explore verified apartments, plots, commercial spaces, and premium developments across Bangladesh.",
+      "Find verified apartments, plots, and commercial spaces that fit your budget and lifestyle.",
     image:
       "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1800&q=80",
     primary: { label: "Browse properties", href: ROUTES.PROPERTIES },
     secondary: { label: "Talk to an advisor", href: ROUTES.CONSULTATION },
   },
   {
+    id: "default-2",
     eyebrow: "New launch — booking open",
     eyebrowIcon: Sparkles,
     title: "Own a home in Bangladesh's fastest-growing address",
@@ -61,6 +69,7 @@ const SLIDES: Slide[] = [
     secondary: { label: "Book a site visit", href: ROUTES.CONSULTATION },
   },
   {
+    id: "default-3",
     eyebrow: "For overseas & local investors",
     eyebrowIcon: TrendingUp,
     title: "Grow your wealth through verified real estate",
@@ -72,6 +81,27 @@ const SLIDES: Slide[] = [
     secondary: { label: "Speak to an advisor", href: ROUTES.CONSULTATION },
   },
 ];
+
+// Map a CMS slide to the carousel's shape: resolve the icon name to a component,
+// drop null fields, and keep a button only when it has both a label and a link.
+function toSlide(s: HeroSlide): Slide {
+  return {
+    id: s.id,
+    eyebrow: s.eyebrow ?? undefined,
+    eyebrowIcon: resolveHeroIcon(s.eyebrowIcon),
+    title: s.title,
+    subtitle: s.subtitle ?? undefined,
+    image: s.imageUrl ?? undefined,
+    primary:
+      s.primaryLabel && s.primaryHref
+        ? { label: s.primaryLabel, href: s.primaryHref }
+        : undefined,
+    secondary:
+      s.secondaryLabel && s.secondaryHref
+        ? { label: s.secondaryLabel, href: s.secondaryHref }
+        : undefined,
+  };
+}
 
 const SLIDE_DURATION = 6000;
 const SWIPE_THRESHOLD = 44;
@@ -90,7 +120,11 @@ function usePrefersReducedMotion() {
   );
 }
 
-export function HeroCarousel() {
+export function HeroCarousel({ slides }: { slides?: HeroSlide[] } = {}) {
+  const SLIDES = useMemo(
+    () => (slides && slides.length > 0 ? slides.map(toSlide) : DEFAULT_SLIDES),
+    [slides],
+  );
   const count = SLIDES.length;
   const [index, setIndex] = useState(0);
   const [userPaused, setUserPaused] = useState(false);
@@ -196,20 +230,22 @@ export function HeroCarousel() {
       <div aria-hidden="true" className="absolute inset-0 -z-10">
         {SLIDES.map((slide, i) => (
           <div
-            key={slide.image}
+            key={slide.id}
             className={cn(
               "absolute inset-0 transition-opacity duration-700 ease-out motion-reduce:transition-none",
               i === index ? "opacity-100" : "opacity-0",
             )}
           >
-            <Image
-              src={slide.image}
-              alt=""
-              fill
-              priority={i === 0}
-              sizes="100vw"
-              className="object-cover"
-            />
+            {slide.image ? (
+              <Image
+                src={slide.image}
+                alt=""
+                fill
+                priority={i === 0}
+                sizes="100vw"
+                className="object-cover"
+              />
+            ) : null}
             {/* Brand teal scrim: bottom-up for the copy, plus a left wash for legibility */}
             <div className="absolute inset-0 bg-linear-to-t from-brand-950/92 via-brand-950/55 to-brand-950/25" />
             <div className="absolute inset-0 bg-linear-to-r from-brand-950/70 via-brand-950/10 to-transparent" />
@@ -229,39 +265,49 @@ export function HeroCarousel() {
             aria-label={`Slide ${index + 1} of ${count}`}
             className="animate-in fade-in-0 slide-in-from-bottom-3 duration-500 ease-out motion-reduce:animate-none"
           >
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-white backdrop-blur-sm">
-              <EyebrowIcon aria-hidden="true" className="size-3.5 text-gold-300" />
-              {active.eyebrow}
-            </span>
+            {active.eyebrow ? (
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-white backdrop-blur-sm">
+                <EyebrowIcon aria-hidden="true" className="size-3.5 text-gold-300" />
+                {active.eyebrow}
+              </span>
+            ) : null}
 
             <h1 className="text-h1 mt-5 text-balance font-heading font-bold text-white">
               {active.title}
             </h1>
 
-            <p className="mt-4 max-w-xl text-base leading-relaxed text-white/85 sm:text-lg">
-              {active.subtitle}
-            </p>
+            {active.subtitle ? (
+              <p className="mt-4 max-w-xl text-base leading-relaxed text-white/85 sm:text-lg">
+                {active.subtitle}
+              </p>
+            ) : null}
 
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Link href={active.primary.href}>
-                <Button
-                  size="lg"
-                  className="gap-2 rounded-full bg-gold-400 px-6 font-bold text-brand-950 shadow-md shadow-gold-950/20 hover:bg-gold-300"
-                >
-                  {active.primary.label}
-                  <ArrowRight aria-hidden="true" className="size-4" />
-                </Button>
-              </Link>
-              <Link href={active.secondary.href}>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="rounded-full border-white/30 bg-white/10 px-6 font-semibold text-white hover:bg-white/20 hover:text-white"
-                >
-                  {active.secondary.label}
-                </Button>
-              </Link>
-            </div>
+            {(active.primary || active.secondary) ? (
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                {active.primary ? (
+                  <Link href={active.primary.href}>
+                    <Button
+                      size="lg"
+                      className="gap-2 rounded-full bg-gold-400 px-6 font-bold text-brand-950 shadow-md shadow-gold-950/20 hover:bg-gold-300"
+                    >
+                      {active.primary.label}
+                      <ArrowRight aria-hidden="true" className="size-4" />
+                    </Button>
+                  </Link>
+                ) : null}
+                {active.secondary ? (
+                  <Link href={active.secondary.href}>
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="rounded-full border-white/30 bg-white/10 px-6 font-semibold text-white hover:bg-white/20 hover:text-white"
+                    >
+                      {active.secondary.label}
+                    </Button>
+                  </Link>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
@@ -283,7 +329,7 @@ export function HeroCarousel() {
               const isActive = i === index;
               return (
                 <button
-                  key={slide.image}
+                  key={slide.id}
                   type="button"
                   onClick={() => goTo(i)}
                   aria-label={`Go to slide ${i + 1}`}
