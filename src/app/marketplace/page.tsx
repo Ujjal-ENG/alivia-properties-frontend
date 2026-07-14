@@ -32,6 +32,7 @@ import {
   type MarketplaceCategory,
 } from "@/services/marketplace.service";
 import { projectsService } from "@/services/projects.service";
+import { heroService } from "@/services/hero.service";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { HeroCarousel } from "@/components/home/hero-carousel";
 import { MarketplaceMegaMenu } from "@/components/marketplace/MarketplaceMegaMenu";
@@ -339,10 +340,13 @@ export default async function MarketplacePage({
   const selectedDepartment = getParam(params, "department");
   const query = initialSearch.trim().toLowerCase();
 
-  const [categoriesRes, projectsRes] = await Promise.allSettled([
+  const [categoriesRes, projectsRes, heroRes] = await Promise.allSettled([
     marketplaceService.listCategories(),
     projectsService.list({ limit: 3 }),
+    heroService.listActive(),
   ]);
+
+  const heroSlides = heroRes.status === "fulfilled" ? heroRes.value : [];
 
   const flagship: FlagshipProject[] = (
     projectsRes.status === "fulfilled" ? projectsRes.value.data : []
@@ -535,6 +539,14 @@ export default async function MarketplacePage({
               aria-label="Marketplace departments"
               className="mt-2 flex items-center gap-1 overflow-x-auto border-t border-border/60 pt-2 scrollbar-none"
             >
+              <Link href="/apartments" className="shrink-0">
+                <Button
+                  size="lg"
+                  className="gap-2 rounded-full bg-brand-700 px-6 text-white hover:bg-brand-800"
+                >
+                  Browse all apartments
+                </Button>
+              </Link>
               {visibleGroups.slice(0, 8).map(({ group }) => {
                 const Icon = iconForKeyword(group.name);
                 return (
@@ -555,7 +567,7 @@ export default async function MarketplacePage({
 
       {clearingSearch && (
         <>
-          <HeroCarousel />
+          <HeroCarousel slides={heroSlides} />
 
           <section className="border-y border-border/60 bg-linear-to-r from-brand-50/70 via-white to-gold-50/50">
             <div className="container-page max-w-373! flex snap-x gap-x-8 gap-y-3 overflow-x-auto py-4 scrollbar-none sm:overflow-visible">
@@ -627,7 +639,7 @@ export default async function MarketplacePage({
               href={ROUTES.MARKETPLACE_REQUEST}
               className="inline-flex min-h-11 items-center gap-2 rounded-full text-sm font-semibold text-brand-700 transition-colors hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
             >
-              Can&apos;t find it? Ask for a price
+              Can&apos;t find it? Book For Consulations
               <ArrowRight aria-hidden="true" className="size-4" />
             </Link>
           </div>
@@ -753,7 +765,7 @@ export default async function MarketplacePage({
                   size="lg"
                   className="rounded-full bg-brand-950 px-5 text-white hover:bg-brand-900"
                 >
-                  Ask for a Price
+                  Book For Consulations
                 </Button>
               </Link>
             </div>
@@ -784,7 +796,7 @@ export default async function MarketplacePage({
                       size="sm"
                       className="gap-2 rounded-md bg-brand-800 px-4 text-white hover:bg-brand-900"
                     >
-                      Ask for a Price
+                      Book For Consulations
                       <ArrowRight aria-hidden="true" className="size-4" />
                     </Button>
                   </Link>

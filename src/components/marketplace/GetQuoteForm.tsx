@@ -298,7 +298,7 @@ export function GetQuoteForm({
     <div className={className}>
       {showHeader && (
         <div className="mb-4 border-b border-border/60 pb-4">
-          <p className="text-eyebrow mb-1">Ask for a Price</p>
+          <p className="text-eyebrow mb-1">Book For Consulations</p>
           <h2 className="font-heading text-xl font-semibold text-ink-900">
             {context?.productName
               ? `Get a quote for ${context.productName}`

@@ -116,12 +116,12 @@ export default async function MarketplaceQuotePage({ searchParams }: Props) {
               <p className="text-eyebrow mb-2">Marketplace</p>
               <h1 className="font-heading text-2xl font-semibold text-balance text-ink-900 sm:text-3xl">
                 {productName
-                  ? `Ask for a price for ${productName}`
+                  ? `Book For Consulations for ${productName}`
                   : supplierName
-                    ? `Ask ${supplierName} for a price`
+                    ? `Book ${supplierName} For Consulations`
                     : categoryName
-                      ? `Ask for a price — ${categoryName}`
-                      : "Ask for a Price"}
+                      ? `Book For Consulations — ${categoryName}`
+                      : "Book For Consulations"}
               </h1>
               <p className="mt-2 text-sm text-ink-600">
                 Share what you&apos;re looking for. We&apos;ll route your request to verified suppliers

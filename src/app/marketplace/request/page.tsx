@@ -39,7 +39,7 @@ export default async function MarketplaceRequestPage({ searchParams }: Props) {
             Marketplace
           </Link>
           <span>›</span>
-          <span className="text-ink-900">Ask for a Price</span>
+          <span className="text-ink-900">Book For Consulations</span>
         </nav>
 
         <div className="grid gap-8 lg:grid-cols-[1.5fr_1fr] lg:items-start">
