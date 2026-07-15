@@ -1,7 +1,11 @@
-/** Level of a node in the Department → Category → Subcategory taxonomy. */
+/**
+ * Level of a node in the Department → Category taxonomy. Categories are the leaf
+ * nodes. SUBCATEGORY is retained for backward compatibility with legacy data but
+ * is no longer created or browsed.
+ */
 export type CategoryLevel = "DEPARTMENT" | "CATEGORY" | "SUBCATEGORY"
 
-/** The unique image shown on a subcategory tile in the quote wizard. */
+/** The unique image shown on a category tile in the quote wizard. */
 export type CategoryImage = {
   key: string
   url: string
