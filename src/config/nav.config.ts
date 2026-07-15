@@ -21,17 +21,6 @@ export const publicNav: NavItem[] = [
     ],
   },
   {
-    label: "Properties",
-    href: ROUTES.PROPERTIES,
-    children: [
-      { label: "For Sale", href: `${ROUTES.PROPERTIES}?purpose=sale` },
-      { label: "For Rent", href: `${ROUTES.PROPERTIES}?purpose=rent` },
-      { label: "Map Search", href: ROUTES.MAP_SEARCH },
-      { label: "Compare Properties", href: ROUTES.COMPARE },
-      { label: "List a Property", href: ROUTES.REGISTER },
-    ],
-  },
-  {
     label: "Apartments",
     href: ROUTES.PROJECTS,
     children: [
@@ -40,14 +29,12 @@ export const publicNav: NavItem[] = [
       { label: "Completed Apartments", href: `${ROUTES.PROJECTS}?status=completed` },
     ],
   },
-  { label: "Agents", href: ROUTES.AGENTS },
   {
     label: "Guides",
     href: ROUTES.PRE_APPROVAL,
     children: [
       { label: "Pre-Approval", href: ROUTES.PRE_APPROVAL },
       { label: "Moving Checklist", href: ROUTES.MOVING_CHECKLIST },
-      { label: "Compare Properties", href: ROUTES.COMPARE },
       { label: "Consultation", href: ROUTES.CONSULTATION },
       { label: "Market Insights", href: ROUTES.BLOG },
     ],
