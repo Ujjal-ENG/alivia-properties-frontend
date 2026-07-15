@@ -76,14 +76,13 @@ export function CategoryFormDialog({
   }
 
   const isDepartment = mode === "department"
-  const isSubcategory = mode === "subcategory"
+  const isCategory = mode === "category"
   const needsParent = mode !== "department"
 
-  const parentOptions = categories.filter((c) =>
-    mode === "category" ? c.level === "DEPARTMENT" : c.level === "CATEGORY",
-  )
+  // Categories nest under a department.
+  const parentOptions = categories.filter((c) => c.level === "DEPARTMENT")
 
-  const previewUrl = isSubcategory ? (form.image?.url ?? "") : form.iconUrl
+  const previewUrl = isCategory ? (form.image?.url ?? form.iconUrl) : form.iconUrl
 
   function set(field: keyof FormState, value: string) {
     setForm((f) => ({ ...f, [field]: value }))
@@ -113,7 +112,7 @@ export function CategoryFormDialog({
     setUploadingImage(true)
     setError(null)
     try {
-      if (isSubcategory) {
+      if (isCategory) {
         const image = await uploadImageRef(file, session.accessToken)
         patch({ image })
       } else {
@@ -129,7 +128,7 @@ export function CategoryFormDialog({
   }
 
   function removeImage() {
-    if (isSubcategory) patch({ image: null })
+    if (isCategory) patch({ image: null })
     else patch({ iconUrl: "" })
   }
 
@@ -137,15 +136,15 @@ export function CategoryFormDialog({
     if (!form.name.trim()) return setError("Name is required")
     if (!form.slug.trim()) return setError("Slug is required")
     if (needsParent && !form.parentSlug.trim()) {
-      return setError(`Select a parent ${mode === "category" ? "department" : "category"}`)
+      return setError("Select a parent department")
     }
     if (!session?.accessToken) return setError("Not authenticated")
 
     setSaving(true)
     setError(null)
     try {
-      // Quote config only applies to subcategories (where buyers request quotes).
-      const variants: CategoryVariantInput[] = isSubcategory
+      // Quote config applies to categories (the leaf where buyers request quotes).
+      const variants: CategoryVariantInput[] = isCategory
         ? form.variants
             .filter((v) => v.name.trim())
             .map((v, i) => ({
@@ -156,7 +155,7 @@ export function CategoryFormDialog({
               isActive: v.isActive,
             }))
         : []
-      const attributes: CategoryAttributeInput[] = isSubcategory
+      const attributes: CategoryAttributeInput[] = isCategory
         ? form.attributes
             .filter((a) => a.label.trim())
             .map((a, i) => ({
@@ -183,8 +182,8 @@ export function CategoryFormDialog({
               name: form.name.trim(),
               level: LEVEL_BY_MODE[mode],
               description: form.description.trim() || null,
-              iconUrl: isSubcategory ? form.iconUrl.trim() || null : form.iconUrl.trim() || null,
-              image: isSubcategory ? form.image : null,
+              iconUrl: form.iconUrl.trim() || null,
+              image: isCategory ? form.image : null,
               parentSlug,
               order,
               isActive: form.isActive,
@@ -200,7 +199,7 @@ export function CategoryFormDialog({
               level: LEVEL_BY_MODE[mode],
               description: form.description.trim() || undefined,
               iconUrl: form.iconUrl.trim() || undefined,
-              image: isSubcategory ? form.image : undefined,
+              image: isCategory ? form.image : undefined,
               parentSlug: parentSlug ?? undefined,
               order,
               isActive: form.isActive,
@@ -218,7 +217,7 @@ export function CategoryFormDialog({
     }
   }
 
-  const badgeIcon = isDepartment ? <Layers className="size-3" /> : isSubcategory ? <ImagePlus className="size-3" /> : <Package className="size-3" />
+  const badgeIcon = isDepartment ? <Layers className="size-3" /> : <Package className="size-3" />
   const title = `${editing ? "Edit" : "New"} ${MODE_LABEL[mode].toLowerCase()}`
 
   return (
@@ -230,8 +229,7 @@ export function CategoryFormDialog({
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold",
                 isDepartment && "bg-brand-100 text-brand-700",
-                mode === "category" && "bg-ink-100 text-ink-700",
-                isSubcategory && "border border-gold-200 bg-gold-50 text-gold-700",
+                isCategory && "bg-ink-100 text-ink-700",
               )}
             >
               {badgeIcon}
@@ -241,8 +239,7 @@ export function CategoryFormDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
             {isDepartment && "A department is the top level (e.g. \"Raw Materials\")."}
-            {mode === "category" && "A category sits inside a department (e.g. \"Tiles\")."}
-            {isSubcategory && "A subcategory is the image tile buyers pick (e.g. \"Wall Tiles\")."}
+            {isCategory && "A category sits inside a department and is what buyers browse to reach suppliers (e.g. \"Tiles\")."}
           </DialogDescription>
         </DialogHeader>
 
@@ -265,11 +262,11 @@ export function CategoryFormDialog({
             </div>
             <div className="flex-1 space-y-1.5">
               <p className="text-sm font-medium text-ink-800">
-                {isSubcategory ? "Subcategory image" : `${MODE_LABEL[mode]} icon (optional)`}
+                {isCategory ? "Category image" : `${MODE_LABEL[mode]} icon (optional)`}
               </p>
               <p className="text-xs text-ink-500">
-                {isSubcategory
-                  ? "The unique tile shown in the quote wizard. Recommended: 800×600px."
+                {isCategory
+                  ? "The tile shown in browse and the quote wizard. Recommended: 800×600px."
                   : "Recommended: 1200×400px."}
               </p>
               <div className="flex gap-2">
@@ -302,7 +299,7 @@ export function CategoryFormDialog({
             <Input
               value={form.name}
               onChange={(e) => { set("name", e.target.value); if (!editing) set("slug", autoSlug(e.target.value)) }}
-              placeholder={isDepartment ? "e.g. Raw Materials" : isSubcategory ? "e.g. Wall Tiles" : "e.g. Tiles"}
+              placeholder={isDepartment ? "e.g. Raw Materials" : "e.g. Tiles"}
               disabled={saving}
             />
           </div>
@@ -313,7 +310,7 @@ export function CategoryFormDialog({
             <Input
               value={form.slug}
               onChange={(e) => set("slug", e.target.value)}
-              placeholder={isDepartment ? "e.g. raw-materials" : isSubcategory ? "e.g. wall-tiles" : "e.g. tiles"}
+              placeholder={isDepartment ? "e.g. raw-materials" : "e.g. tiles"}
               disabled={saving || Boolean(editing)}
               className={editing ? "bg-ink-50 text-ink-500" : ""}
             />
@@ -333,24 +330,22 @@ export function CategoryFormDialog({
             />
           </div>
 
-          {/* Parent (category + subcategory) */}
+          {/* Parent department (categories only) */}
           {needsParent && (
             <div className="grid gap-1.5">
-              <label className="text-sm font-medium text-ink-800">
-                Parent {mode === "category" ? "department" : "category"} *
-              </label>
+              <label className="text-sm font-medium text-ink-800">Parent department *</label>
               <select
                 value={form.parentSlug}
                 onChange={(e) => set("parentSlug", e.target.value)}
                 disabled={saving}
                 className="h-9 rounded-lg border border-border bg-white px-3 text-sm text-ink-900 outline-none focus:border-brand-600 focus:ring-3 focus:ring-brand-600/20 disabled:opacity-60"
               >
-                <option value="">— Select a {mode === "category" ? "department" : "category"} —</option>
+                <option value="">— Select a department —</option>
                 {parentOptions.map((p) => <option key={p.slug} value={p.slug}>{p.name}</option>)}
               </select>
               {parentOptions.length === 0 && (
                 <p className="text-xs text-amber-600">
-                  No {mode === "category" ? "departments" : "categories"} yet. Create one first.
+                  No departments yet. Create one first.
                 </p>
               )}
             </div>
@@ -378,12 +373,12 @@ export function CategoryFormDialog({
             </label>
           </div>
 
-          {/* RFQ configuration — subcategories only */}
-          {isSubcategory && (
+          {/* RFQ configuration — categories only */}
+          {isCategory && (
             <div className="grid gap-1.5">
               <label className="text-sm font-medium text-ink-800">Quote configuration</label>
               <p className="-mt-1 text-xs text-ink-500">
-                Define the variants and spec fields buyers fill when requesting a quote for this subcategory.
+                Define the variants and spec fields buyers fill when requesting a quote for this category.
               </p>
               <RfqConfigEditor
                 variants={form.variants}
