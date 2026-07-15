@@ -23,7 +23,7 @@ const LEVEL_BADGE: Record<string, string> = {
 
 export function CategoryRow({ cat, depth, onEdit, onDelete, onAddChild }: Props) {
   const mode = detectMode(cat)
-  const isSubcategory = mode === "subcategory"
+  const isLeaf = mode === "category"
   const thumb = cat.image?.url ?? cat.iconUrl ?? null
   const variantCount = cat.variants?.length ?? 0
   const fieldCount = cat.attributes?.length ?? 0
@@ -70,8 +70,8 @@ export function CategoryRow({ cat, depth, onEdit, onDelete, onAddChild }: Props)
           <p className="mt-0.5 truncate text-xs text-ink-500">{cat.description}</p>
         )}
 
-        {/* Quote configuration summary (subcategories only) */}
-        {isSubcategory && (
+        {/* Quote configuration summary (categories — the quote leaf) */}
+        {isLeaf && (
           <div className="mt-1 flex flex-wrap items-center gap-1">
             {variantCount > 0 ? (
               <>
@@ -108,8 +108,8 @@ export function CategoryRow({ cat, depth, onEdit, onDelete, onAddChild }: Props)
             type="button" size="icon" variant="ghost"
             className="size-8 rounded-full text-ink-600 hover:bg-brand-50 hover:text-brand-700"
             onClick={() => onAddChild(cat)}
-            aria-label={mode === "department" ? "Add category" : "Add subcategory"}
-            title={mode === "department" ? "Add category" : "Add subcategory"}
+            aria-label="Add category"
+            title="Add category"
           >
             <Plus className="size-3.5" />
           </Button>
