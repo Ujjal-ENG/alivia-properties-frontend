@@ -26,9 +26,8 @@ export type MarketplaceCategory = {
   attributes?: CategoryAttribute[]
 }
 
-/** A subcategory node carries its image + RFQ config (wizard step 3 / form). */
-export type TreeSubcategory = MarketplaceCategory
-export type TreeCategory = MarketplaceCategory & { subcategories: TreeSubcategory[] }
+/** A category is the leaf node — it carries the image + RFQ config and suppliers. */
+export type TreeCategory = MarketplaceCategory
 export type TreeDepartment = MarketplaceCategory & { categories: TreeCategory[] }
 
 export type SupplierWithProducts = Supplier & { products: MarketplaceProduct[] }
@@ -151,7 +150,7 @@ export const marketplaceService = {
     return httpClient.get<MarketplaceCategory[]>("/marketplace/categories")
   },
 
-  /** Full Department → Category → Subcategory tree (powers the quote wizard). */
+  /** Full Department → Category tree (powers the quote wizard). */
   getTree(): Promise<TreeDepartment[]> {
     return httpClient.get<TreeDepartment[]>("/marketplace/tree")
   },
@@ -163,12 +162,6 @@ export const marketplaceService = {
   listCategoriesUnder(department: string): Promise<MarketplaceCategory[]> {
     return httpClient.get<MarketplaceCategory[]>("/marketplace/categories", {
       query: { department },
-    })
-  },
-
-  listSubcategories(category: string): Promise<MarketplaceCategory[]> {
-    return httpClient.get<MarketplaceCategory[]>("/marketplace/subcategories", {
-      query: { category },
     })
   },
 
