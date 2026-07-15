@@ -5,25 +5,24 @@ import type {
   CategoryLevel,
 } from "@/types/marketplace.types"
 
-/** Three taxonomy levels: Department → Category → Subcategory. */
-export type DialogMode = "department" | "category" | "subcategory"
+/** Two taxonomy levels: Department → Category (the leaf). */
+export type DialogMode = "department" | "category"
 
 export const LEVEL_BY_MODE: Record<DialogMode, CategoryLevel> = {
   department: "DEPARTMENT",
   category: "CATEGORY",
-  subcategory: "SUBCATEGORY",
 }
 
+// Legacy SUBCATEGORY rows (pre-flatten) map to the category UI.
 export const MODE_BY_LEVEL: Record<CategoryLevel, DialogMode> = {
   DEPARTMENT: "department",
   CATEGORY: "category",
-  SUBCATEGORY: "subcategory",
+  SUBCATEGORY: "category",
 }
 
 export const MODE_LABEL: Record<DialogMode, string> = {
   department: "Department",
   category: "Category",
-  subcategory: "Subcategory",
 }
 
 /** Editable row for a category variant (the named options buyers pick). */
@@ -108,7 +107,7 @@ export function toFormState(cat: MarketplaceCategory): FormState {
 /** Prefer the explicit level; fall back to parent depth for legacy rows. */
 export function detectMode(cat: MarketplaceCategory): DialogMode {
   if (cat.level) return MODE_BY_LEVEL[cat.level]
-  return cat.parentSlug ? "subcategory" : "department"
+  return cat.parentSlug ? "category" : "department"
 }
 
 export const emptyVariant = (): VariantRow => ({ name: "", unit: "", isActive: true })
