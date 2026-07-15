@@ -43,8 +43,6 @@ export const ROUTES = {
   ADMIN_PROJECTS: "/admin/projects",
   ADMIN_PROJECT_CREATE: "/admin/projects/create",
   ADMIN_PROJECT_EDIT: (id: string) => `/admin/projects/${id}/edit`,
-  ADMIN_PROPERTIES: "/admin/properties",
-  ADMIN_PENDING: "/admin/pending-listings",
   ADMIN_USERS: "/admin/users",
   ADMIN_SELLERS: "/admin/sellers",
   ADMIN_INQUIRIES: "/admin/inquiries",
