@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import type { MarketplaceCategory } from "@/services/marketplace.service"
-import { CategoryCard } from "./CategoryCard"
 import { CategoryFormDialog } from "./CategoryFormDialog"
 import { CategoryRow } from "./CategoryRow"
 import { DeleteDialog } from "./DeleteDialog"
@@ -29,14 +28,12 @@ export function AdminMarketplaceCategoriesPanel({
   const [flashSlug, setFlashSlug] = useState<string | null>(null)
   const [filterText, setFilterText] = useState("")
 
-  const lvl = (c: MarketplaceCategory) => c.level ?? (c.parentSlug ? "SUBCATEGORY" : "DEPARTMENT")
+  const lvl = (c: MarketplaceCategory) => c.level ?? (c.parentSlug ? "CATEGORY" : "DEPARTMENT")
   const sortOrder = (a: MarketplaceCategory, b: MarketplaceCategory) => a.order - b.order
 
   const departments = categories.filter((c) => lvl(c) === "DEPARTMENT").sort(sortOrder)
   const categoriesUnder = (deptSlug: string) =>
     categories.filter((c) => lvl(c) === "CATEGORY" && c.parentSlug === deptSlug).sort(sortOrder)
-  const subsUnder = (catSlug: string) =>
-    categories.filter((c) => lvl(c) === "SUBCATEGORY" && c.parentSlug === catSlug).sort(sortOrder)
 
   const q = filterText.trim().toLowerCase()
   const matches = (c: MarketplaceCategory) =>
@@ -57,8 +54,7 @@ export function AdminMarketplaceCategoriesPanel({
   }
 
   function openAddChild(parent: MarketplaceCategory) {
-    const childMode: DialogMode = lvl(parent) === "DEPARTMENT" ? "category" : "subcategory"
-    openCreate(childMode, parent.slug)
+    openCreate("category", parent.slug)
   }
 
   function handleSaved(cat: MarketplaceCategory) {
@@ -75,12 +71,8 @@ export function AdminMarketplaceCategoriesPanel({
 
   function handleDeleted(slug: string) {
     setCategories((prev) => {
-      const catChildren = prev.filter((c) => c.parentSlug === slug).map((c) => c.slug)
-      const doomed = new Set([slug, ...catChildren])
-      // also drop grandchildren (subcategories of removed categories)
-      prev.forEach((c) => {
-        if (c.parentSlug && catChildren.includes(c.parentSlug)) doomed.add(c.slug)
-      })
+      // Deleting a department also drops its categories.
+      const doomed = new Set([slug, ...prev.filter((c) => c.parentSlug === slug).map((c) => c.slug)])
       return prev.filter((c) => !doomed.has(c.slug))
     })
     router.refresh()
@@ -90,9 +82,9 @@ export function AdminMarketplaceCategoriesPanel({
     flashSlug === slug && "ring-2 ring-brand-400 ring-offset-2 rounded-xl"
 
   const totalDepartments = departments.length
-  const totalCategories = categories.filter((c) => lvl(c) === "CATEGORY").length
-  const subcats = categories.filter((c) => lvl(c) === "SUBCATEGORY")
-  const withImages = subcats.filter((c) => c.image?.url || c.iconUrl).length
+  const categoryNodes = categories.filter((c) => lvl(c) === "CATEGORY")
+  const totalCategories = categoryNodes.length
+  const withImages = categoryNodes.filter((c) => c.image?.url || c.iconUrl).length
 
   return (
     <div className="space-y-6">
@@ -101,8 +93,7 @@ export function AdminMarketplaceCategoriesPanel({
         <div className="flex flex-wrap gap-3">
           <Stat label="Departments" value={totalDepartments} />
           <Stat label="Categories" value={totalCategories} />
-          <Stat label="Subcategories" value={subcats.length} />
-          <Stat label="Subcat. images" value={withImages} accent="brand" />
+          <Stat label="Category images" value={withImages} accent="brand" />
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -120,23 +111,20 @@ export function AdminMarketplaceCategoriesPanel({
             <FolderPlus className="size-4" /> Department
           </Button>
           <Button
-            variant="outline"
             onClick={() => openCreate("category")}
             className="rounded-full gap-1.5"
           >
             <Package className="size-4" /> Category
-          </Button>
-          <Button onClick={() => openCreate("subcategory")} className="rounded-full gap-1.5">
-            <Plus className="size-4" /> Subcategory
           </Button>
         </div>
       </div>
 
       {/* Explainer */}
       <div className="rounded-xl border border-brand-100 bg-brand-50/60 px-4 py-3 text-xs text-brand-800">
-        Build the tree top-down: <strong>Departments</strong> → <strong>Categories</strong> →{" "}
-        <strong>Subcategories</strong>. Subcategories carry the image tile and quote configuration
-        buyers see in the wizard. Use the <Plus className="inline size-3" /> on a row to add a child.
+        Build the tree top-down: <strong>Departments</strong> → <strong>Categories</strong>.
+        Categories are the leaf buyers browse to reach suppliers — they carry the image tile and
+        quote configuration shown in the wizard. Use the <Plus className="inline size-3" /> on a
+        department to add a category.
       </div>
 
       {/* Tree */}
@@ -145,25 +133,17 @@ export function AdminMarketplaceCategoriesPanel({
           <Layers className="mx-auto mb-2 size-8 text-ink-300" />
           <p className="text-sm font-medium">No departments yet.</p>
           <p className="mt-1 text-xs">
-            Click <strong>Department</strong> to start, then add categories and subcategories.
+            Click <strong>Department</strong> to start, then add categories.
           </p>
         </div>
       ) : (
         <div className="space-y-8">
           {departments
-            .filter(
-              (d) =>
-                matches(d) ||
-                categoriesUnder(d.slug).some(
-                  (c) => matches(c) || subsUnder(c.slug).some(matches),
-                ),
-            )
+            .filter((d) => matches(d) || categoriesUnder(d.slug).some(matches))
             .map((dept) => {
-              const cats = categoriesUnder(dept.slug).filter(
-                (c) => matches(c) || subsUnder(c.slug).some(matches),
-              )
+              const cats = categoriesUnder(dept.slug).filter(matches)
               return (
-                <div key={dept.slug} className="space-y-3">
+                <div key={dept.slug} className="space-y-2">
                   <div className={cn(flash(dept.slug))}>
                     <CategoryRow
                       cat={dept}
@@ -187,17 +167,16 @@ export function AdminMarketplaceCategoriesPanel({
                       .
                     </div>
                   ) : (
-                    <div className="ml-0 grid grid-cols-1 gap-4 md:ml-6 md:grid-cols-2">
+                    <div className="space-y-2">
                       {cats.map((category) => (
-                        <CategoryCard
-                          key={category.slug}
-                          category={category}
-                          subcategories={subsUnder(category.slug).filter(matches)}
-                          onEdit={openEdit}
-                          onDelete={setDeletingCat}
-                          onAddChild={openAddChild}
-                          flashSlug={flashSlug}
-                        />
+                        <div key={category.slug} className={cn(flash(category.slug))}>
+                          <CategoryRow
+                            cat={category}
+                            depth={1}
+                            onEdit={openEdit}
+                            onDelete={setDeletingCat}
+                          />
+                        </div>
                       ))}
                     </div>
                   )}
