@@ -113,7 +113,7 @@ export function SiteFooter() {
                 <li key={href}>
                   <Link
                     href={href}
-                    className="inline-flex min-h-10 items-center text-sm text-ink-400 transition-colors duration-200 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+                    className="inline-flex min-h-11 items-center text-sm text-ink-400 transition-colors duration-200 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
                   >
                     {label}
                   </Link>
@@ -130,7 +130,7 @@ export function SiteFooter() {
               <li>
                 <a
                   href={`tel:${siteConfig.contact.phoneRaw}`}
-                  className="inline-flex min-h-10 items-center gap-2 transition-colors duration-200 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+                  className="inline-flex min-h-11 items-center gap-2 transition-colors duration-200 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
                 >
                   <Phone aria-hidden="true" className="size-4 text-brand-400" />
                   {siteConfig.contact.phone}
@@ -139,13 +139,13 @@ export function SiteFooter() {
               <li>
                 <a
                   href={`mailto:${siteConfig.contact.email}`}
-                  className="inline-flex min-h-10 items-center gap-2 break-all transition-colors duration-200 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+                  className="inline-flex min-h-11 items-center gap-2 break-all transition-colors duration-200 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
                 >
                   <Mail aria-hidden="true" className="size-4 shrink-0 text-brand-400" />
                   {siteConfig.contact.email}
                 </a>
               </li>
-              <li className="flex min-h-10 items-start gap-2 pt-2">
+              <li className="flex min-h-11 items-start gap-2 pt-2">
                 <MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-brand-400" />
                 <span className="leading-relaxed">{siteConfig.contact.address}</span>
               </li>
@@ -160,13 +160,13 @@ export function SiteFooter() {
             © {year} <span className="text-ink-400">{siteConfig.name}</span>. All rights reserved.
           </p>
           <div className="flex flex-wrap gap-x-4 gap-y-1">
-            <Link href="/privacy" className="inline-flex min-h-9 items-center transition-colors duration-200 hover:text-ink-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300">
+            <Link href="/privacy" className="inline-flex min-h-11 items-center transition-colors duration-200 hover:text-ink-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300">
               Privacy
             </Link>
-            <Link href="/terms" className="inline-flex min-h-9 items-center transition-colors duration-200 hover:text-ink-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300">
+            <Link href="/terms" className="inline-flex min-h-11 items-center transition-colors duration-200 hover:text-ink-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300">
               Terms
             </Link>
-            <Link href={ROUTES.CONTACT} className="inline-flex min-h-9 items-center transition-colors duration-200 hover:text-ink-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300">
+            <Link href={ROUTES.CONTACT} className="inline-flex min-h-11 items-center transition-colors duration-200 hover:text-ink-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300">
               Support
             </Link>
           </div>
