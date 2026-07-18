@@ -298,3 +298,93 @@ target reaches 44px while the visible text stays the same size.
    `pnpm prisma:generate && pnpm db:push`, then
    `pnpm start:dev > /tmp/backend-api.log 2>&1 &` and wait for "Nest
    application successfully started" in the log.
+
+---
+
+## Task 5: MarketplaceMegaMenu mobile trigger width (root-cause fix for the compact search bar)
+
+**Files:** `src/components/marketplace/MarketplaceMegaMenu.tsx`
+
+**Why this task exists:** Task 3's sub-fix 3c gave the compact search bar's
+department `<select>` an explicit width, on the theory that the select's
+browser-heuristic auto-sizing was squeezing the free-text search input down
+to ~32px wide (unusable) at 375px viewport width. Task 3's implementer
+built that fix correctly, but live measurement proved the real bottleneck
+is elsewhere: at 375px, the header row shared between the
+`MarketplaceMegaMenu` trigger button and the `MarketplaceSearchForm`
+totals ~343px (`375 - 32px` container-page gutters). The MegaMenu's
+trigger button (defined in this file, around lines 156–176:
+`<button ref={triggerRef} ... className="flex h-11 w-full items-center
+gap-2 rounded-md bg-gold-400 px-3 ...">`, containing a `LayoutGrid` icon
+plus `<span className="whitespace-nowrap">All Categories</span>`) cannot
+shrink below its content's intrinsic width because the label has
+`whitespace-nowrap` and flex items default to `min-width: auto` (i.e. they
+refuse to shrink below their content's minimum size unless told
+otherwise). That rigidly consumes ~168px of the ~343px row, leaving only
+~119px to split between the select, the search input, and the submit
+button — mathematically too little for a usable search box no matter how
+the select is sized. (Confirmed via live `agent-browser` DOM measurement,
+not guessed — see `.superpowers/sdd/task-3-report.md` in this repo for the
+full trace, though that file is git-ignored scratch and won't exist in a
+fresh clone; the description above is complete on its own.)
+
+This exact "abbreviate the label below `sm`" pattern is already used
+elsewhere in this same feature area — see
+`src/app/marketplace/page.tsx` around line 682–685:
+```tsx
+<span className="hidden sm:inline">See all {group.name}</span>
+<span className="sm:hidden">See all</span>
+```
+Apply the equivalent idea to the trigger button's label so it stops being
+rigid on narrow phones, freeing the row for the search input.
+
+**The fix:**
+In the trigger `<button>` JSX (~line 172–176), change:
+```tsx
+<span className="whitespace-nowrap">All Categories</span>
+```
+to hide the label below `sm` (640px) and show it from `sm` up:
+```tsx
+<span className="hidden whitespace-nowrap sm:inline">All Categories</span>
+```
+The button already has `aria-label="All categories"` on the `<button>`
+element itself (~line 161), so hiding the visible label on small screens
+does not regress accessibility — screen readers still announce "All
+categories" via the aria-label regardless of the visible content.
+
+Do not change the button's padding/height/icon or any other class — only
+the label span's visibility. Do not touch the desktop hover panel or the
+mobile drawer (`drawerOpen` block) — this task is only about the trigger
+button's own footprint in the header row.
+
+**Verification:**
+1. `pnpm lint` passes.
+2. At 375×812, open `http://localhost:3000/`. Screenshot the header row
+   (MegaMenu trigger + search form). Confirm the trigger button now shows
+   icon-only (no "All Categories" text) and is visibly narrower.
+3. Measure the compact search input width the same way Task 3 did:
+   ```js
+   (() => {
+     const input = document.getElementById('marketplace-header-search');
+     const r = input.getBoundingClientRect();
+     return { width: Math.round(r.width) };
+   })()
+   ```
+   This must now be substantially wider than the ~32px broken baseline —
+   at least 100px at 375px viewport width, matching Task 3's original
+   acceptance bar (now achievable since the actual bottleneck is fixed).
+4. Confirm the trigger button is still keyboard/screen-reader accessible:
+   check `aria-label` is still present and unchanged on the `<button>`
+   (`agent-browser get attr` or inspect the diff — it shouldn't need to
+   change since it was never on the `<span>`).
+5. Re-check at 640px (`sm` breakpoint) and above that the "All Categories"
+   label reappears and the trigger looks like it did before this fix (no
+   regression at tablet/desktop widths). Re-check 768px and 1440px for no
+   horizontal page overflow, same method as Task 3.
+6. Confirm the desktop hover dropdown panel (opens on hover/click at
+   `md:` and up — the `{open && (...)}` block) and the mobile drawer (the
+   `{drawerOpen && (...)}` block) both still work and are visually
+   unchanged — click the trigger at a mobile viewport width to open the
+   drawer, screenshot it, confirm it matches Task 3's pre-existing
+   behavior (departments list, drill-down, "Browse All Apartments"
+   button at the bottom).
