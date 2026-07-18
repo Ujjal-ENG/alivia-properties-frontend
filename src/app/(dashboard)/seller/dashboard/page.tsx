@@ -121,7 +121,7 @@ export default async function SellerDashboardPage() {
                   <span className="text-sm font-semibold text-brand-700">
                     {property.purpose === "rent" ? formatRent(property.price) : formatPrice(property.price, true)}
                   </span>
-                  <Link href={ROUTES.SELLER_PROPERTY_EDIT(property.id)} className="text-xs font-semibold text-brand-700 hover:underline">
+                  <Link href={ROUTES.SELLER_PROPERTY_EDIT(property.id)} className="inline-flex min-h-11 items-center text-xs font-semibold text-brand-700 hover:underline">
                     Edit Listing
                   </Link>
                 </div>
