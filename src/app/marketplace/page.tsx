@@ -431,13 +431,13 @@ export default async function MarketplacePage({
             </Link>
             <Link
               href={ROUTES.BUYER_MARKETPLACE_QUOTES}
-              className="min-h-11 rounded-full px-2 transition-colors hover:bg-white/10 hover:text-white"
+              className="inline-flex min-h-11 items-center rounded-full px-2 transition-colors hover:bg-white/10 hover:text-white"
             >
               My Orders
             </Link>
             <a
               href={`tel:${siteConfig.contact.phoneRaw}`}
-              className="min-h-11 rounded-full px-2 transition-colors hover:bg-white/10 hover:text-white"
+              className="inline-flex min-h-11 items-center rounded-full px-2 transition-colors hover:bg-white/10 hover:text-white"
             >
               Help & Support
             </a>
