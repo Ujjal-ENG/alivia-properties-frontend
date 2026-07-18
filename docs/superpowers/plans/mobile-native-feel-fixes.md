@@ -388,3 +388,106 @@ button's own footprint in the header row.
    drawer, screenshot it, confirm it matches Task 3's pre-existing
    behavior (departments list, drill-down, "Browse All Apartments"
    button at the bottom).
+
+---
+
+## Task 6: Mobile drawer full-height fix (containing-block bug)
+
+**Files:** `src/components/marketplace/MarketplaceMegaMenu.tsx`
+
+**Why this task exists:** While verifying Task 5, live testing found that the
+mobile drawer (the `{drawerOpen && (...)}` block, ~line 262–340: `<div
+className="fixed inset-0 z-60 md:hidden"> ... </div>`) does not actually
+cover the full viewport on phones. Measured live at 375×812: the drawer's
+backdrop + white panel only render from `y=112` to `y=295` (a 183px band),
+not `y=0` to `y=812`. Confirmed via `git stash`/`git stash pop` A/B
+comparison to be **byte-identical pre-existing behavior**, unrelated to
+Task 5's change — this is a real, separate bug in the drawer's own
+positioning that was simply never caught before because nobody had opened
+it in a live mobile browser check until now.
+
+**Root cause:** `<MarketplaceMegaMenu>` is rendered (from
+`src/app/marketplace/page.tsx`) inside a `<section className="sticky
+top-0 z-30 border-b border-border/60 bg-white/95 backdrop-blur
+supports-backdrop-filter:bg-white/88">` — note `backdrop-blur` (Tailwind
+for `backdrop-filter: blur(...)`). Per the CSS spec, a non-`none`
+`filter`/`backdrop-filter` on an ancestor establishes a new **containing
+block** for any `position: fixed` (and `absolute`) descendants — so the
+drawer's `fixed inset-0` no longer positions relative to the viewport, it
+positions relative to that blurred `<section>`'s own box (whose rendered
+height on a phone — top utility strip + search row + department-chips row
+— happens to match the observed ~183px clipped band almost exactly). This
+is a well-known CSS gotcha, and the standard fix used throughout the
+React/headless-UI ecosystem (Radix, Base UI, Headless UI, etc. all do
+this for exactly this reason) is to render this kind of full-viewport
+overlay through a **React portal** to `document.body`, so it's no longer
+a DOM descendant of anything that could accidentally reparent its
+containing block.
+
+**The fix:**
+1. Add `import { createPortal } from "react-dom";` to this file's imports
+   (it already has `"use client"` at the top and other React imports —
+   add `createPortal` alongside them).
+2. Find the mobile drawer's returned JSX: currently
+   ```tsx
+   {drawerOpen && (
+     <div className="fixed inset-0 z-60 md:hidden">
+       {/* backdrop */}
+       <div className="absolute inset-0 bg-black/50" onClick={...} aria-hidden="true" />
+       {/* panel */}
+       <div className="absolute inset-y-0 left-0 flex w-[88%] max-w-sm flex-col bg-white shadow-2xl">
+         ...
+       </div>
+     </div>
+   )}
+   ```
+   Wrap the returned `<div className="fixed inset-0 z-60 md:hidden">...</div>`
+   in `createPortal(..., document.body)`, e.g.:
+   ```tsx
+   {drawerOpen && createPortal(
+     <div className="fixed inset-0 z-60 md:hidden">
+       {/* ...unchanged contents... */}
+     </div>,
+     document.body,
+   )}
+   ```
+   Do not change anything inside the drawer's JSX (backdrop, panel,
+   department list, drill-down, close button, "Browse All Apartments"
+   button) — only wrap the existing returned element in the portal call.
+   Do not touch the desktop hover panel (`{open && (...)}` block) — that
+   one uses `absolute` positioning relative to its own `relative`-
+   positioned trigger wrapper (not `fixed`), so it is not affected by the
+   containing-block issue and does not need a portal.
+3. `document.body` is always defined by the time this runs (it's a
+   client component, and `drawerOpen` only becomes true after a user
+   click post-hydration) — no SSR guard/`typeof window` check is needed,
+   matching how this pattern is normally used in this ecosystem.
+
+**Verification:**
+1. `pnpm lint` passes.
+2. At 375×812, open `http://localhost:3000/`, click the "All Categories"
+   trigger to open the drawer. Measure the backdrop/panel's rect:
+   ```js
+   (() => {
+     const overlay = document.querySelector('.fixed.inset-0.z-60');
+     const r = overlay.getBoundingClientRect();
+     return { top: Math.round(r.top), bottom: Math.round(r.bottom), height: Math.round(r.height) };
+   })()
+   ```
+   Must now show `top: 0` and `bottom` at (or within a couple px of) the
+   viewport height (812), i.e. the overlay covers the full screen — not
+   the previous clipped `top:112, bottom:295, height:183`.
+3. Screenshot the opened drawer and confirm visually: the dark backdrop
+   covers the entire screen behind the white panel, and the white panel
+   itself runs from the very top to the very bottom of the screen (not a
+   short band in the middle).
+4. Re-verify the drawer still functions: department list renders, click a
+   department to drill down (confirm header text changes and category
+   list appears), close button dismisses it, clicking the backdrop
+   dismisses it.
+5. Confirm the desktop hover panel at 1440px is unaffected (still opens
+   on hover, same content as before — this task should not change its
+   behavior at all since it's untouched code).
+6. Confirm no new lint/console errors from the portal usage (check
+   `agent-browser console` after opening/closing the drawer a couple
+   times).
