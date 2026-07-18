@@ -8,6 +8,7 @@ import {
   ChevronDown,
   CircleDollarSign,
   Headphones,
+  LayoutDashboard,
   Lock,
   Package,
   Search,
@@ -23,6 +24,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/config/routes.config";
 import { siteConfig } from "@/config/site.config";
@@ -40,6 +42,8 @@ import {
   FlagshipProjects,
   type FlagshipProject,
 } from "@/pages-sections/home/flagship-projects";
+import type { UserRole } from "@/types/user.types";
+import { getDashboardRoute } from "@/utils/auth-helpers";
 import { formatPrice } from "@/utils/format-price";
 import { pickLocationText } from "@/utils/project-location";
 
@@ -340,6 +344,11 @@ export default async function MarketplacePage({
   const selectedDepartment = getParam(params, "department");
   const query = initialSearch.trim().toLowerCase();
 
+  const session = await auth();
+  const dashboardHref = session?.user?.role
+    ? getDashboardRoute(session.user.role as UserRole)
+    : null;
+
   const [categoriesRes, projectsRes, heroRes] = await Promise.allSettled([
     marketplaceService.listCategories(),
     projectsService.list({ limit: 3 }),
@@ -473,11 +482,15 @@ export default async function MarketplacePage({
               {/* Compact account/cart icons — replaced by the labeled versions below at xl */}
               <div className="flex shrink-0 items-center gap-1.5 xl:hidden">
                 <Link
-                  href={ROUTES.LOGIN}
-                  aria-label="My account"
+                  href={dashboardHref ?? ROUTES.LOGIN}
+                  aria-label={dashboardHref ? "Go to dashboard" : "My account"}
                   className="flex size-11 items-center justify-center rounded-full text-ink-700 transition-colors hover:bg-brand-50 hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
                 >
-                  <User aria-hidden="true" className="size-4.5" />
+                  {dashboardHref ? (
+                    <LayoutDashboard aria-hidden="true" className="size-4.5" />
+                  ) : (
+                    <User aria-hidden="true" className="size-4.5" />
+                  )}
                 </Link>
                 <Link href={ROUTES.MARKETPLACE_REQUEST} aria-label="Cart" className="relative">
                   <Button
@@ -514,11 +527,15 @@ export default async function MarketplacePage({
             {/* Labeled account/cart — xl only, compact icon versions above cover mobile/tablet */}
             <div className="hidden items-center gap-3 xl:flex xl:justify-self-end">
               <Link
-                href={ROUTES.LOGIN}
+                href={dashboardHref ?? ROUTES.LOGIN}
                 className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-semibold text-ink-700 transition-colors hover:bg-brand-50 hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
               >
-                <User aria-hidden="true" className="size-4" />
-                My Account
+                {dashboardHref ? (
+                  <LayoutDashboard aria-hidden="true" className="size-4" />
+                ) : (
+                  <User aria-hidden="true" className="size-4" />
+                )}
+                {dashboardHref ? "Dashboard" : "My Account"}
               </Link>
               <Link href={ROUTES.MARKETPLACE_REQUEST}>
                 <Button
