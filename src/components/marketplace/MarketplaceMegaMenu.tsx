@@ -172,7 +172,7 @@ export function MarketplaceMegaMenu({ data }: { data: MegaMenuData }) {
         className="flex h-11 w-full items-center gap-2 rounded-md bg-gold-400 px-3 font-bold text-brand-950 shadow-md shadow-gold-200/70 transition-colors hover:bg-gold-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-900"
       >
         <LayoutGrid aria-hidden="true" className="size-5" />
-        <span className="whitespace-nowrap">All Categories</span>
+        <span className="hidden whitespace-nowrap sm:inline">All Categories</span>
       </button>
 
       {/* Desktop hover panel (md+) */}
