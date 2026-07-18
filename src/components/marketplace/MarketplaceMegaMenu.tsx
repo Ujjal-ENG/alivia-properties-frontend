@@ -4,6 +4,7 @@ import { Boxes, ChevronRight, LayoutGrid, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { ROUTES } from "@/config/routes.config";
 import { cn } from "@/lib/utils";
@@ -259,85 +260,89 @@ export function MarketplaceMegaMenu({ data }: { data: MegaMenuData }) {
       )}
 
       {/* Mobile drawer (below md) */}
-      {drawerOpen && (
-        <div className="fixed inset-0 z-60 md:hidden">
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => {
-              setDrawerOpen(false);
-              setDrilled(null);
-            }}
-            aria-hidden="true"
-          />
-          <div className="absolute inset-y-0 left-0 flex w-[88%] max-w-sm flex-col bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-border/60 p-4">
-              <span className="text-base font-bold text-ink-900">
-                {drilled
-                  ? departments.find((d) => d.slug === drilled)?.name
-                  : "All Categories"}
-              </span>
-              <button
-                type="button"
-                aria-label="Close categories"
-                onClick={() => {
-                  if (drilled) setDrilled(null);
-                  else setDrawerOpen(false);
-                }}
-                className="flex size-9 items-center justify-center rounded-full text-ink-600 hover:bg-ink-100"
-              >
-                <X aria-hidden="true" className="size-5" />
-              </button>
-            </div>
+      {drawerOpen &&
+        createPortal(
+          <div className="fixed inset-0 z-60 md:hidden">
+            <div
+              className="absolute inset-0 bg-black/50"
+              onClick={() => {
+                setDrawerOpen(false);
+                setDrilled(null);
+              }}
+              aria-hidden="true"
+            />
+            <div className="absolute inset-y-0 left-0 flex w-[88%] max-w-sm flex-col bg-white shadow-2xl">
+              <div className="flex items-center justify-between border-b border-border/60 p-4">
+                <span className="text-base font-bold text-ink-900">
+                  {drilled
+                    ? departments.find((d) => d.slug === drilled)?.name
+                    : "All Categories"}
+                </span>
+                <button
+                  type="button"
+                  aria-label="Close categories"
+                  onClick={() => {
+                    if (drilled) setDrilled(null);
+                    else setDrawerOpen(false);
+                  }}
+                  className="flex size-9 items-center justify-center rounded-full text-ink-600 hover:bg-ink-100"
+                >
+                  <X aria-hidden="true" className="size-5" />
+                </button>
+              </div>
 
-            <div className="flex-1 overflow-y-auto overscroll-contain p-2">
-              {!drilled ? (
-                <ul>
-                  {departments.map((dept) => (
-                    <li key={dept.slug}>
-                      <button
-                        type="button"
-                        onClick={() => setDrilled(dept.slug)}
-                        className="flex min-h-12 w-full items-center gap-3 rounded-lg px-3 text-left text-sm font-semibold text-ink-800 hover:bg-ink-50"
-                      >
-                        <Thumb src={imageFor(dept)} className="size-10" />
-                        <span className="min-w-0 flex-1 truncate">
-                          {dept.name}
-                        </span>
-                        <ChevronRight
-                          aria-hidden="true"
-                          className="size-4 opacity-60"
-                        />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <div className="space-y-4 p-2">
-                  {(categoriesByDepartment[drilled] ?? []).map((cat) => (
-                    <div key={cat.slug}>
-                      <Link
-                        href={ROUTES.MARKETPLACE_CATEGORY(cat.slug)}
-                        onClick={() => setDrawerOpen(false)}
-                        className="flex items-center gap-2.5 py-1"
-                      >
-                        <Thumb
-                          src={imageFor(cat, drilled)}
-                          className="size-10"
-                        />
-                        <span className="min-w-0 flex-1 truncate text-sm font-bold text-ink-900">
-                          {cat.name}
-                        </span>
-                      </Link>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+              <div className="flex-1 overflow-y-auto overscroll-contain p-2">
+                {!drilled ? (
+                  <ul>
+                    {departments.map((dept) => (
+                      <li key={dept.slug}>
+                        <button
+                          type="button"
+                          onClick={() => setDrilled(dept.slug)}
+                          className="flex min-h-12 w-full items-center gap-3 rounded-lg px-3 text-left text-sm font-semibold text-ink-800 hover:bg-ink-50"
+                        >
+                          <Thumb src={imageFor(dept)} className="size-10" />
+                          <span className="min-w-0 flex-1 truncate">
+                            {dept.name}
+                          </span>
+                          <ChevronRight
+                            aria-hidden="true"
+                            className="size-4 opacity-60"
+                          />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="space-y-4 p-2">
+                    {(categoriesByDepartment[drilled] ?? []).map((cat) => (
+                      <div key={cat.slug}>
+                        <Link
+                          href={ROUTES.MARKETPLACE_CATEGORY(cat.slug)}
+                          onClick={() => setDrawerOpen(false)}
+                          className="flex items-center gap-2.5 py-1"
+                        >
+                          <Thumb
+                            src={imageFor(cat, drilled)}
+                            className="size-10"
+                          />
+                          <span className="min-w-0 flex-1 truncate text-sm font-bold text-ink-900">
+                            {cat.name}
+                          </span>
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-            <div className="border-t border-border/60 p-4">{browseAllBtn}</div>
-          </div>
-        </div>
-      )}
+              <div className="border-t border-border/60 p-4">
+                {browseAllBtn}
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }
