@@ -119,7 +119,7 @@ export function DashboardHeader({
         {/* Back to home */}
         <Link
           href={ROUTES.HOME}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border/80 bg-white text-ink-700 transition-colors hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+          className="hidden lg:flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-border/80 bg-white text-ink-700 transition-colors hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
           title="Back to home"
           aria-label="Back to home"
         >
