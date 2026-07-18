@@ -413,31 +413,31 @@ export default async function MarketplacePage({
     <>
     <main id="main-content" className="storefront bg-ink-50 text-ink-900">
       <section className="bg-brand-950 text-white">
-        <div className="container-page max-w-373! flex h-9 flex-wrap items-center justify-end gap-3 text-xs font-semibold">
+        <div className="container-page max-w-373! flex min-h-11 flex-wrap items-center justify-end gap-3 py-1 text-xs font-semibold">
           <div className="flex flex-wrap items-center gap-4 text-brand-100/90">
             <Link
               href={ROUTES.BECOME_SUPPLIER}
-              className="inline-flex items-center gap-2 rounded-full px-2 transition-colors hover:bg-white/10 hover:text-white"
+              className="inline-flex min-h-11 items-center gap-2 rounded-full px-2 transition-colors hover:bg-white/10 hover:text-white"
             >
               <Store aria-hidden="true" className="size-3.5" />
               Be a Supplier
             </Link>
             <Link
               href={ROUTES.BECOME_INVESTOR}
-              className="inline-flex items-center gap-2 rounded-full px-2 transition-colors hover:bg-white/10 hover:text-white"
+              className="inline-flex min-h-11 items-center gap-2 rounded-full px-2 transition-colors hover:bg-white/10 hover:text-white"
             >
               <TrendingUp aria-hidden="true" className="size-3.5" />
               Be an Investor
             </Link>
             <Link
               href={ROUTES.BUYER_MARKETPLACE_QUOTES}
-              className="rounded-full px-2 transition-colors hover:bg-white/10 hover:text-white"
+              className="min-h-11 rounded-full px-2 transition-colors hover:bg-white/10 hover:text-white"
             >
               My Orders
             </Link>
             <a
               href={`tel:${siteConfig.contact.phoneRaw}`}
-              className="rounded-full px-2 transition-colors hover:bg-white/10 hover:text-white"
+              className="min-h-11 rounded-full px-2 transition-colors hover:bg-white/10 hover:text-white"
             >
               Help & Support
             </a>
@@ -475,14 +475,14 @@ export default async function MarketplacePage({
                 <Link
                   href={ROUTES.LOGIN}
                   aria-label="My account"
-                  className="flex size-10 items-center justify-center rounded-full text-ink-700 transition-colors hover:bg-brand-50 hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                  className="flex size-11 items-center justify-center rounded-full text-ink-700 transition-colors hover:bg-brand-50 hover:text-brand-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
                 >
                   <User aria-hidden="true" className="size-4.5" />
                 </Link>
                 <Link href={ROUTES.MARKETPLACE_REQUEST} aria-label="Cart" className="relative">
                   <Button
                     size="icon"
-                    className="relative size-10 rounded-full bg-white text-ink-900 shadow-none hover:bg-brand-50"
+                    className="relative size-11 rounded-full bg-white text-ink-900 shadow-none hover:bg-brand-50"
                   >
                     <ShoppingCart aria-hidden="true" className="size-4.5" />
                   </Button>
@@ -923,7 +923,7 @@ function MarketplaceSearchForm({
   className?: string;
 }) {
   const selectControl = (
-    <div className="relative">
+    <div className={cn("relative", compact && "w-28 shrink-0 sm:w-36")}>
       <select
         name="department"
         defaultValue={selectedDepartment}
