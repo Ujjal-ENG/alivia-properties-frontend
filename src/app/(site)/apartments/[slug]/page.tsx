@@ -66,11 +66,15 @@ function toMapEmbedUrl(value?: string | null): string | null {
   try {
     const url = new URL(raw);
     const host = url.hostname.replace(/^www\./, "");
+    // Only a *.google.com host with a real /maps/<something> path can be safely
+    // framed. Bare maps.google.com links, goo.gl/maps.app.goo.gl short links, and
+    // lookalike hosts (e.g. "evil-google.com", which a bare `endsWith("google.com")`
+    // would wrongly accept) all either need a server-side redirect resolve first or
+    // resolve to a normal Maps webapp page that sends `X-Frame-Options: sameorigin`
+    // — silently blanking the iframe instead of embedding.
     const isGoogleMap =
-      host === "maps.google.com" ||
-      host === "maps.app.goo.gl" ||
-      host === "goo.gl" ||
-      (host.endsWith("google.com") && url.pathname.startsWith("/maps"));
+      (host === "google.com" || host.endsWith(".google.com")) &&
+      /^\/maps\/[^/]/.test(url.pathname);
 
     if (!isGoogleMap) return null;
     if (url.pathname.includes("/embed")) return url.toString();
