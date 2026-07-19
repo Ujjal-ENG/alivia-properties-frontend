@@ -52,6 +52,7 @@ export const projectSchema = z.object({
     .union([z.literal(""), z.string().url("Enter a valid video link")])
     .optional()
     .default(""),
+  panorama: z.array(z.string()).max(1, "Add a single 360° panorama").optional().default([]),
 
   handoverDate: z.string().optional().default(""),
   landSize: z.coerce.number().min(0).optional(),

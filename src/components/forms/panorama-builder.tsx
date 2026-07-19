@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { VirtualTour } from "@/components/properties/virtual-tour"
 import { useUploader } from "@/hooks/use-uploader"
+import type { UploadKind } from "@/services/uploads.service"
 import {
   assembleEquirectangular,
   canvasToFile,
@@ -28,10 +29,12 @@ type PanoramaBuilderProps = {
   galleryUrls: string[]
   /** Called with the uploaded panorama URL once the seller accepts the result. */
   onBuilt: (url: string) => void
+  /** Upload bucket kind — defaults to "property-image" for the existing Properties caller. */
+  kind?: UploadKind
 }
 
-export function PanoramaBuilder({ galleryUrls, onBuilt }: PanoramaBuilderProps) {
-  const { upload } = useUploader("property-image")
+export function PanoramaBuilder({ galleryUrls, onBuilt, kind = "property-image" }: PanoramaBuilderProps) {
+  const { upload } = useUploader(kind)
   const [open, setOpen] = useState(false)
   // Photos uploaded directly inside the builder (so it works even before any
   // listing photos exist — e.g. on the create page).

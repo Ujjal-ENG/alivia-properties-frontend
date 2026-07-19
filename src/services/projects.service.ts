@@ -19,6 +19,7 @@ type BackendImage = { url: string; isCover?: boolean } | string
 type BackendProject = Omit<Project, "galleryImages"> & {
   galleryImages?: BackendImage[]
   coverImageUrl?: string
+  panorama?: { url: string } | null
 }
 
 function imgUrl(i: BackendImage): string {
@@ -39,9 +40,12 @@ function keyFromUrl(url: string): string {
 // Map the admin form values to the backend write contract: uppercase status,
 // gallery URLs → ordered ImageRef objects, blank optionals dropped.
 function toWritePayload(payload: unknown): Record<string, unknown> {
-  const { galleryImages, status, coverImageUrl, handoverDate, videoUrl, ...rest } =
+  const { galleryImages, status, coverImageUrl, handoverDate, videoUrl, panorama, ...rest } =
     (payload ?? {}) as Record<string, unknown>
   const urls = Array.isArray(galleryImages) ? (galleryImages as string[]) : []
+  // The form holds the panorama as a 0-or-1 entry URL array; the backend expects
+  // a single ImageRef object (or null to clear it).
+  const panoramaUrl = Array.isArray(panorama) ? (panorama as string[])[0] : undefined
   return {
     ...rest,
     ...(typeof status === "string" ? { status: status.toUpperCase() } : {}),
@@ -58,6 +62,7 @@ function toWritePayload(payload: unknown): Record<string, unknown> {
       isCover: i === 0,
       order: i,
     })),
+    panorama: panoramaUrl ? { key: keyFromUrl(panoramaUrl), url: panoramaUrl } : null,
   }
 }
 
@@ -72,6 +77,7 @@ function toFrontendProject(p: BackendProject): Project {
     coverImageUrl: cover,
     coverImage: cover,           // alias used by projects/[slug]/page.tsx
     featured: p.isFeatured,      // alias used by projects/[slug]/page.tsx
+    panoramaUrl: p.panorama?.url ?? undefined,
     area: p.area ?? p.location,
     division: p.division ?? "",
     status: (typeof p.status === "string"
