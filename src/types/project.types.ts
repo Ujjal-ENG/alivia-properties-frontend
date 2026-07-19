@@ -46,6 +46,8 @@ export type Project = {
   // video — uploaded clips and/or an external link (YouTube/Vimeo/direct file)
   videos?: string[]
   videoUrl?: string
+  /** Equirectangular 360° image URL for the in-app virtual tour. */
+  panoramaUrl?: string
 
   handoverDate?: string
   landSize?: number

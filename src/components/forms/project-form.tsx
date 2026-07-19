@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { FileUploader } from "@/components/common/file-uploader"
+import { PanoramaBuilder } from "@/components/forms/panorama-builder"
 import { PropertyImagesUploader } from "@/components/forms/property-images-uploader"
 import { projectSchema, type ProjectInput, type ProjectSubmit } from "@/schemas/project.schema"
 import { createProject, updateProject } from "@/services/projects.service"
@@ -56,6 +57,7 @@ function getDefaults(initial?: Project): ProjectInput {
     galleryImages: initial?.galleryImages ?? [],
     videos: initial?.videos ?? [],
     videoUrl: initial?.videoUrl ?? "",
+    panorama: initial?.panoramaUrl ? [initial.panoramaUrl] : [],
     handoverDate: initial?.handoverDate ? initial.handoverDate.slice(0, 10) : "",
     landSize: initial?.landSize,
     landSizeUnit: initial?.landSizeUnit ?? "katha",
@@ -112,6 +114,7 @@ export function ProjectForm({ mode, initialProject }: ProjectFormProps) {
   const coverValue = useWatch({ control: form.control, name: "coverImageUrl" })
   const galleryValue = useWatch({ control: form.control, name: "galleryImages" }) ?? []
   const videoValues = useWatch({ control: form.control, name: "videos" }) ?? []
+  const panoramaValues = useWatch({ control: form.control, name: "panorama" }) ?? []
   const selectedAmenities = useWatch({ control: form.control, name: "amenities" }) ?? []
 
   async function onSubmit(values: ProjectSubmit) {
@@ -420,6 +423,30 @@ export function ProjectForm({ mode, initialProject }: ProjectFormProps) {
                   </FormItem>
                 )}
               />
+            </div>
+
+            <div className="space-y-2 border-t border-border pt-6">
+              <FileUploader
+                kind="project-image"
+                label="360° Panorama (optional)"
+                hint="One equirectangular (2:1) photo powers the interactive virtual tour · max 10 MB"
+                value={panoramaValues}
+                onChange={(urls) =>
+                  form.setValue("panorama", urls.slice(0, 1), { shouldValidate: true, shouldDirty: true })
+                }
+              />
+              {form.formState.errors.panorama?.message && (
+                <p className="text-sm text-red-600">{form.formState.errors.panorama.message}</p>
+              )}
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-500">
+                <span>Upload a 360° equirectangular shot (a 2:1 image, e.g. 4096×2048) — or</span>
+                <PanoramaBuilder
+                  kind="project-image"
+                  galleryUrls={galleryValue}
+                  onBuilt={(url) => form.setValue("panorama", [url], { shouldValidate: true, shouldDirty: true })}
+                />
+                <span>from your apartment photos. Leave empty for the sample tour.</span>
+              </div>
             </div>
           </div>
 
