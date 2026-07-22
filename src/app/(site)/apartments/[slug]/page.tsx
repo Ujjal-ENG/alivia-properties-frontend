@@ -14,6 +14,7 @@ import { parseProjectDescription } from "@/lib/project-description";
 import { getProject, recordProjectView } from "@/services/projects.service";
 import type { Project } from "@/types/project.types";
 import { formatPrice, formatPriceRange } from "@/utils/format-price";
+import { toMapEmbedUrl } from "@/utils/map-embed";
 import {
   Building2,
   ChevronRight,
@@ -54,58 +55,18 @@ function toEmbedUrl(url: string): string | null {
   }
 }
 
-type ProjectWithMaybeMap = Project & {
-  mapEmbedUrl?: string | null;
-  mapUrl?: string | null;
-  mapPin?: string | null;
-};
-
-function toMapEmbedUrl(value?: string | null): string | null {
-  const raw = value?.trim();
-  if (!raw || !/^https?:\/\//i.test(raw)) return null;
-
-  try {
-    const url = new URL(raw);
-    const host = url.hostname.replace(/^www\./, "");
-    // Only a *.google.com host with a real /maps/<something> path can be safely
-    // framed. Bare maps.google.com links, goo.gl/maps.app.goo.gl short links, and
-    // lookalike hosts (e.g. "evil-google.com", which a bare `endsWith("google.com")`
-    // would wrongly accept) all either need a server-side redirect resolve first or
-    // resolve to a normal Maps webapp page that sends `X-Frame-Options: sameorigin`
-    // — silently blanking the iframe instead of embedding.
-    const isGoogleMap =
-      (host === "google.com" || host.endsWith(".google.com")) &&
-      /^\/maps\/[^/]/.test(url.pathname);
-
-    if (!isGoogleMap) return null;
-    if (url.pathname.includes("/embed")) return url.toString();
-
-    url.searchParams.set("output", "embed");
-    return url.toString();
-  } catch {
-    return null;
-  }
-}
-
+// Admins paste the Google Maps share link into "Location" (see project-form.tsx);
+// "Full Address" stays plain text. Try Location first — it's where the precise
+// pin lives — then fall back to the written address.
 function projectMapEmbedUrl(project: Project): string | null {
-  const maybe = project as ProjectWithMaybeMap;
-  for (const value of [
-    maybe.mapEmbedUrl,
-    maybe.mapUrl,
-    maybe.mapPin,
-    project.address,
-    project.location,
-  ]) {
-    const embed = toMapEmbedUrl(value);
-    if (embed) return embed;
-  }
-  return null;
+  return toMapEmbedUrl(project.location) ?? toMapEmbedUrl(project.address);
 }
 
 function projectLocationText(project: Project): string {
   return (
     [project.address, project.location, project.area, project.division].find(
-      (value) => value && !toMapEmbedUrl(value),
+      (value): value is string =>
+        typeof value === "string" && value.trim().length > 0 && !/^https?:\/\//i.test(value.trim()),
     ) ?? "Apartment location"
   );
 }

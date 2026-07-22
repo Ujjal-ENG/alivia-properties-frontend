@@ -23,6 +23,7 @@ import {
 import { getProperty, getProperties } from "@/services/properties.service";
 import { getDocuments } from "@/services/documents.service";
 import { formatPrice, formatRent } from "@/utils/format-price";
+import { toMapEmbedUrl } from "@/utils/map-embed";
 import { ROUTES } from "@/config/routes.config";
 import { Button } from "@/components/ui/button";
 import { VerifiedBadge } from "@/components/common/verified-badge";
@@ -110,6 +111,7 @@ export default async function PropertyDetailPage({
     [p.address, p.area, p.district, p.division].filter(Boolean).join(", "),
   );
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${locationQuery}`;
+  const mapEmbedUrl = toMapEmbedUrl(p.mapPin) ?? toMapEmbedUrl(p.address);
 
   const schema = {
     "@context": "https://schema.org",
@@ -310,25 +312,36 @@ export default async function PropertyDetailPage({
                   <Navigation className="size-3.5" /> Get directions
                 </a>
               </div>
-              <div className="relative mt-5 h-56 overflow-hidden rounded-[1.5rem] border border-border bg-brand-aurora">
-                <div className="absolute inset-0 bg-grid-fade opacity-60" />
-                <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-                  <span className="flex size-11 items-center justify-center rounded-full bg-brand-600 text-white shadow-md">
-                    <MapPin className="size-5" />
-                  </span>
-                  <p className="mt-3 text-sm font-semibold text-ink-900">
-                    {p.area}, {p.district}
-                  </p>
-                  {p.address && (
-                    <p className="mt-1 max-w-xs text-xs leading-relaxed text-ink-600">
-                      {p.address}
+              {mapEmbedUrl ? (
+                <iframe
+                  src={mapEmbedUrl}
+                  title={`${p.title} location map`}
+                  loading="lazy"
+                  allowFullScreen
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="mt-5 h-56 w-full rounded-[1.5rem] border border-border bg-ink-50"
+                />
+              ) : (
+                <div className="relative mt-5 h-56 overflow-hidden rounded-[1.5rem] border border-border bg-brand-aurora">
+                  <div className="absolute inset-0 bg-grid-fade opacity-60" />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+                    <span className="flex size-11 items-center justify-center rounded-full bg-brand-600 text-white shadow-md">
+                      <MapPin className="size-5" />
+                    </span>
+                    <p className="mt-3 text-sm font-semibold text-ink-900">
+                      {p.area}, {p.district}
                     </p>
-                  )}
-                  <p className="mt-0.5 text-xs text-ink-400">
-                    {p.division} Division
-                  </p>
+                    {p.address && (
+                      <p className="mt-1 max-w-xs text-xs leading-relaxed text-ink-600">
+                        {p.address}
+                      </p>
+                    )}
+                    <p className="mt-0.5 text-xs text-ink-400">
+                      {p.division} Division
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {similar.length > 0 && (
