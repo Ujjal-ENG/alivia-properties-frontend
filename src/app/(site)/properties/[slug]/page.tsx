@@ -30,7 +30,8 @@ import { PropertyCard } from "@/components/properties/property-card";
 import { PropertyGallery } from "@/components/properties/property-gallery";
 import { MortgageCalculator } from "@/components/properties/mortgage-calculator";
 import { ReportListingDialog } from "@/components/properties/report-listing-dialog";
-import { VirtualTour } from "@/components/properties/virtual-tour";
+// 360° virtual tour temporarily disabled on the frontend — map option stays enabled.
+// import { VirtualTour } from "@/components/properties/virtual-tour";
 import { FloorPlan } from "@/components/properties/floor-plan";
 import { VideoReel } from "@/components/properties/video-reel";
 import { DocumentVault } from "@/components/properties/document-vault";
@@ -252,15 +253,16 @@ export default async function PropertyDetailPage({
               </p>
             </div>
 
-            {/* A 360° room tour and floor plan only make sense for built spaces,
-                not bare plots/land. */}
+            {/* A floor plan only makes sense for built spaces, not bare plots/land. */}
             {p.type !== "plot" && p.type !== "land" && (
               <>
+                {/* 360° virtual tour temporarily disabled on the frontend — map option stays enabled.
                 <VirtualTour
                   posterImage={p.images[0]}
                   panoramaUrl={p.panoramaUrl}
                   title="Virtual 360° Tour"
                 />
+                */}
                 {floorLevels.length > 0 && <FloorPlan levels={floorLevels} />}
               </>
             )}

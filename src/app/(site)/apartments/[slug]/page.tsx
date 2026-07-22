@@ -3,7 +3,8 @@ export const dynamic = "force-dynamic";
 import { ProjectAtAGlance } from "@/components/projects/project-at-a-glance";
 import { buildProjectFacts } from "@/components/projects/project-facts";
 import { ProjectGallery } from "@/components/projects/project-gallery";
-import { VirtualTour } from "@/components/properties/virtual-tour";
+// 360° virtual tour temporarily disabled on the frontend — map option stays enabled.
+// import { VirtualTour } from "@/components/properties/virtual-tour";
 import { StructuredData } from "@/components/seo/structured-data";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/config/routes.config";
@@ -330,11 +331,13 @@ export default async function ProjectDetailPage({
               </div>
             ) : null}
 
+            {/* 360° virtual tour temporarily disabled on the frontend — map option stays enabled.
             <VirtualTour
               posterImage={galleryImages[0]}
               panoramaUrl={project.panoramaUrl}
               title="Virtual 360° Tour"
             />
+            */}
 
             {mapEmbedUrl ? (
               <div>
