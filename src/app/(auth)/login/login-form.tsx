@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+// import { Checkbox } from "@/components/ui/checkbox"; // DISABLED — "remember me" retired, see src/auth.ts header comment
 import {
   Form,
   FormControl,
@@ -27,7 +27,7 @@ import { z } from "zod";
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(1, "Password is required"),
-  rememberMe: z.boolean(),
+  // rememberMe: z.boolean(), // DISABLED — everyone stays logged in now, see src/auth.ts header comment
 });
 type LoginInput = z.infer<typeof loginSchema>;
 
@@ -72,10 +72,7 @@ export function LoginForm() {
     "idle",
   );
 
-  const form = useForm<LoginInput>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { rememberMe: false },
-  });
+  const form = useForm<LoginInput>({ resolver: zodResolver(loginSchema) });
 
   async function onSubmit(data: LoginInput) {
     setError(null);
@@ -84,7 +81,6 @@ export function LoginForm() {
     const result = await signIn("credentials", {
       email: data.email,
       password: data.password,
-      rememberMe: data.rememberMe ? "true" : "false",
       redirect: false,
     });
 
@@ -237,6 +233,7 @@ export function LoginForm() {
             )}
           />
 
+          {/* "Remember me" checkbox DISABLED — everyone stays logged in now.
           <FormField
             control={form.control}
             name="rememberMe"
@@ -251,6 +248,7 @@ export function LoginForm() {
               </FormItem>
             )}
           />
+          */}
 
           <Button
             type="submit"
