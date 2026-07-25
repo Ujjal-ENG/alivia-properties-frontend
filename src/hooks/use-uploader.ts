@@ -38,12 +38,12 @@ export function useUploader(kind: UploadKind) {
         }
       }
 
-      // Pull a fresh session at upload time so the access token is current even
-      // if the tab has sat idle past the 15-min access-token lifetime — this
-      // triggers the auth refresh flow and avoids a stale-token 401 mid-upload.
+      // Pull a fresh session at upload time in case the user signed out in
+      // another tab since this component mounted.
       const fresh = await getSession()
       const uploadToken = fresh?.accessToken
-      if (!uploadToken || fresh?.error) {
+      // fresh?.error check DISABLED — session.error is no longer produced, see src/auth.ts header comment
+      if (!uploadToken) {
         setError("You must be signed in to upload files.")
         return []
       }
