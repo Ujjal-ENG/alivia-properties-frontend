@@ -8,8 +8,8 @@ declare module "next-auth" {
     role: UserRole
     isVerified: boolean
     accessToken?: string
-    refreshToken?: string
-    rememberMe?: boolean
+    // refreshToken?: string   // DISABLED — refresh flow is off, see src/auth.ts header comment
+    // rememberMe?: boolean    // DISABLED — same
   }
 
   interface Session {
@@ -22,7 +22,7 @@ declare module "next-auth" {
       isVerified: boolean
     }
     accessToken?: string
-    error?: "RefreshAccessTokenError" | "SessionExpired"
+    // error?: "RefreshAccessTokenError" | "SessionExpired"   // DISABLED — same
   }
 }
 
@@ -31,9 +31,9 @@ declare module "next-auth/jwt" {
     role?: UserRole
     isVerified?: boolean
     accessToken?: string
-    refreshToken?: string
-    accessTokenExpires?: number
-    rememberMe?: boolean
-    error?: "RefreshAccessTokenError" | "SessionExpired"
+    // refreshToken?: string      // DISABLED — same
+    // accessTokenExpires?: number // DISABLED — same
+    // rememberMe?: boolean        // DISABLED — same
+    // error?: "RefreshAccessTokenError" | "SessionExpired" // DISABLED — same
   }
 }
