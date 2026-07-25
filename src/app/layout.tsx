@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { SessionWatcher } from "@/components/layout/session-watcher";
+// import { SessionWatcher } from "@/components/layout/session-watcher"; // DISABLED — see src/components/layout/session-watcher.tsx
 import { defaultMetadata } from "@/config/seo.config";
 import type { Metadata } from "next";
 import { SessionProvider } from "next-auth/react";
@@ -47,7 +47,7 @@ export default async function RootLayout({
           refetchInterval={5 * 60}
           refetchOnWindowFocus
         >
-          <SessionWatcher />
+          {/* <SessionWatcher /> DISABLED — no session.error is produced anymore, see src/auth.ts */}
           {children}
         </SessionProvider>
       </body>
