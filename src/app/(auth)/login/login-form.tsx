@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -26,6 +27,7 @@ import { z } from "zod";
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(1, "Password is required"),
+  rememberMe: z.boolean(),
 });
 type LoginInput = z.infer<typeof loginSchema>;
 
@@ -70,7 +72,10 @@ export function LoginForm() {
     "idle",
   );
 
-  const form = useForm<LoginInput>({ resolver: zodResolver(loginSchema) });
+  const form = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { rememberMe: false },
+  });
 
   async function onSubmit(data: LoginInput) {
     setError(null);
@@ -79,6 +84,7 @@ export function LoginForm() {
     const result = await signIn("credentials", {
       email: data.email,
       password: data.password,
+      rememberMe: data.rememberMe ? "true" : "false",
       redirect: false,
     });
 
@@ -227,6 +233,21 @@ export function LoginForm() {
                   </div>
                 </FormControl>
                 <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="rememberMe"
+            render={({ field }) => (
+              <FormItem className="group/field flex flex-row items-center gap-2 space-y-0">
+                <FormControl>
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <FormLabel className="cursor-pointer text-sm font-normal text-muted-foreground">
+                  Remember me for 7 days
+                </FormLabel>
               </FormItem>
             )}
           />
