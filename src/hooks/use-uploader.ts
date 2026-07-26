@@ -63,11 +63,9 @@ export function useUploader(kind: UploadKind) {
           err instanceof ApiError
             ? err.status === 0
               ? err.message // network failure — already a clear, user-facing message
-              : err.status === 401 || err.status === 403
-                ? "Your session expired. Sign in again and retry the upload."
-                : err.status === 413
-                  ? "That file is too large for the server. Try a smaller image."
-                  : `Upload failed: ${err.message}`
+              : err.status === 413
+                ? "That file is too large for the server. Try a smaller image."
+                : `Upload failed: ${err.message}`
             : "Upload failed — please try again.",
         )
         return []
