@@ -43,7 +43,7 @@ export function useUploader(kind: UploadKind) {
       // triggers the auth refresh flow and avoids a stale-token 401 mid-upload.
       const fresh = await getSession()
       const uploadToken = fresh?.accessToken
-      if (!uploadToken || fresh?.error === "RefreshAccessTokenError") {
+      if (!uploadToken || fresh?.error) {
         setError("You must be signed in to upload files.")
         return []
       }
