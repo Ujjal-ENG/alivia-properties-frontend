@@ -84,6 +84,29 @@ async function refreshAccessToken(refreshToken: string): Promise<RefreshResult> 
   return { ok: true, data: payload };
 }
 
+// The backend rotates the refresh token on every use (old one is invalidated).
+// Middleware, RSC session lookups, and the client's polling/focus refetch can
+// all invoke the `jwt` callback around the same moment once the access token
+// goes stale, each reading the same not-yet-rotated refresh token from the
+// cookie. Without de-duping, the second request to hit /auth/refresh loses
+// the race, gets "refresh token mismatch", and wipes the session — logging
+// the user out minutes into their session instead of transparently renewing.
+// Sharing one in-flight promise per refresh token keeps concurrent callback
+// invocations from ever issuing a second, doomed refresh request.
+let inFlightRefresh: { token: string; promise: Promise<RefreshResult> } | null = null;
+
+function refreshAccessTokenDeduped(refreshToken: string): Promise<RefreshResult> {
+  if (inFlightRefresh && inFlightRefresh.token === refreshToken) {
+    return inFlightRefresh.promise;
+  }
+
+  const promise = refreshAccessToken(refreshToken).finally(() => {
+    if (inFlightRefresh?.token === refreshToken) inFlightRefresh = null;
+  });
+  inFlightRefresh = { token: refreshToken, promise };
+  return promise;
+}
+
 // Auth.js v5 forwards `code` to the client on signIn({ redirect: false }).
 class BackendLoginError extends CredentialsSignin {
   code: string;
@@ -154,10 +177,12 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        rememberMe: { label: "Remember me", type: "checkbox" },
       },
       async authorize(credentials) {
         const email = credentials?.email as string | undefined;
         const password = credentials?.password as string | undefined;
+        const rememberMe = credentials?.rememberMe === "true";
         if (!email || !password) {
           throw new BackendLoginError("Email and password are required.");
         }
@@ -177,12 +202,16 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           isVerified: user.isVerified,
           accessToken,
           refreshToken,
+          rememberMe,
         };
       },
     }),
   ],
 
-  session: { strategy: "jwt" },
+  // 7 days is the outer cap for a "remembered" session (matches the backend
+  // refresh token's lifetime). Sessions without "remember me" are cut off
+  // much sooner by the jwt callback above, well before this cookie expires.
+  session: { strategy: "jwt", maxAge: 7 * 24 * 60 * 60 },
 
   pages: {
     signIn: "/login",
@@ -199,6 +228,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         token.accessTokenExpires = token.accessToken
           ? getAccessTokenExpiresAt(token.accessToken as string)
           : undefined;
+        token.rememberMe = (user as { rememberMe?: boolean }).rememberMe ?? false;
         token.error = undefined;
       }
 
@@ -208,11 +238,27 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         typeof expiresAt === "number" &&
         Date.now() < expiresAt - 30_000;
 
-      if (hasFreshAccessToken || typeof token.refreshToken !== "string") {
+      if (hasFreshAccessToken) {
         return token;
       }
 
-      const refreshed = await refreshAccessToken(token.refreshToken);
+      // No "remember me": the access token's 15-minute lifetime *is* the
+      // session lifetime — don't spend the refresh token keeping it alive.
+      if (!token.rememberMe) {
+        if (token.accessToken || token.refreshToken) {
+          token.accessToken = undefined;
+          token.refreshToken = undefined;
+          token.accessTokenExpires = undefined;
+          token.error = "SessionExpired";
+        }
+        return token;
+      }
+
+      if (typeof token.refreshToken !== "string") {
+        return token;
+      }
+
+      const refreshed = await refreshAccessTokenDeduped(token.refreshToken);
       if (!refreshed.ok) {
         token.accessToken = undefined;
         token.accessTokenExpires = undefined;
@@ -237,7 +283,10 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           (token.isVerified as boolean | undefined) ?? false;
       }
       session.accessToken = token.accessToken as string | undefined;
-      session.error = token.error as "RefreshAccessTokenError" | undefined;
+      session.error = token.error as
+        | "RefreshAccessTokenError"
+        | "SessionExpired"
+        | undefined;
       return session;
     },
   },
