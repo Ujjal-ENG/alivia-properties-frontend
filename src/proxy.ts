@@ -9,7 +9,9 @@ const ROLE_PREFIXES: Record<string, string> = {
 
 export default auth((req) => {
   const { nextUrl, auth: session } = req
-  const isLoggedIn = !!session
+  // A session with `error` set (refresh failed, or expired without "remember
+  // me") is a dead session — treat it the same as no session at all.
+  const isLoggedIn = !!session && !session.error
 
   const matchedPrefix = Object.keys(ROLE_PREFIXES).find((p) =>
     nextUrl.pathname.startsWith(p),
