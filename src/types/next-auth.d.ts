@@ -9,6 +9,7 @@ declare module "next-auth" {
     isVerified: boolean
     accessToken?: string
     refreshToken?: string
+    rememberMe?: boolean
   }
 
   interface Session {
@@ -21,7 +22,7 @@ declare module "next-auth" {
       isVerified: boolean
     }
     accessToken?: string
-    error?: "RefreshAccessTokenError"
+    error?: "RefreshAccessTokenError" | "SessionExpired"
   }
 }
 
@@ -32,6 +33,7 @@ declare module "next-auth/jwt" {
     accessToken?: string
     refreshToken?: string
     accessTokenExpires?: number
-    error?: "RefreshAccessTokenError"
+    rememberMe?: boolean
+    error?: "RefreshAccessTokenError" | "SessionExpired"
   }
 }
