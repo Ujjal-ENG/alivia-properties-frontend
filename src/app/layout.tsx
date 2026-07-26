@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { SessionWatcher } from "@/components/layout/session-watcher";
 import { defaultMetadata } from "@/config/seo.config";
 import type { Metadata } from "next";
 import { SessionProvider } from "next-auth/react";
@@ -46,6 +47,7 @@ export default async function RootLayout({
           refetchInterval={5 * 60}
           refetchOnWindowFocus
         >
+          <SessionWatcher />
           {children}
         </SessionProvider>
       </body>
